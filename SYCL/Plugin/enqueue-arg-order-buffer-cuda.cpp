@@ -2,7 +2,6 @@
 
 // RUN: %clangxx -fsycl -fsycl-targets=%sycl_triple  %s -o %t.out
 // RUN: env SYCL_PI_TRACE=2 %GPU_RUN_PLACEHOLDER %t.out %GPU_CHECK_PLACEHOLDER
-// RUN: env SYCL_PI_TRACE=2 %CPU_RUN_PLACEHOLDER %t.out %CPU_CHECK_PLACEHOLDER
 
 // Tests that inter device copy (P2P) works correctly when the copy is made
 // across distinct contexts for buffers.  When a pair of command groups are

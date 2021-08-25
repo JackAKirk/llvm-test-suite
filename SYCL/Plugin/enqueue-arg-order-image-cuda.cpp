@@ -1,3 +1,10 @@
+// REQUIRES: gpu, cuda
+
+// RUN: %clangxx -fsycl -fsycl-targets=%sycl_triple  %s -o %t.out
+// Native images are created with host pointers only with host unified memory
+// support, enforce it for this test.
+// RUN: env SYCL_HOST_UNIFIED_MEMORY=1 SYCL_PI_TRACE=2 %GPU_RUN_PLACEHOLDER %t.out %GPU_CHECK_PLACEHOLDER
+
 // Tests that inter device copy (P2P) works correctly when the copy is made
 // across distinct contexts for images.  When a pair of command groups are
 // submitted to different queues with distinct contexts the runtime copies image
