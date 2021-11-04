@@ -45,7 +45,7 @@ void check(queue &Queue, size_t G = 240, size_t L = 60) {
             }
             if constexpr (UseMask) {
               auto mask = detail::Builder::createSubGroupMask<ext::oneapi::sub_group_mask>(-1, SG.get_max_local_range()[0]);
-              group_barrier(SG, mask);
+              ext::oneapi::group_barrier(SG, mask);
 			}
             else if constexpr (UseNewSyntax) {
               group_barrier(SG);
