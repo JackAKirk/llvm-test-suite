@@ -44,9 +44,8 @@ void check(queue &Queue, size_t G = 240, size_t L = 60) {
               res += addacc[SGoff + i];
             }
             if constexpr (UseMask) {
-              ext::oneapi::sub_group_mask mask;
-              mask.set();
-              group_barrier(SG);
+              auto mask = detail::Builder::createSubGroupMask<ext::oneapi::sub_group_mask>(-1, SG.get_max_local_range()[0]);
+              group_barrier(SG, mask);
 			}
             else if constexpr (UseNewSyntax) {
               group_barrier(SG);
