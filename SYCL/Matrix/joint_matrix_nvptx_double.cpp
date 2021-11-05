@@ -1,6 +1,7 @@
 // REQUIRES: gpu, cuda
 
-// RUN: %clangxx -fsycl -fsycl-targets=%sycl_triple -Xsycl-target-backend --cuda-gpu-arch=sm_80 -DSYCL_EXT_ONEAPI_MATRIX=3  %s -o %t.out
+// RUN: %clangxx -fsycl -fsycl-targets=%sycl_triple -Xsycl-target-backend
+// --cuda-gpu-arch=sm_80 -DSYCL_EXT_ONEAPI_MATRIX=3  %s -o %t.out
 
 #include <CL/sycl.hpp>
 
@@ -111,12 +112,10 @@ int main() {
                        matrix_layout::row_major>
               sub_c;
 
-          joint_matrix<double, matrix_use::a, M, K,
-                       matrix_layout::row_major>
+          joint_matrix<double, matrix_use::a, M, K, matrix_layout::row_major>
               sub_a;
 
-          joint_matrix<double, matrix_use::b, K, N,
-                       matrix_layout::row_major>
+          joint_matrix<double, matrix_use::b, K, N, matrix_layout::row_major>
               sub_b;
 
           joint_matrix_load(sg, sub_c,
