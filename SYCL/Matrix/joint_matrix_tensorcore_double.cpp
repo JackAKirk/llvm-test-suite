@@ -2,6 +2,11 @@
 
 // RUN: %clangxx -fsycl -fsycl-targets=%sycl_triple -Xsycl-target-backend
 // --cuda-gpu-arch=sm_80 -DSYCL_EXT_ONEAPI_MATRIX=3  %s -o %t.out
+//
+// Specifying the sm version via the --cuda-gpu-arch flag is necessary
+// for the Nvidia case.  DPC++ JIT compilation is not
+// supported for the Nvidia case, although some JIT optimizations are performed
+// at the level of the PTX assembly code.
 
 #include <CL/sycl.hpp>
 
