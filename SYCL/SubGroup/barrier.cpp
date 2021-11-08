@@ -17,10 +17,9 @@
 #include <limits>
 #include <numeric>
 
+template <typename T, bool UseNewSyntax> class sycl_subgr;
 using namespace cl::sycl;
-
-
-template <typename T, bool UseNewSyntax = false, bool UseMask = true>
+template <typename T, bool UseNewSyntax = false>
 void check(queue &Queue, size_t G = 240, size_t L = 60) {
   try {
     nd_range<1> NdRange(G, L);
@@ -32,7 +31,7 @@ void check(queue &Queue, size_t G = 240, size_t L = 60) {
       auto addacc = addbuf.template get_access<access::mode::read_write>(cgh);
       auto sgsizeacc = sgsizebuf.get_access<access::mode::read_write>(cgh);
 
-      cgh.parallel_for(
+      cgh.parallel_for<sycl_subgr<T, UseNewSyntax>>(
           NdRange, [=](nd_item<1> NdItem) {
             ext::oneapi::sub_group SG = NdItem.get_sub_group();
             size_t lid = SG.get_local_id().get(0);
@@ -43,11 +42,7 @@ void check(queue &Queue, size_t G = 240, size_t L = 60) {
             for (size_t i = 0; i <= lid; i++) {
               res += addacc[SGoff + i];
             }
-            if constexpr (UseMask) {
-              auto mask = detail::Builder::createSubGroupMask<ext::oneapi::sub_group_mask>(-1, SG.get_max_local_range()[0]);
-              sycl::ext::oneapi::group_barrier(SG, mask);
-			}
-            else if constexpr (UseNewSyntax) {
+            if constexpr (UseNewSyntax) {
               group_barrier(SG);
             } else {
               SG.barrier(access::fence_space::global_space);
@@ -96,15 +91,9 @@ int main() {
   check<long, true>(Queue);
   check<unsigned long, true>(Queue);
   check<float, true>(Queue);
-  check<int, true, true>(Queue);
-  check<unsigned int, true, true>(Queue);
-  check<long, true, true>(Queue);
-  check<unsigned long, true, true>(Queue);
-  check<float, true, true>(Queue);
   if (Queue.get_device().has(sycl::aspect::fp64)) {
     check<double>(Queue);
     check<double, true>(Queue);
-    check<double, true, true>(Queue);
   }
   std::cout << "Test passed." << std::endl;
   return 0;
