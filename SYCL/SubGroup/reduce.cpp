@@ -1,4 +1,4 @@
-// U-NSUPPORTED: cpu
+// UNSUPPORTED: cpu
 // #2252 Disable until all variants of built-ins are available in OpenCL CPU
 // runtime for every supported ISA
 //

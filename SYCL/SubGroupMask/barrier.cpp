@@ -7,14 +7,13 @@
 // Builtins in libclc are not implemented:
 // XFAIL: hip_amd, cpu
 
-#include <sycl.hpp>
 #include <limits>
 #include <numeric>
+#include <sycl.hpp>
 
 using namespace sycl;
 
-template <typename T>
-void check(queue &Queue, size_t G = 240, size_t L = 60) {
+template <typename T> void check(queue &Queue, size_t G = 240, size_t L = 60) {
   try {
     nd_range<1> NdRange(G, L);
     std::vector<T> data(G);
@@ -23,32 +22,32 @@ void check(queue &Queue, size_t G = 240, size_t L = 60) {
     Queue.submit([&](handler &cgh) {
       auto resAcc = resBuf.template get_access<access::mode::read_write>(cgh);
 
-      cgh.parallel_for(
-          NdRange, [=](nd_item<1> NdItem) {
-            ext::oneapi::sub_group SG = NdItem.get_sub_group();
-			size_t g_id = NdItem.get_global_linear_id();
-            size_t l_sg_id = SG.get_local_linear_id();
-			size_t sg_size = SG.get_max_local_range()[0];
-            size_t l_g_id = NdItem.get_local_linear_id();
-            size_t SGoff = l_g_id - l_sg_id;
-			auto mask = detail::Builder::createSubGroupMask<ext::oneapi::sub_group_mask>(~0, SG.get_max_local_range()[0]);
+      cgh.parallel_for(NdRange, [=](nd_item<1> NdItem) {
+        ext::oneapi::sub_group SG = NdItem.get_sub_group();
+        size_t g_id = NdItem.get_global_linear_id();
+        size_t l_sg_id = SG.get_local_linear_id();
+        size_t sg_size = SG.get_max_local_range()[0];
+        size_t l_g_id = NdItem.get_local_linear_id();
+        size_t SGoff = l_g_id - l_sg_id;
+        auto mask =
+            detail::Builder::createSubGroupMask<ext::oneapi::sub_group_mask>(
+                ~0, SG.get_max_local_range()[0]);
 
-			if(l_sg_id==0){
-				for(int i=SGoff;i<SGoff+sg_size;i++){
-					resAcc[i] = 0;
-				}
-			}
-			
-			sycl::ext::oneapi::group_barrier(SG, mask);
-			
-			resAcc[l_g_id] += 1;
-			
-          });
+        if (l_sg_id == 0) {
+          for (int i = SGoff; i < SGoff + sg_size; i++) {
+            resAcc[i] = 0;
+          }
+        }
+
+        sycl::ext::oneapi::group_barrier(SG, mask);
+
+        resAcc[l_g_id] += 1;
+      });
     });
     auto resAcc = resBuf.template get_access<access::mode::read_write>();
 
     for (int i = 0; i < G; i++) {
-		assert(resAcc[i]==1);
+      assert(resAcc[i] == 1);
     }
   } catch (exception e) {
     std::cout << "SYCL exception caught: " << e.what();

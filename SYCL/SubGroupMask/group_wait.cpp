@@ -90,15 +90,15 @@ template <typename T> int test() {
 
   {
     auto Acc = OutBuf.template get_access<access::mode::write>();
-    for (size_t I = 0; I < NElems; I++){
+    for (size_t I = 0; I < NElems; I++) {
       Acc[I] = static_cast<T>(0);
     }
   }
   {
-	  auto Acc = InBuf.template get_access<access::mode::write>();
-	  for (size_t J = 0; J < NElems; J++){
-		Acc[J] = J;
-	  }
+    auto Acc = InBuf.template get_access<access::mode::write>();
+    for (size_t J = 0; J < NElems; J++) {
+      Acc[J] = J;
+    }
   }
 
   Q.submit([&](handler &CGH) {
@@ -113,26 +113,30 @@ template <typename T> int test() {
        Local[NDId.get_local_id()] = 1;
 
        auto sg = NDId.get_sub_group();
-	   size_t loc = sg.get_local_linear_id();
-	   size_t sg_size = sg.get_group_linear_range();
-	   size_t gid = sg.get_group_linear_id();
+       size_t loc = sg.get_local_linear_id();
+       size_t sg_size = sg.get_group_linear_range();
+       size_t gid = sg.get_group_linear_id();
        size_t NElemsToCopy = NElems / 2;
-	   auto mask = detail::Builder::createSubGroupMask<ext::oneapi::sub_group_mask>((1u<<(sg_size/2))-1, sg.get_max_local_range()[0]);
+       auto mask =
+           detail::Builder::createSubGroupMask<ext::oneapi::sub_group_mask>(
+               (1u << (sg_size / 2)) - 1, sg.get_max_local_range()[0]);
 
-       if(loc<sg_size/2){
+       if (loc < sg_size / 2) {
          auto E = sycl::ext::oneapi::async_group_copy(
-             sg, mask, In.get_pointer() + gid * sg_size, Local.get_pointer(), NElems);
+             sg, mask, In.get_pointer() + gid * sg_size, Local.get_pointer(),
+             NElems);
          sycl::ext::oneapi::wait_for(sg, mask, E);
 
          Local[sg_size - loc] *= 2;
        }
 
-       if(loc<sg_size/2){
+       if (loc < sg_size / 2) {
          auto E = sycl::ext::oneapi::async_group_copy(
-             sg, mask, Local.get_pointer(), Out.get_pointer() + gid * sg_size, NElems);
+             sg, mask, Local.get_pointer(), Out.get_pointer() + gid * sg_size,
+             NElems);
          sycl::ext::oneapi::wait_for(sg, mask, E);
        }
-	   SGSize[0] = sg_size;
+       SGSize[0] = sg_size;
      });
    }).wait();
 
