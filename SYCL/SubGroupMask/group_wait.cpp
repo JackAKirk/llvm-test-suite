@@ -121,7 +121,7 @@ template <typename T> int test() {
 
        if(loc<sg_size/2){
          auto E = sycl::ext::oneapi::async_group_copy(
-             sg, Local.get_pointer(), In.get_pointer() + gid * sg_size, NElems, mask);
+             sg, mask, In.get_pointer() + gid * sg_size, Local.get_pointer(), NElems);
          sycl::ext::oneapi::wait_for(sg, mask, E);
 
          Local[sg_size - loc] *= 2;
@@ -129,7 +129,7 @@ template <typename T> int test() {
 
        if(loc<sg_size/2){
          auto E = sycl::ext::oneapi::async_group_copy(
-             sg, Out.get_pointer() + gid * sg_size, Local.get_pointer(), NElems, mask);
+             sg, mask, Local.get_pointer(), Out.get_pointer() + gid * sg_size, NElems);
          sycl::ext::oneapi::wait_for(sg, mask, E);
        }
 	   SGSize[0] = sg_size;

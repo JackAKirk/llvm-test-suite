@@ -47,12 +47,12 @@ void test_impl(queue q,
 			auto mask = detail::Builder::createSubGroupMask<ext::oneapi::sub_group_mask>(0xAAAA, sg.get_max_local_range()[0]);
 			
             int lid = it.get_local_id(0);
-            out[0] = reduce_over_group(sg, in[lid], binary_op, mask);
-            out[1] = reduce_over_group(sg, in[lid], init, binary_op, mask);
-            out[2] = joint_reduce(sg, in.get_pointer(), in.get_pointer() + N,
-                                  binary_op, mask);
-            out[3] = joint_reduce(sg, in.get_pointer(), in.get_pointer() + N,
-                                  init, binary_op, mask);
+            out[0] = reduce_over_group(sg, mask, in[lid], binary_op);
+            out[1] = reduce_over_group(sg, mask, in[lid], init, binary_op);
+            out[2] = joint_reduce(sg, mask, in.get_pointer(), in.get_pointer() + N,
+                                  binary_op);
+            out[3] = joint_reduce(sg, mask, in.get_pointer(), in.get_pointer() + N,
+                                  init, binary_op);
           });
     });
   }
