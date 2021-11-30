@@ -11,6 +11,8 @@
 #include <CL/sycl.hpp>
 
 using namespace cl::sycl;
+using sycl::ext::oneapi::dest_stride;
+using sycl::ext::oneapi::src_stride;
 
 template <typename T, typename G> class TypeHelper;
 
@@ -26,7 +28,7 @@ const size_t WorkGroupSize = 8;
 
 template <typename T> void initInputBuffer(buffer<T, 1> &Buf, size_t Stride) {
   auto Acc = Buf.template get_access<access::mode::write>();
-  for (size_t I = 0; I < Buf.get_count(); I += WorkGroupSize) {
+  for (size_t I = 0; I < Buf.size(); I += WorkGroupSize) {
     for (size_t J = 0; J < WorkGroupSize; J++)
       Acc[I + J] = static_cast<T>(I + J + ((J % Stride == 0) ? 100 : 0));
   }
@@ -36,7 +38,7 @@ template <typename T> int checkResults(buffer<T, 1> &OutBuf, size_t Stride) {
   auto Out = OutBuf.template get_access<access::mode::read>();
   int EarlyFailout = 20;
 
-  for (size_t I = 0; I < OutBuf.get_count(); I += WorkGroupSize) {
+  for (size_t I = 0; I < OutBuf.size(); I += WorkGroupSize) {
     for (size_t J = 0; J < WorkGroupSize; J++) {
       size_t ExpectedVal = (J % Stride == 0) ? (100 + I + J) : 0;
       if (!checkEqual(Out[I + J], ExpectedVal)) {
@@ -103,25 +105,25 @@ template <typename T, typename G> int test(size_t Stride) {
 
          if (Stride == 1) { // Check the version without stride arg.
            auto E = sycl::ext::oneapi::async_group_copy(
-               Sub_group, Local.get_pointer(), In.get_pointer() + Offset,
+               Sub_group, In.get_pointer() + Offset, Local.get_pointer(),
                NElemsToCopy);
            sycl::ext::oneapi::wait_for(Sub_group, E);
          } else {
            auto E = sycl::ext::oneapi::async_group_copy(
-               Sub_group, Local.get_pointer(), In.get_pointer() + Offset,
-               NElemsToCopy, Stride);
+               Sub_group, In.get_pointer() + Offset, Local.get_pointer(),
+               NElemsToCopy, src_stride{Stride});
            sycl::ext::oneapi::wait_for(Sub_group, E);
          }
 
          if (Stride == 1) { // Check the version without stride arg.
            auto E = sycl::ext::oneapi::async_group_copy(
-               Sub_group, Out.get_pointer() + Offset, Local.get_pointer(),
+               Sub_group, Local.get_pointer(), Out.get_pointer() + Offset,
                NElemsToCopy);
            sycl::ext::oneapi::wait_for(Sub_group, E);
          } else {
            auto E = sycl::ext::oneapi::async_group_copy(
-               Sub_group, Out.get_pointer() + Offset, Local.get_pointer(),
-               NElemsToCopy, Stride);
+               Sub_group, Local.get_pointer(), Out.get_pointer() + Offset,
+               NElemsToCopy, dest_stride{Stride});
            sycl::ext::oneapi::wait_for(Sub_group, E);
          }
        }

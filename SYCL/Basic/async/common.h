@@ -6,7 +6,7 @@ using namespace cl::sycl;
 
 template <typename T> void initOutputBuffer(buffer<T, 1> &Buf) {
   auto Acc = Buf.template get_access<access::mode::write>();
-  for (size_t I = 0; I < Buf.get_count(); I++)
+  for (size_t I = 0; I < Buf.size(); I++)
     Acc[I] = static_cast<T>(0);
 }
 

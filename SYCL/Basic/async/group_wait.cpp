@@ -18,7 +18,7 @@ template <typename T> class KernelName;
 
 template <typename T> void initInputBuffer(buffer<T, 1> &Buf) {
   auto Acc = Buf.template get_access<access::mode::write>();
-  const size_t NElems = Buf.get_count();
+  const size_t NElems = Buf.size();
 
   for (size_t J = 0; J < NElems; J++)
     Acc[J] = (J < NElems / 2) ? J : 0;
@@ -27,7 +27,7 @@ template <typename T> void initInputBuffer(buffer<T, 1> &Buf) {
 template <typename T> int checkResults(buffer<T, 1> &OutBuf) {
   auto Out = OutBuf.template get_access<access::mode::read>();
   int EarlyFailout = 20;
-  const size_t NElems = OutBuf.get_count();
+  const size_t NElems = OutBuf.size();
 
   for (size_t J = 0; J < NElems; J++) {
     size_t ExpectedVal = (J < NElems / 2) ? (J * 2) : 0;
@@ -70,15 +70,15 @@ template <typename T> int test() {
 
        {
          auto E = sycl::ext::oneapi::async_group_copy(
-             Group, Local.get_pointer(), In.get_pointer(), NElemsToCopy);
+             Group, In.get_pointer(), Local.get_pointer(), NElemsToCopy);
          sycl::ext::oneapi::wait_for(Group, E);
 
-         Local[NElems - NDId.get_local_id()] *= 2;
+         Local[NElems - 1 - NDId.get_local_id()] *= 2;
        }
 
        {
          auto E = sycl::ext::oneapi::async_group_copy(
-             Group, Out.get_pointer(), Local.get_pointer(), NElemsToCopy);
+             Group, Local.get_pointer(), Out.get_pointer(), NElemsToCopy);
          sycl::ext::oneapi::wait_for(Group, E);
        }
      });
