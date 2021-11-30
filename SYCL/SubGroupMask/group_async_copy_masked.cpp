@@ -65,7 +65,7 @@ template <typename T, typename G> int test_masked(size_t Stride) {
          range<1>{WorkGroupSize}, CGH);
 
      nd_range<1> NDR{range<1>(NElems), range<1>(WorkGroupSize)};
-     CGH.parallel_for<KernelNameMasked<T, G>>(NDR, [=](nd_item<1> NDId) {
+     CGH.parallel_for<KernelName<T, G>>(NDR, [=](nd_item<1> NDId) {
        auto GrId = NDId.get_group_linear_id();
        size_t NElemsToCopy =
            WorkGroupSize / Stride + ((WorkGroupSize % Stride) ? 1 : 0);

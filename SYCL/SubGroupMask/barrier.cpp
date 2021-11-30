@@ -10,7 +10,7 @@
 
 using namespace sycl;
 
-constexpr size_t G = 4;
+constexpr size_t G = 16;
 
 template <typename T> void calc_b(T *a, T *b) {
   for (int i = 0; i < G; i++) {
