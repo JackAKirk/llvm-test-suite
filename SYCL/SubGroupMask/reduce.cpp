@@ -2,16 +2,6 @@
 
 // RUN: %clangxx -fsycl -fsycl-targets=%sycl_triple -Xsycl-target-backend --cuda-gpu-arch=sm_80 %s -o %t.out
 
-// TODO: Do we keep the below?
-//  TODO: enable compile+runtime checks for operations defined in SPIR-V 1.3.
-//  That requires either adding a switch to clang (-spirv-max-version=1.3) or
-//  raising the spirv version from 1.1. to 1.3 for spirv translator
-//  unconditionally. Using operators specific for spirv 1.3 and higher with
-//  -spirv-max-version=1.1 being set by default causes assert/check fails
-//  in spirv translator.
-//  RUNx: %clangxx -fsycl -fsycl-targets=%sycl_triple -DSPIRV_1_3 %s -I . -o
-//  \   %t13.out
-
 #include <CL/sycl.hpp>
 #include <algorithm>
 #include <cassert>
@@ -93,6 +83,10 @@ int main() {
 
   test<int>(q);
   test<unsigned int>(q);
+  test<short>(q);
+  test<unsigned short>(q);
+  test<char>(q);
+  test<unsigned char>(q);
 
   std::cout << "Test passed." << std::endl;
 }
