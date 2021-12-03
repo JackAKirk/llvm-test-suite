@@ -11,8 +11,8 @@
 #include <CL/sycl.hpp>
 
 using namespace cl::sycl;
-using sycl::ext::oneapi::dest_stride;
-using sycl::ext::oneapi::src_stride;
+using sycl::ext::oneapi::experimental::dest_stride;
+using sycl::ext::oneapi::experimental::src_stride;
 
 template <typename T, typename G> class TypeHelper;
 
@@ -104,27 +104,27 @@ template <typename T, typename G> int test(size_t Stride) {
          auto Sub_group = NDId.get_sub_group();
 
          if (Stride == 1) { // Check the version without stride arg.
-           auto E = sycl::ext::oneapi::async_group_copy(
+           auto E = sycl::ext::oneapi::experimental::async_group_copy(
                Sub_group, In.get_pointer() + Offset, Local.get_pointer(),
                NElemsToCopy);
-           sycl::ext::oneapi::wait_for(Sub_group, E);
+           sycl::ext::oneapi::experimental::wait_for(Sub_group, E);
          } else {
-           auto E = sycl::ext::oneapi::async_group_copy(
+           auto E = sycl::ext::oneapi::experimental::async_group_copy(
                Sub_group, In.get_pointer() + Offset, Local.get_pointer(),
                NElemsToCopy, src_stride{Stride});
-           sycl::ext::oneapi::wait_for(Sub_group, E);
+           sycl::ext::oneapi::experimental::wait_for(Sub_group, E);
          }
 
          if (Stride == 1) { // Check the version without stride arg.
-           auto E = sycl::ext::oneapi::async_group_copy(
+           auto E = sycl::ext::oneapi::experimental::async_group_copy(
                Sub_group, Local.get_pointer(), Out.get_pointer() + Offset,
                NElemsToCopy);
-           sycl::ext::oneapi::wait_for(Sub_group, E);
+           sycl::ext::oneapi::experimental::wait_for(Sub_group, E);
          } else {
-           auto E = sycl::ext::oneapi::async_group_copy(
+           auto E = sycl::ext::oneapi::experimental::async_group_copy(
                Sub_group, Local.get_pointer(), Out.get_pointer() + Offset,
                NElemsToCopy, dest_stride{Stride});
-           sycl::ext::oneapi::wait_for(Sub_group, E);
+           sycl::ext::oneapi::experimental::wait_for(Sub_group, E);
          }
        }
      });

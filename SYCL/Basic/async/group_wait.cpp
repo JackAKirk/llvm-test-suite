@@ -69,17 +69,17 @@ template <typename T> int test() {
        size_t NElemsToCopy = NElems / 2;
 
        {
-         auto E = sycl::ext::oneapi::async_group_copy(
+         auto E = sycl::ext::oneapi::experimental::async_group_copy(
              Group, In.get_pointer(), Local.get_pointer(), NElemsToCopy);
-         sycl::ext::oneapi::wait_for(Group, E);
+         sycl::ext::oneapi::experimental::wait_for(Group, E);
 
          Local[NElems - 1 - NDId.get_local_id()] *= 2;
        }
 
        {
-         auto E = sycl::ext::oneapi::async_group_copy(
+         auto E = sycl::ext::oneapi::experimental::async_group_copy(
              Group, Local.get_pointer(), Out.get_pointer(), NElemsToCopy);
-         sycl::ext::oneapi::wait_for(Group, E);
+         sycl::ext::oneapi::experimental::wait_for(Group, E);
        }
      });
    }).wait();
