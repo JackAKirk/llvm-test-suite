@@ -11,7 +11,7 @@
 #include <vector>
 
 using namespace sycl;
-using namespace sycl::ext::oneapi;
+using namespace sycl::ext::oneapi::cuda;
 
 void basic() {
   queue q{};
