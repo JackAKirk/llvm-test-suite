@@ -1,4 +1,4 @@
-// UNSUPPORTED: cuda || hip
+// UNSUPPORTED: hip
 // RUN: %clangxx -fsycl -fsycl-targets=%sycl_triple %s -I . -o %t.out
 // RUN: %CPU_RUN_PLACEHOLDER %t.out
 // RUN: %GPU_RUN_PLACEHOLDER %t.out
@@ -69,6 +69,11 @@ int main() {
   std::iota(input.begin(), input.end(), 0);
   std::fill(output.begin(), output.end(), 0);
 
+  std::array<unsigned int, N> input1;
+  std::array<unsigned int, 4> output1;
+  std::iota(input1.begin(), input1.end(), 0);
+  std::fill(output1.begin(), output1.end(), 0);
+
   test<class KernelNamePlusV>(q, input, output, sycl::plus<>(), 0);
   test<class KernelNameMinimumV>(q, input, output, sycl::minimum<>(),
                                  std::numeric_limits<int>::max());
@@ -81,13 +86,17 @@ int main() {
   test<class KernelNameMaximumI>(q, input, output, sycl::maximum<int>(),
                                  std::numeric_limits<int>::lowest());
 
-#ifdef SPIRV_1_3
+//#ifdef SPIRV_1_3
   test<class KernelNameMultipliesI>(q, input, output, sycl::multiplies<int>(),
                                     1);
   test<class KernelNameBitOrI>(q, input, output, sycl::bit_or<int>(), 0);
   test<class KernelNameBitXorI>(q, input, output, sycl::bit_xor<int>(), 0);
   test<class KernelNameBitAndI>(q, input, output, sycl::bit_and<int>(), ~0);
-#endif // SPIRV_1_3
+
+  test<class KernelNameBitOrUI>(q, input1, output1, sycl::bit_or<unsigned int>(), 0);
+  test<class KernelNameBitXorUI>(q, input1, output1, sycl::bit_xor<unsigned int>(), 0);
+  test<class KernelNameBitAndUI>(q, input1, output1, sycl::bit_and<unsigned int>(), ~0);
+//#endif // SPIRV_1_3
 
   std::cout << "Test passed." << std::endl;
 }
