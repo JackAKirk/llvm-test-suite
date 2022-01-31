@@ -93,9 +93,12 @@ int main() {
   std::iota(inputUI.begin(), inputUI.end(), 0);
   std::fill(outputUI.begin(), outputUI.end(), 0);
 
-  test<class KernelNameBitOrUI>(q, inputUI, outputUI, sycl::bit_or<unsigned int>(), 0);
-  test<class KernelNameBitXorUI>(q, inputUI, outputUI, sycl::bit_xor<unsigned int>(), 0);
-  test<class KernelNameBitAndUI>(q, inputUI, outputUI, sycl::bit_and<unsigned int>(), ~0);
+  test<class KernelNameBitOrUI>(q, inputUI, outputUI,
+                                sycl::bit_or<unsigned int>(), 0);
+  test<class KernelNameBitXorUI>(q, inputUI, outputUI,
+                                 sycl::bit_xor<unsigned int>(), 0);
+  test<class KernelNameBitAndUI>(q, inputUI, outputUI,
+                                 sycl::bit_and<unsigned int>(), ~0);
 #endif // SPIRV_1_3
 
   std::cout << "Test passed." << std::endl;
