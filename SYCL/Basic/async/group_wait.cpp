@@ -91,19 +91,71 @@ int main() {
 
   if (test<int>())
     return 1;
+  if (test<int2>())
+    return 1;
+  if (test<int4>())
+    return 1;
   if (test<uint>())
+    return 1;
+  if (test<uint2>())
+    return 1;
+  if (test<uint4>())
     return 1;
   if (test<double>())
     return 1;
+  if (test<double2>())
+    return 1;
   if (test<float>())
+    return 1;
+  if (test<float2>())
+    return 1;
+  if (test<float4>())
     return 1;
   if (test<long>())
     return 1;
+  if (test<long2>())
+    return 1;
   if (test<ulong>())
+    return 1;
+  if (test<ulong2>())
     return 1;
   if (test<vec<int, 1>>())
     return 1;
-  if (test<int4>())
+  if (test<short2>())
+    return 1;
+  if (test<short4>())
+    return 1;
+  if (test<short8>())
+    return 1;
+  if (test<ushort2>())
+    return 1;
+  if (test<ushort4>())
+    return 1;
+  if (test<ushort8>())
+    return 1;
+  if (test<char4>())
+    return 1;
+  if (test<char8>())
+    return 1;
+  if (test<char16>())
+    return 1;
+  if (test<schar4>())
+    return 1;
+  if (test<schar8>())
+    return 1;
+  if (test<schar16>())
+    return 1;
+  if (test<uchar4>())
+    return 1;
+  if (test<uchar8>())
+    return 1;
+  if (test<uchar16>())
+    return 1;
+  if (test<half2>())
+    return 1;
+  if (test<half4>())
+    return 1;
+  if (test<half8>())
     return 1;
 
   std::cout << "Test passed.\n";

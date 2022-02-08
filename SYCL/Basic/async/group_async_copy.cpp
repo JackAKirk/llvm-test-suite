@@ -137,19 +137,36 @@ int main() {
   for (int Stride = 1; Stride < WorkGroupSize; Stride++) {
     if (test<int, group<1>>(Stride))
       return 1;
+    if (test<int2, group<1>>(Stride))
+      return 1;
+    if (test<int4, group<1>>(Stride))
+      return 1;
     if (test<uint, group<1>>(Stride))
+      return 1;
+    if (test<uint2, group<1>>(Stride))
+      return 1;
+    if (test<uint4, group<1>>(Stride))
       return 1;
     if (test<double, group<1>>(Stride))
       return 1;
+    if (test<double2, group<1>>(Stride))
+      return 1;
     if (test<float, group<1>>(Stride))
+      return 1;
+    if (test<float2, group<1>>(Stride))
+      return 1;
+    if (test<float4, group<1>>(Stride))
       return 1;
     if (test<long, group<1>>(Stride))
       return 1;
+    if (test<long2, group<1>>(Stride))
+      return 1;
     if (test<ulong, group<1>>(Stride))
       return 1;
-    if (test<vec<int, 1>, group<1>>(Stride))
+    if (test<ulong2, group<1>>(Stride))
       return 1;
-    if (test<int4, group<1>>(Stride))
+
+    if (test<vec<int, 1>, group<1>>(Stride))
       return 1;
     if (test<bool, group<1>>(Stride))
       return 1;
@@ -161,24 +178,79 @@ int main() {
       return 1;
     if (test<std::byte, group<1>>(Stride))
       return 1;
+
+    if (test<char4, group<1>>(Stride))
+      return 1;
+    if (test<char8, group<1>>(Stride))
+      return 1;
+    if (test<char16, group<1>>(Stride))
+      return 1;
+    if (test<schar4, group<1>>(Stride))
+      return 1;
+    if (test<schar8, group<1>>(Stride))
+      return 1;
+    if (test<schar16, group<1>>(Stride))
+      return 1;
+    if (test<uchar4, group<1>>(Stride))
+      return 1;
+    if (test<uchar8, group<1>>(Stride))
+      return 1;
+    if (test<uchar16, group<1>>(Stride))
+      return 1;
+    if (test<short2, group<1>>(Stride))
+      return 1;
+    if (test<short4, group<1>>(Stride))
+      return 1;
+    if (test<short8, group<1>>(Stride))
+      return 1;
+    if (test<ushort2, group<1>>(Stride))
+      return 1;
+    if (test<ushort4, group<1>>(Stride))
+      return 1;
+    if (test<ushort8, group<1>>(Stride))
+      return 1;
+    if (test<half2, group<1>>(Stride))
+      return 1;
+    if (test<half4, group<1>>(Stride))
+      return 1;
+    if (test<half8, group<1>>(Stride))
+      return 1;
   }
 
   for (int Stride = 1; Stride < WorkGroupSize; Stride++) {
+
     if (test<int, sub_group>(Stride))
+      return 1;
+    if (test<int2, sub_group>(Stride))
+      return 1;
+    if (test<int4, sub_group>(Stride))
       return 1;
     if (test<uint, sub_group>(Stride))
       return 1;
+    if (test<uint2, sub_group>(Stride))
+      return 1;
+    if (test<uint4, sub_group>(Stride))
+      return 1;
     if (test<double, sub_group>(Stride))
+      return 1;
+    if (test<double2, sub_group>(Stride))
       return 1;
     if (test<float, sub_group>(Stride))
       return 1;
+    if (test<float2, sub_group>(Stride))
+      return 1;
+    if (test<float4, sub_group>(Stride))
+      return 1;
     if (test<long, sub_group>(Stride))
+      return 1;
+    if (test<long2, sub_group>(Stride))
       return 1;
     if (test<ulong, sub_group>(Stride))
       return 1;
-    if (test<vec<int, 1>, sub_group>(Stride))
+    if (test<ulong2, sub_group>(Stride))
       return 1;
-    if (test<int4, sub_group>(Stride))
+
+    if (test<vec<int, 1>, sub_group>(Stride))
       return 1;
     if (test<bool, sub_group>(Stride))
       return 1;
@@ -189,6 +261,43 @@ int main() {
     if (test<cl::sycl::cl_bool, sub_group>(Stride))
       return 1;
     if (test<std::byte, sub_group>(Stride))
+      return 1;
+
+    if (test<char4, sub_group>(Stride))
+      return 1;
+    if (test<char8, sub_group>(Stride))
+      return 1;
+    if (test<char16, sub_group>(Stride))
+      return 1;
+    if (test<schar4, sub_group>(Stride))
+      return 1;
+    if (test<schar8, sub_group>(Stride))
+      return 1;
+    if (test<schar16, sub_group>(Stride))
+      return 1;
+    if (test<uchar4, sub_group>(Stride))
+      return 1;
+    if (test<uchar8, sub_group>(Stride))
+      return 1;
+    if (test<uchar16, sub_group>(Stride))
+      return 1;
+    if (test<short2, sub_group>(Stride))
+      return 1;
+    if (test<short4, sub_group>(Stride))
+      return 1;
+    if (test<short8, sub_group>(Stride))
+      return 1;
+    if (test<ushort2, sub_group>(Stride))
+      return 1;
+    if (test<ushort4, sub_group>(Stride))
+      return 1;
+    if (test<ushort8, sub_group>(Stride))
+      return 1;
+    if (test<half2, sub_group>(Stride))
+      return 1;
+    if (test<half4, sub_group>(Stride))
+      return 1;
+    if (test<half8, sub_group>(Stride))
       return 1;
   }
 

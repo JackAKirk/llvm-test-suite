@@ -18,9 +18,28 @@ template <typename T> bool checkEqual(vec<T, 1> A, size_t B) {
   return A.s0() == TB;
 }
 
+template <typename T> bool checkEqual(vec<T, 8> A, size_t B) {
+  T TB = B;
+  return A.s0() == TB && A.s1() == TB && A.s2() == TB && A.s3() == TB &&
+         A.s4() == TB && A.s5() == TB && A.s6() == TB && A.s7() == TB;
+}
+
+template <typename T> bool checkEqual(vec<T, 16> A, size_t B) {
+  T TB = B;
+  return A.s0() == TB && A.s1() == TB && A.s2() == TB && A.s3() == TB &&
+         A.s4() == TB && A.s5() == TB && A.s6() == TB && A.s7() == TB &&
+         A.s8() == TB && A.s9() == TB && A.sA() == TB && A.sB() == TB &&
+         A.sC() == TB && A.sD() == TB && A.sE() == TB && A.sF() == TB;
+}
+
 template <typename T> bool checkEqual(vec<T, 4> A, size_t B) {
   T TB = B;
   return A.x() == TB && A.y() == TB && A.z() == TB && A.w() == TB;
+}
+
+template <typename T> bool checkEqual(vec<T, 2> A, size_t B) {
+  T TB = B;
+  return A.s0() == TB && A.s1() == TB;
 }
 
 template <typename T>
@@ -34,11 +53,36 @@ template <typename T> std::string toString(vec<T, 1> A) {
   return R + std::to_string(A.s0()) + ")";
 }
 
+template <typename T> std::string toString(vec<T, 2> A) {
+  std::string R("(");
+  return R + std::to_string(A.s0()) + "," + std::to_string(A.s1()) + ")";
+}
+
 template <typename T> std::string toString(vec<T, 4> A) {
   std::string R("(");
   R += std::to_string(A.x()) + "," + std::to_string(A.y()) + "," +
        std::to_string(A.z()) + "," + std::to_string(A.w()) + ")";
   return R;
+}
+
+template <typename T> std::string toString(vec<T, 8> A) {
+  std::string R("(");
+  return R + std::to_string(A.s0()) + "," + std::to_string(A.s1()) + "," +
+         std::to_string(A.s2()) + "," + std::to_string(A.s3()) + "," +
+         std::to_string(A.s4()) + "," + std::to_string(A.s5()) + "," +
+         std::to_string(A.s6()) + "," + std::to_string(A.s7()) + ")";
+}
+
+template <typename T> std::string toString(vec<T, 16> A) {
+  std::string R("(");
+  return R + std::to_string(A.s0()) + "," + std::to_string(A.s1()) + "," +
+         std::to_string(A.s2()) + "," + std::to_string(A.s3()) + "," +
+         std::to_string(A.s4()) + "," + std::to_string(A.s5()) + "," +
+         std::to_string(A.s6()) + "," + std::to_string(A.s7()) + "," +
+         std::to_string(A.s8()) + "," + std::to_string(A.s9()) + "," +
+         std::to_string(A.sA()) + "," + std::to_string(A.sB()) + "," +
+         std::to_string(A.sC()) + "," + std::to_string(A.sD()) + "," +
+         std::to_string(A.sE()) + "," + std::to_string(A.sF()) + ")";
 }
 
 template <typename T = void>
