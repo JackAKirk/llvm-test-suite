@@ -150,7 +150,7 @@ template <typename T> int checkResults(buffer<T, 1> &OutBuf, size_t Stride) {
   return EarlyFailout - 20;
 }
 
-template <typename T, typename G> int test(size_t Stride, queue& Q) {
+template <typename T, typename G> int test(size_t Stride, queue &Q) {
 
   buffer<T, 1> InBuf(NElems);
   buffer<T, 1> OutBuf(NElems);
