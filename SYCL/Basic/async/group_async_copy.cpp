@@ -54,8 +54,7 @@ template <typename T> int checkResults(buffer<T, 1> &OutBuf, size_t Stride) {
   return EarlyFailout - 20;
 }
 
-template <typename T, typename G> int test(size_t Stride) {
-  queue Q;
+template <typename T, typename G> int test(size_t Stride, queue& Q) {
 
   buffer<T, 1> InBuf(NElems);
   buffer<T, 1> OutBuf(NElems);
@@ -134,170 +133,180 @@ template <typename T, typename G> int test(size_t Stride) {
 }
 
 int main() {
+
+  queue Q;
+
   for (int Stride = 1; Stride < WorkGroupSize; Stride++) {
-    if (test<int, group<1>>(Stride))
+    if (test<int, group<1>>(Stride, Q))
       return 1;
-    if (test<int2, group<1>>(Stride))
+    if (test<int2, group<1>>(Stride, Q))
       return 1;
-    if (test<int4, group<1>>(Stride))
+    if (test<int4, group<1>>(Stride, Q))
       return 1;
-    if (test<uint, group<1>>(Stride))
+    if (test<uint, group<1>>(Stride, Q))
       return 1;
-    if (test<uint2, group<1>>(Stride))
+    if (test<uint2, group<1>>(Stride, Q))
       return 1;
-    if (test<uint4, group<1>>(Stride))
+    if (test<uint4, group<1>>(Stride, Q))
       return 1;
-    if (test<double, group<1>>(Stride))
+    if (test<double, group<1>>(Stride, Q))
       return 1;
-    if (test<double2, group<1>>(Stride))
+    if (test<double2, group<1>>(Stride, Q))
       return 1;
-    if (test<float, group<1>>(Stride))
+    if (test<float, group<1>>(Stride, Q))
       return 1;
-    if (test<float2, group<1>>(Stride))
+    if (test<float2, group<1>>(Stride, Q))
       return 1;
-    if (test<float4, group<1>>(Stride))
+    if (test<float4, group<1>>(Stride, Q))
       return 1;
-    if (test<long, group<1>>(Stride))
+    if (test<long, group<1>>(Stride, Q))
       return 1;
-    if (test<long2, group<1>>(Stride))
+    if (test<long2, group<1>>(Stride, Q))
       return 1;
-    if (test<ulong, group<1>>(Stride))
+    if (test<ulong, group<1>>(Stride, Q))
       return 1;
-    if (test<ulong2, group<1>>(Stride))
-      return 1;
-
-    if (test<vec<int, 1>, group<1>>(Stride))
-      return 1;
-    if (test<bool, group<1>>(Stride))
-      return 1;
-    if (test<vec<bool, 1>, group<1>>(Stride))
-      return 1;
-    if (test<vec<bool, 4>, group<1>>(Stride))
-      return 1;
-    if (test<cl::sycl::cl_bool, group<1>>(Stride))
-      return 1;
-    if (test<std::byte, group<1>>(Stride))
+    if (test<ulong2, group<1>>(Stride, Q))
       return 1;
 
-    if (test<char4, group<1>>(Stride))
+    if (test<vec<int, 1>, group<1>>(Stride, Q))
       return 1;
-    if (test<char8, group<1>>(Stride))
+    if (test<bool, group<1>>(Stride, Q))
       return 1;
-    if (test<char16, group<1>>(Stride))
+    if (test<vec<bool, 1>, group<1>>(Stride, Q))
       return 1;
-    if (test<schar4, group<1>>(Stride))
+    if (test<vec<bool, 4>, group<1>>(Stride, Q))
       return 1;
-    if (test<schar8, group<1>>(Stride))
+    if (test<cl::sycl::cl_bool, group<1>>(Stride, Q))
       return 1;
-    if (test<schar16, group<1>>(Stride))
+    if (test<std::byte, group<1>>(Stride, Q))
       return 1;
-    if (test<uchar4, group<1>>(Stride))
+
+    if (test<char4, group<1>>(Stride, Q))
       return 1;
-    if (test<uchar8, group<1>>(Stride))
+    if (test<char8, group<1>>(Stride, Q))
       return 1;
-    if (test<uchar16, group<1>>(Stride))
+    if (test<char16, group<1>>(Stride, Q))
       return 1;
-    if (test<short2, group<1>>(Stride))
+    if (test<schar4, group<1>>(Stride, Q))
       return 1;
-    if (test<short4, group<1>>(Stride))
+    if (test<schar8, group<1>>(Stride, Q))
       return 1;
-    if (test<short8, group<1>>(Stride))
+    if (test<schar16, group<1>>(Stride, Q))
       return 1;
-    if (test<ushort2, group<1>>(Stride))
+    if (test<uchar4, group<1>>(Stride, Q))
       return 1;
-    if (test<ushort4, group<1>>(Stride))
+    if (test<uchar8, group<1>>(Stride, Q))
       return 1;
-    if (test<ushort8, group<1>>(Stride))
+    if (test<uchar16, group<1>>(Stride, Q))
       return 1;
-    if (test<half2, group<1>>(Stride))
+    if (test<short2, group<1>>(Stride, Q))
       return 1;
-    if (test<half4, group<1>>(Stride))
+    if (test<short4, group<1>>(Stride, Q))
       return 1;
-    if (test<half8, group<1>>(Stride))
+    if (test<short8, group<1>>(Stride, Q))
       return 1;
+    if (test<ushort2, group<1>>(Stride, Q))
+      return 1;
+    if (test<ushort4, group<1>>(Stride, Q))
+      return 1;
+    if (test<ushort8, group<1>>(Stride, Q))
+      return 1;
+    if (test<half2, group<1>>(Stride, Q))
+      return 1;
+    if (test<half4, group<1>>(Stride, Q))
+      return 1;
+    if (test<half8, group<1>>(Stride, Q))
+      return 1;
+  }
+
+  if (Q.get_device().get_backend() == backend::host) {
+    std::cout << "Test passed.\n";
+    std::cout << "Host device: subgroup tests skipped.\n";
+
+    return 0;
   }
 
   for (int Stride = 1; Stride < WorkGroupSize; Stride++) {
 
-    if (test<int, sub_group>(Stride))
+    if (test<int, sub_group>(Stride, Q))
       return 1;
-    if (test<int2, sub_group>(Stride))
+    if (test<int2, sub_group>(Stride, Q))
       return 1;
-    if (test<int4, sub_group>(Stride))
+    if (test<int4, sub_group>(Stride, Q))
       return 1;
-    if (test<uint, sub_group>(Stride))
+    if (test<uint, sub_group>(Stride, Q))
       return 1;
-    if (test<uint2, sub_group>(Stride))
+    if (test<uint2, sub_group>(Stride, Q))
       return 1;
-    if (test<uint4, sub_group>(Stride))
+    if (test<uint4, sub_group>(Stride, Q))
       return 1;
-    if (test<double, sub_group>(Stride))
+    if (test<double, sub_group>(Stride, Q))
       return 1;
-    if (test<double2, sub_group>(Stride))
+    if (test<double2, sub_group>(Stride, Q))
       return 1;
-    if (test<float, sub_group>(Stride))
+    if (test<float, sub_group>(Stride, Q))
       return 1;
-    if (test<float2, sub_group>(Stride))
+    if (test<float2, sub_group>(Stride, Q))
       return 1;
-    if (test<float4, sub_group>(Stride))
+    if (test<float4, sub_group>(Stride, Q))
       return 1;
-    if (test<long, sub_group>(Stride))
+    if (test<long, sub_group>(Stride, Q))
       return 1;
-    if (test<long2, sub_group>(Stride))
+    if (test<long2, sub_group>(Stride, Q))
       return 1;
-    if (test<ulong, sub_group>(Stride))
+    if (test<ulong, sub_group>(Stride, Q))
       return 1;
-    if (test<ulong2, sub_group>(Stride))
-      return 1;
-
-    if (test<vec<int, 1>, sub_group>(Stride))
-      return 1;
-    if (test<bool, sub_group>(Stride))
-      return 1;
-    if (test<vec<bool, 1>, sub_group>(Stride))
-      return 1;
-    if (test<vec<bool, 4>, sub_group>(Stride))
-      return 1;
-    if (test<cl::sycl::cl_bool, sub_group>(Stride))
-      return 1;
-    if (test<std::byte, sub_group>(Stride))
+    if (test<ulong2, sub_group>(Stride, Q))
       return 1;
 
-    if (test<char4, sub_group>(Stride))
+    if (test<vec<int, 1>, sub_group>(Stride, Q))
       return 1;
-    if (test<char8, sub_group>(Stride))
+    if (test<bool, sub_group>(Stride, Q))
       return 1;
-    if (test<char16, sub_group>(Stride))
+    if (test<vec<bool, 1>, sub_group>(Stride, Q))
       return 1;
-    if (test<schar4, sub_group>(Stride))
+    if (test<vec<bool, 4>, sub_group>(Stride, Q))
       return 1;
-    if (test<schar8, sub_group>(Stride))
+    if (test<cl::sycl::cl_bool, sub_group>(Stride, Q))
       return 1;
-    if (test<schar16, sub_group>(Stride))
+    if (test<std::byte, sub_group>(Stride, Q))
       return 1;
-    if (test<uchar4, sub_group>(Stride))
+
+    if (test<char4, sub_group>(Stride, Q))
       return 1;
-    if (test<uchar8, sub_group>(Stride))
+    if (test<char8, sub_group>(Stride, Q))
       return 1;
-    if (test<uchar16, sub_group>(Stride))
+    if (test<char16, sub_group>(Stride, Q))
       return 1;
-    if (test<short2, sub_group>(Stride))
+    if (test<schar4, sub_group>(Stride, Q))
       return 1;
-    if (test<short4, sub_group>(Stride))
+    if (test<schar8, sub_group>(Stride, Q))
       return 1;
-    if (test<short8, sub_group>(Stride))
+    if (test<schar16, sub_group>(Stride, Q))
       return 1;
-    if (test<ushort2, sub_group>(Stride))
+    if (test<uchar4, sub_group>(Stride, Q))
       return 1;
-    if (test<ushort4, sub_group>(Stride))
+    if (test<uchar8, sub_group>(Stride, Q))
       return 1;
-    if (test<ushort8, sub_group>(Stride))
+    if (test<uchar16, sub_group>(Stride, Q))
       return 1;
-    if (test<half2, sub_group>(Stride))
+    if (test<short2, sub_group>(Stride, Q))
       return 1;
-    if (test<half4, sub_group>(Stride))
+    if (test<short4, sub_group>(Stride, Q))
       return 1;
-    if (test<half8, sub_group>(Stride))
+    if (test<short8, sub_group>(Stride, Q))
+      return 1;
+    if (test<ushort2, sub_group>(Stride, Q))
+      return 1;
+    if (test<ushort4, sub_group>(Stride, Q))
+      return 1;
+    if (test<ushort8, sub_group>(Stride, Q))
+      return 1;
+    if (test<half2, sub_group>(Stride, Q))
+      return 1;
+    if (test<half4, sub_group>(Stride, Q))
+      return 1;
+    if (test<half8, sub_group>(Stride, Q))
       return 1;
   }
 
