@@ -8,12 +8,32 @@
 // XFAIL: hip_amd
 
 #include <CL/sycl.hpp>
+#include <iostream>
+#include <typeinfo>
 
 using namespace cl::sycl;
 using sycl::ext::oneapi::experimental::dest_stride;
 using sycl::ext::oneapi::experimental::src_stride;
 
 template <typename T, typename G> class TypeHelper;
+
+template <typename T, typename G>
+using KernelName = class TypeHelper<
+    typename std::conditional<std::is_same<T, std::byte>::value, unsigned char,
+                              T>::type,
+    G>;
+
+// Define the number of work items to enqueue.
+const size_t NElems = 32;
+const size_t WorkGroupSize = 8;
+
+template <typename T> void initInputBuffer(buffer<T, 1> &Buf, size_t Stride) {
+  auto Acc = Buf.template get_access<access::mode::write>();
+  for (size_t I = 0; I < Buf.size(); I += WorkGroupSize) {
+    for (size_t J = 0; J < WorkGroupSize; J++)
+      Acc[I + J] = static_cast<T>(I + J + ((J % Stride == 0) ? 100 : 0));
+  }
+}
 
 template <typename T> void initOutputBuffer(buffer<T, 1> &Buf) {
   auto Acc = Buf.template get_access<access::mode::write>();
@@ -29,6 +49,16 @@ template <typename T> bool checkEqual(vec<T, 1> A, size_t B) {
   return A.s0() == TB;
 }
 
+template <typename T> bool checkEqual(vec<T, 2> A, size_t B) {
+  T TB = B;
+  return A.s0() == TB && A.s1() == TB;
+}
+
+template <typename T> bool checkEqual(vec<T, 4> A, size_t B) {
+  T TB = B;
+  return A.x() == TB && A.y() == TB && A.z() == TB && A.w() == TB;
+}
+
 template <typename T> bool checkEqual(vec<T, 8> A, size_t B) {
   T TB = B;
   return A.s0() == TB && A.s1() == TB && A.s2() == TB && A.s3() == TB &&
@@ -41,16 +71,6 @@ template <typename T> bool checkEqual(vec<T, 16> A, size_t B) {
          A.s4() == TB && A.s5() == TB && A.s6() == TB && A.s7() == TB &&
          A.s8() == TB && A.s9() == TB && A.sA() == TB && A.sB() == TB &&
          A.sC() == TB && A.sD() == TB && A.sE() == TB && A.sF() == TB;
-}
-
-template <typename T> bool checkEqual(vec<T, 4> A, size_t B) {
-  T TB = B;
-  return A.x() == TB && A.y() == TB && A.z() == TB && A.w() == TB;
-}
-
-template <typename T> bool checkEqual(vec<T, 2> A, size_t B) {
-  T TB = B;
-  return A.s0() == TB && A.s1() == TB;
 }
 
 template <typename T>
@@ -108,24 +128,6 @@ typename std::enable_if_t<
     !is_vec<T>::value && !std::is_same<T, std::byte>::value, std::string>
 toString(T A) {
   return std::to_string(A);
-}
-
-template <typename T, typename G>
-using KernelName = class TypeHelper<
-    typename std::conditional<std::is_same<T, std::byte>::value, unsigned char,
-                              T>::type,
-    G>;
-
-// Define the number of work items to enqueue.
-const size_t NElems = 32;
-const size_t WorkGroupSize = 8;
-
-template <typename T> void initInputBuffer(buffer<T, 1> &Buf, size_t Stride) {
-  auto Acc = Buf.template get_access<access::mode::write>();
-  for (size_t I = 0; I < Buf.size(); I += WorkGroupSize) {
-    for (size_t J = 0; J < WorkGroupSize; J++)
-      Acc[I + J] = static_cast<T>(I + J + ((J % Stride == 0) ? 100 : 0));
-  }
 }
 
 template <typename T> int checkResults(buffer<T, 1> &OutBuf, size_t Stride) {
@@ -316,7 +318,6 @@ int main() {
   if (Q.get_device().get_backend() == backend::host) {
     std::cout << "Test passed.\n";
     std::cout << "Host device: subgroup tests skipped.\n";
-
     return 0;
   }
 
