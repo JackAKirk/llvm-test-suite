@@ -1,12 +1,9 @@
 // RUN: %clangxx -fsycl -fsycl-targets=%sycl_triple %s -o %t.out -Xsycl-target-backend=nvptx64-nvidia-cuda --cuda-gpu-arch=sm_80
-// RUN: %CPU_RUN_PLACEHOLDER %t.out
 // RUN: %GPU_RUN_PLACEHOLDER %t.out
-// RUN: %ACC_RUN_PLACEHOLDER %t.out
 
-// XFAIL: opencl, esimd, level0, hip
+// REQUIRES: cuda
 
 #include "CL/sycl.hpp"
-//#include <sycl/ext/oneapi/barrier.hpp>
 #include <iostream>
 #include <vector>
 
