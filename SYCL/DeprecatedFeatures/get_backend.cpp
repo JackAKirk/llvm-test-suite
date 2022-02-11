@@ -1,3 +1,4 @@
+// REQUIRES: TEMPORARY_DISABLED
 // RUN: %clangxx -fsycl -fsycl-targets=%sycl_triple -D__SYCL_INTERNAL_API %s -o %t.out
 // RUN: env SYCL_DEVICE_FILTER=%sycl_be %t.out
 //
@@ -16,8 +17,9 @@ using namespace cl::sycl;
 bool check(backend be) {
   switch (be) {
   case backend::opencl:
-  case backend::level_zero:
-  case backend::cuda:
+  case backend::ext_oneapi_level_zero:
+  case backend::ext_oneapi_cuda:
+  case backend::ext_oneapi_hip:
   case backend::host:
     return true;
   default:
@@ -61,6 +63,7 @@ int main() {
 
       unsigned char *HostAlloc = (unsigned char *)malloc_host(1, c);
       auto e = q.memset(HostAlloc, 42, 1);
+      free(HostAlloc, c);
       if (e.get_backend() != plt.get_backend()) {
         return_fail();
       }

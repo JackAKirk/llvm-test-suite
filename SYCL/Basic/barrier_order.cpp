@@ -1,9 +1,8 @@
+// UNSUPPORTED: hip
 // RUN: %clangxx -fsycl -fsycl-targets=%sycl_triple %s -o %t.out
 // RUN: %HOST_RUN_PLACEHOLDER %t.out
 // RUN: %CPU_RUN_PLACEHOLDER %t.out
 // RUN: %GPU_RUN_PLACEHOLDER %t.out
-
-// UNSUPPORTED: cuda || hip
 
 #include <CL/sycl.hpp>
 #include <stdlib.h>
@@ -19,7 +18,7 @@ int main() {
 
   q.single_task<class kernel1>([=] { *x = 1; });
 
-  q.submit_barrier();
+  q.ext_oneapi_submit_barrier();
 
   q.single_task<class kernel2>([=] {
     if (*x == 1) {

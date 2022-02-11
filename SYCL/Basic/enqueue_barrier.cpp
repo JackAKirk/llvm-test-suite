@@ -1,11 +1,11 @@
-// RUN: %clangxx -fsycl %s -o %t.out
+// RUN: %clangxx -fsycl -fsycl-targets=%sycl_triple %s -o %t.out
 // RUN: env SYCL_PI_TRACE=2 %CPU_RUN_PLACEHOLDER %t.out 2>&1 %CPU_CHECK_PLACEHOLDER
 // RUN: env SYCL_PI_TRACE=2 %GPU_RUN_PLACEHOLDER %t.out 2>&1 %GPU_CHECK_PLACEHOLDER
 // RUN: env SYCL_PI_TRACE=2 %ACC_RUN_PLACEHOLDER %t.out 2>&1 %ACC_CHECK_PLACEHOLDER
 
 // The test is failing sporadically on Windows OpenCL RTs
 // Disabling on windows until fixed
-// UNSUPPORTED: cuda || windows || hip
+// UNSUPPORTED: hip_amd, windows
 
 #include <CL/sycl.hpp>
 #include <sycl/ext/intel/fpga_device_selector.hpp>
@@ -27,8 +27,8 @@ int main() {
   Q1.submit(
       [&](sycl::handler &cgh) { cgh.single_task<class kernel4>([]() {}); });
 
-  // call queue::submit_barrier()
-  Q1.submit_barrier();
+  // call queue::ext_oneapi_submit_barrier()
+  Q1.ext_oneapi_submit_barrier();
 
   sycl::queue Q2(Context, sycl::default_selector{});
   sycl::queue Q3(Context, sycl::default_selector{});
@@ -51,8 +51,8 @@ int main() {
   auto Event4 = Q2.submit(
       [&](sycl::handler &cgh) { cgh.single_task<class kernel9>([]() {}); });
 
-  // call queue::submit_barrier(const std::vector<event> &WaitList)
-  Q3.submit_barrier({Event3, Event4});
+  // call queue::ext_oneapi_submit_barrier(const std::vector<event> &WaitList)
+  Q3.ext_oneapi_submit_barrier({Event3, Event4});
 
   Q3.submit(
       [&](sycl::handler &cgh) { cgh.single_task<class kernel10>([]() {}); });

@@ -11,8 +11,14 @@ using namespace sycl;
 
 // Floating-point types do not support pre- or post-increment
 template <> void add_test<double>(queue q, size_t N) {
-  add_fetch_test<double>(q, N);
-  add_plus_equal_test<double>(q, N);
+  add_fetch_test<::sycl::ext::oneapi::atomic_ref,
+                 access::address_space::global_space, double>(q, N);
+  add_fetch_test<::sycl::atomic_ref, access::address_space::global_space,
+                 double>(q, N);
+  add_plus_equal_test<::sycl::ext::oneapi::atomic_ref,
+                      access::address_space::global_space, double>(q, N);
+  add_plus_equal_test<::sycl::atomic_ref, access::address_space::global_space,
+                      double>(q, N);
 }
 
 int main() {

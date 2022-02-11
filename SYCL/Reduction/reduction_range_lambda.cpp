@@ -2,9 +2,7 @@
 // RUN: %CPU_RUN_PLACEHOLDER %t.out
 // RUN: %GPU_RUN_PLACEHOLDER %t.out
 // RUN: %ACC_RUN_PLACEHOLDER %t.out
-//
-// Incorrect results on HIP AMD
-// XFAIL: hip_amd
+// UNSUPPORTED: ze_debug-1,ze_debug4
 
 // This test performs basic checks of parallel_for(range, reduction, lambda)
 // with reductions initialized with 1-dimensional accessor accessing

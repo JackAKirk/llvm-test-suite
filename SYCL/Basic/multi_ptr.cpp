@@ -30,7 +30,7 @@ template <typename T> class testMultPtrKernel;
 template <typename T> class testMultPtrArrowOperatorKernel;
 
 template <typename T> struct point {
-  point(const point &rhs) : x(rhs.x), y(rhs.y) {}
+  point(const point &rhs) = default;
   point(T x, T y) : x(x), y(y) {}
   point(T v) : x(v), y(v) {}
   point() : x(0), y(0) {}
@@ -65,10 +65,10 @@ template <typename T> void testMultPtr() {
     buffer<T, 1> bufferData_2(data_2, numOfItems);
     queue myQueue;
     myQueue.submit([&](handler &cgh) {
-      accessor<T, 1, access::mode::read, access::target::global_buffer,
+      accessor<T, 1, access::mode::read, access::target::device,
                access::placeholder::false_t>
           accessorData_1(bufferData_1, cgh);
-      accessor<T, 1, access::mode::read_write, access::target::global_buffer,
+      accessor<T, 1, access::mode::read_write, access::target::device,
                access::placeholder::false_t>
           accessorData_2(bufferData_2, cgh);
       accessor<T, 1, access::mode::read_write, access::target::local>
@@ -130,7 +130,7 @@ template <typename T> void testMultPtrArrowOperator() {
     buffer<point<T>, 1> bufferData_4(data_4, numOfItems);
     queue myQueue;
     myQueue.submit([&](handler &cgh) {
-      accessor<point<T>, 1, access::mode::read, access::target::global_buffer,
+      accessor<point<T>, 1, access::mode::read, access::target::device,
                access::placeholder::false_t>
           accessorData_1(bufferData_1, cgh);
       accessor<point<T>, 1, access::mode::read, access::target::constant_buffer,
@@ -139,7 +139,7 @@ template <typename T> void testMultPtrArrowOperator() {
       accessor<point<T>, 1, access::mode::read_write, access::target::local,
                access::placeholder::false_t>
           accessorData_3(1, cgh);
-      accessor<point<T>, 1, access::mode::read, access::target::global_buffer,
+      accessor<point<T>, 1, access::mode::read, access::target::device,
                access::placeholder::false_t>
           accessorData_4(bufferData_4, cgh);
 

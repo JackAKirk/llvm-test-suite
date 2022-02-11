@@ -1,5 +1,6 @@
-// RUN: %clangxx -fsycl -fsycl-targets=%sycl_triple %s -o %t.out
-// RUN: %t.out
+// RUN: %clangxx -fsycl -fsycl-targets=%sycl_triple %s -o %t.out \
+// RUN:          -fsycl-dead-args-optimization
+// RUN: %BE_RUN_PLACEHOLDER %t.out
 
 // UNSUPPORTED: cuda
 // UNSUPPORTED: hip

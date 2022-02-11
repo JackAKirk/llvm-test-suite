@@ -5,7 +5,9 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //===----------------------------------------------------------------------===//
-// REQUIRES: gpu
+
+// This test is failing with driver version 21.49.21786
+// REQUIRES: gpu, TEMPORARILY_DISABLED
 // UNSUPPORTED: cuda || hip
 // RUN: %clangxx -fsycl -DUSE_REF %s -I%S/.. -o %t.ref.out
 // RUN: %clangxx -fsycl %s -I%S/.. -o %t.out
