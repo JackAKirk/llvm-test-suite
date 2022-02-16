@@ -51,10 +51,12 @@ int32_t matrix_ref_mn(const int &m, const int &n, uint32_t *A_Packed, uint32_t *
     for (int k = 0; k < Big_K / 32; k++)
       if constexpr (std::is_same<BinaryOperation,
                                  sycl::bit_and<uint32_t>>::value) {
-        res += popcount(A_Packed[m * Big_K / 32 + k] & B_Packed[n * Big_K / 32 + k]);
+        res += popcount(A_Packed[m * Big_K / 32 + k] &
+                        B_Packed[n * Big_K / 32 + k]);
       } else if constexpr (std::is_same<BinaryOperation,
                                         sycl::bit_xor<uint32_t>>::value) {
-        res += popcount(A_Packed[m * Big_K / 32 + k] ^ B_Packed[n * Big_K / 32 + k]);
+        res += popcount(A_Packed[m * Big_K / 32 + k] ^
+                        B_Packed[n * Big_K / 32 + k]);
       } else {
         throw std::runtime_error(
             "Only sycl::bit_xor<uint32_t> and sycl::bit_and<uint32_t> "
@@ -109,8 +111,10 @@ void test(BinaryOperation Op) {
   queue q;
   q.submit([&](handler &cgh) {
     auto accC = bufC.template get_access<access::mode::read_write>(cgh);
-    auto accA_Packed = bufA_Packed.template get_access<access::mode::read_write>(cgh);
-    auto accB_Packed = bufB_Packed.template get_access<access::mode::read_write>(cgh);
+    auto accA_Packed =
+        bufA_Packed.template get_access<access::mode::read_write>(cgh);
+    auto accB_Packed =
+        bufB_Packed.template get_access<access::mode::read_write>(cgh);
     auto accD = bufD.template get_access<access::mode::read_write>(cgh);
 
     range<2> LocalRange = {1, N_THREADS_PER_MATRIX_OP};
@@ -125,7 +129,7 @@ void test(BinaryOperation Op) {
                   .get_id()[0]; // row id of current submatrix of BIG C matrix
           const auto n =
               item.get_group().get_id()[1]; // column id of current
-                                                       // submatrix of BIG C matrix
+                                            // submatrix of BIG C matrix
           // matrix_use::a must have matrix_layout::row_major for single-bit
           // cases
           joint_matrix<uint32_t, matrix_use::a, M, K, matrix_layout::row_major>
@@ -136,14 +140,14 @@ void test(BinaryOperation Op) {
               sub_b;
 
           joint_matrix<int32_t, matrix_use::accumulator, M, N,
-                      matrix_layout::row_major>
+                       matrix_layout::row_major>
               sub_c;
 
           joint_matrix_load(
               sg, sub_c, accC.get_pointer() + (m * M) * Big_N + n * N, Big_N);
 
           for (int k = 0; k < Sub_Tiles_K;
-                k++) // row/col id of current submatrix of BIG A/B matrices
+               k++) // row/col id of current submatrix of BIG A/B matrices
           {
             joint_matrix_load(sg, sub_a,
                               accA_Packed.get_pointer() + (k * K / 32) +
