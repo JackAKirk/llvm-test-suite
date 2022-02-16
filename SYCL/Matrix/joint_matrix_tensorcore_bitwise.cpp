@@ -43,8 +43,8 @@ template <size_t M, size_t K, size_t N, class BinaryOperation>
 using KernelName = class TypeHelper<M, K, N, BinaryOperation>;
 
 template <size_t Big_N, size_t Big_K, class BinaryOperation>
-int32_t matrix_ref_mn(const int &m, const int &n, uint32_t *A_Packed, uint32_t *B_Packed,
-                      int32_t *C, BinaryOperation Op) {
+int32_t matrix_ref_mn(const int &m, const int &n, uint32_t *A_Packed,
+                      uint32_t *B_Packed, int32_t *C, BinaryOperation Op) {
   int32_t res = C[m * Big_N + n];
 
   {
