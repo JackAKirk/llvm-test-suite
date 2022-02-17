@@ -19,13 +19,13 @@ using namespace sycl::ext::oneapi::experimental::matrix;
 // terminology.  Multiple TILES can be used to construct yet larger matrices.
 // This example uses row_major a, b, and accumulator matrices.
 
-// M, N, K define the unit sizes of dimensions of the three types (a, b,
+// M, N, (K * 32) define the sizes of dimensions of the three types (a, b,
 // accumulator) of matrices per subgroup operation:
 // M: number of rows of "C"/"D" (Accumulator) sub-matrices,
 // number of cols of "B" sub-matrix.
 // N: number of cols of "C"/"D" (Accumulator) sub-matrices,
 // number of rows of "A" sub-matrix.
-// K: number of cols of "A"/number of rows of "B" sub-matrices.
+// (K * 32): number of cols of "A"/number of rows of "B" sub-matrices.
 
 constexpr int N_THREADS_PER_MATRIX_OP =
     32; // the number of threads per MMA subgroup is always 32 for Nvidia.
@@ -43,20 +43,20 @@ template <size_t M, size_t K, size_t N, class BinaryOperation>
 using KernelName = class TypeHelper<M, K, N, BinaryOperation>;
 
 template <size_t Big_N, size_t Big_K, class BinaryOperation>
-int32_t matrix_ref_mn(const int &m, const int &n, uint32_t *A_Packed,
-                      uint32_t *B_Packed, int32_t *C, BinaryOperation Op) {
+int32_t matrix_ref_mn(const int &m, const int &n, uint32_t *A,
+                      uint32_t *B, int32_t *C, BinaryOperation Op) {
   int32_t res = C[m * Big_N + n];
 
   {
-    for (int k = 0; k < Big_K / 32; k++)
+    for (int k = 0; k < Big_K; k++)
       if constexpr (std::is_same<BinaryOperation,
                                  sycl::bit_and<uint32_t>>::value) {
-        res += popcount(A_Packed[m * Big_K / 32 + k] &
-                        B_Packed[n * Big_K / 32 + k]);
+        res += popcount(A[m * Big_K + k] &
+                        B[n * Big_K + k]);
       } else if constexpr (std::is_same<BinaryOperation,
                                         sycl::bit_xor<uint32_t>>::value) {
-        res += popcount(A_Packed[m * Big_K / 32 + k] ^
-                        B_Packed[n * Big_K / 32 + k]);
+        res += popcount(A[m * Big_K + k] ^
+                        B[n * Big_K + k]);
       } else {
         throw std::runtime_error(
             "Only sycl::bit_xor<uint32_t> and sycl::bit_and<uint32_t> "
@@ -79,11 +79,11 @@ void test(BinaryOperation Op) {
       N; // total number of N dimension matrix elements for the "Big matrix".
   constexpr auto Big_K =
       Sub_Tiles_K *
-      K; // total number of K dimension matrix elements for the "Big matrix".
+      K; // total number of K dimension matrix elements for the "Big matrix" divided by 32.
 
-  // Each element of A_Packed/B_Packed hold 32 single-bit matrix elements
-  uint32_t A_Packed[Big_M * Big_K / 32];
-  uint32_t B_Packed[Big_K * Big_N / 32];
+  // Each array element of A/B hold 32 single-bit matrix elements
+  uint32_t A[Big_M * Big_K];
+  uint32_t B[Big_K * Big_N];
   int32_t C[Big_M * Big_N];
   int32_t D[Big_M * Big_N];
 
@@ -94,27 +94,27 @@ void test(BinaryOperation Op) {
 
   srand(time(NULL));
 
-  // Randomly set each of the 32 bits held by each array element of
-  // A_Packed/B_Packed
-  for (int i = 0; i < Big_M * Big_K / 32; i++) {
-    A_Packed[i] = (uint32_t)rand();
+  // Randomly set each of the 32 single-bit matrix elements held by each array element of
+  // A/B
+  for (int i = 0; i < Big_M * Big_K; i++) {
+    A[i] = (uint32_t)rand();
   }
-  for (int i = 0; i < Big_K * Big_N / 32; i++) {
-    B_Packed[i] = (uint32_t)rand();
+  for (int i = 0; i < Big_K * Big_N; i++) {
+    B[i] = (uint32_t)rand();
   }
 
-  buffer<uint32_t, 1> bufA_Packed(A_Packed, range<1>(Big_M * Big_K / 32));
-  buffer<uint32_t, 1> bufB_Packed(B_Packed, range<1>(Big_K * Big_N / 32));
+  buffer<uint32_t, 1> bufA(A, range<1>(Big_M * Big_K));
+  buffer<uint32_t, 1> bufB(B, range<1>(Big_K * Big_N));
   buffer<int32_t, 1> bufC(C, range<1>(Big_M * Big_N));
   buffer<int32_t, 1> bufD(D, range<1>(Big_M * Big_N));
 
   queue q;
   q.submit([&](handler &cgh) {
     auto accC = bufC.template get_access<access::mode::read_write>(cgh);
-    auto accA_Packed =
-        bufA_Packed.template get_access<access::mode::read_write>(cgh);
-    auto accB_Packed =
-        bufB_Packed.template get_access<access::mode::read_write>(cgh);
+    auto accA =
+        bufA.template get_access<access::mode::read_write>(cgh);
+    auto accB =
+        bufB.template get_access<access::mode::read_write>(cgh);
     auto accD = bufD.template get_access<access::mode::read_write>(cgh);
 
     range<2> LocalRange = {1, N_THREADS_PER_MATRIX_OP};
@@ -150,13 +150,13 @@ void test(BinaryOperation Op) {
                k++) // row/col id of current submatrix of BIG A/B matrices
           {
             joint_matrix_load(sg, sub_a,
-                              accA_Packed.get_pointer() + (k * K / 32) +
-                                  (m * M * Big_K / 32),
+                              accA.get_pointer() + (k * K) +
+                                  (m * M * Big_K),
                               Big_K);
 
             joint_matrix_load(sg, sub_b,
-                              accB_Packed.get_pointer() + (n * N * Big_K / 32) +
-                                  (k * K / 32),
+                              accB.get_pointer() + (n * N * Big_K) +
+                                  (k * K),
                               Big_K);
 
             sub_c = joint_matrix_bmad(sg, sub_a, sub_b, sub_c, Op);
@@ -172,15 +172,15 @@ void test(BinaryOperation Op) {
   for (int m = 0; m < Big_M; m++)
     for (int n = 0; n < Big_N; n++) {
       assert((host_accessor[m * Big_N + n] ==
-              matrix_ref_mn<Big_N, Big_K>(m, n, A_Packed, B_Packed, C, Op)));
+              matrix_ref_mn<Big_N, Big_K>(m, n, A, B, C, Op)));
     }
 };
 
 int main() {
 
-  test<SUB_TILES_M, SUB_TILES_K, SUB_TILES_N, 8, 128, 8>(
+  test<SUB_TILES_M, SUB_TILES_K, SUB_TILES_N, 8, 4, 8>(
       sycl::bit_and<uint32_t>());
-  test<SUB_TILES_M, SUB_TILES_K, SUB_TILES_N, 8, 128, 8>(
+  test<SUB_TILES_M, SUB_TILES_K, SUB_TILES_N, 8, 4, 8>(
       sycl::bit_xor<uint32_t>());
 
   return 0;
