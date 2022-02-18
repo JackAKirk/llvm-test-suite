@@ -195,87 +195,24 @@ template <typename T> int test(size_t Stride) {
 
 int main() {
   for (int Stride = 1; Stride < WorkGroupSize; Stride++) {
-    if (test<int>(Stride))
-      return 1;
-    if (test<int2>(Stride))
-      return 1;
-    if (test<int4>(Stride))
-      return 1;
-    if (test<uint>(Stride))
-      return 1;
-    if (test<uint2>(Stride))
-      return 1;
-    if (test<uint4>(Stride))
-      return 1;
-    if (test<double>(Stride))
-      return 1;
-    if (test<double2>(Stride))
-      return 1;
-    if (test<float>(Stride))
-      return 1;
-    if (test<float2>(Stride))
-      return 1;
-    if (test<float4>(Stride))
-      return 1;
-    if (test<long>(Stride))
-      return 1;
-    if (test<long2>(Stride))
-      return 1;
-    if (test<ulong>(Stride))
-      return 1;
-    if (test<ulong2>(Stride))
-      return 1;
-    if (test<char4>(Stride))
-      return 1;
-    if (test<char8>(Stride))
-      return 1;
-    if (test<char16>(Stride))
-      return 1;
-    if (test<schar4>(Stride))
-      return 1;
-    if (test<schar8>(Stride))
-      return 1;
-    if (test<schar16>(Stride))
-      return 1;
-    if (test<uchar4>(Stride))
-      return 1;
-    if (test<uchar8>(Stride))
-      return 1;
-    if (test<uchar16>(Stride))
-      return 1;
-    if (test<short2>(Stride))
-      return 1;
-    if (test<short4>(Stride))
-      return 1;
-    if (test<short8>(Stride))
-      return 1;
-    if (test<ushort2>(Stride))
-      return 1;
-    if (test<ushort4>(Stride))
-      return 1;
-    if (test<ushort8>(Stride))
-      return 1;
-    if (test<half2>(Stride))
-      return 1;
-    if (test<half4>(Stride))
-      return 1;
-    if (test<half8>(Stride))
-      return 1;
-
-    if (test<vec<int, 1>>(Stride))
-      return 1;
-    if (test<int4>(Stride))
-      return 1;
-    if (test<bool>(Stride))
-      return 1;
-    if (test<vec<bool, 1>>(Stride))
-      return 1;
-    if (test<vec<bool, 4>>(Stride))
-      return 1;
-    if (test<cl::sycl::cl_bool>(Stride))
-      return 1;
-    if (test<std::byte>(Stride))
-      return 1;
+if ((test<int>(Stride)) || (test<int2>(Stride)) || (test<int4>(Stride)) ||
+    (test<uint>(Stride)) || (test<uint2>(Stride)) || (test<uint4>(Stride)) ||
+    (test<double>(Stride)) || (test<double2>(Stride)) ||
+    (test<float>(Stride)) || (test<float2>(Stride)) || (test<float4>(Stride)) ||
+    (test<long>(Stride)) || (test<long2>(Stride)) || (test<ulong>(Stride)) ||
+    (test<ulong2>(Stride)) || (test<char4>(Stride)) || (test<char8>(Stride)) ||
+    (test<char16>(Stride)) || (test<schar4>(Stride)) ||
+    (test<schar8>(Stride)) || (test<schar16>(Stride)) ||
+    (test<uchar4>(Stride)) || (test<uchar8>(Stride)) ||
+    (test<uchar16>(Stride)) || (test<short2>(Stride)) ||
+    (test<short4>(Stride)) || (test<short8>(Stride)) ||
+    (test<ushort2>(Stride)) || (test<ushort4>(Stride)) ||
+    (test<ushort8>(Stride)) || (test<half2>(Stride)) || (test<half4>(Stride)) ||
+    (test<half8>(Stride)) || (test<vec<int, 1>>(Stride)) ||
+    (test<int4>(Stride)) || (test<bool>(Stride)) ||
+    (test<vec<bool, 1>>(Stride)) || (test<vec<bool, 4>>(Stride)) ||
+    (test<cl::sycl::cl_bool>(Stride)) || (test<std::byte>(Stride)))
+  return 1;
   }
 
   std::cout << "Test passed.\n";
