@@ -23,7 +23,7 @@ const size_t NWorkGroups = NElems / WorkGroupSize;
 
 template <typename T> void initInputBuffer(buffer<T, 1> &Buf, size_t Stride) {
   auto Acc = Buf.template get_access<access::mode::write>();
-  for (size_t I = 0; I < Buf.get_count(); I += WorkGroupSize) {
+  for (size_t I = 0; I < Buf.size(); I += WorkGroupSize) {
     for (size_t J = 0; J < WorkGroupSize; J++)
       Acc[I + J] = static_cast<T>(I + J + ((J % Stride == 0) ? 100 : 0));
   }
@@ -31,22 +31,12 @@ template <typename T> void initInputBuffer(buffer<T, 1> &Buf, size_t Stride) {
 
 template <typename T> void initOutputBuffer(buffer<T, 1> &Buf) {
   auto Acc = Buf.template get_access<access::mode::write>();
-  for (size_t I = 0; I < Buf.get_count(); I++)
+  for (size_t I = 0; I < Buf.size(); I++)
     Acc[I] = static_cast<T>(0);
 }
 
 template <typename T> struct is_vec : std::false_type {};
 template <typename T, size_t N> struct is_vec<vec<T, N>> : std::true_type {};
-
-template <typename T> bool checkEqual(vec<T, 1> A, size_t B) {
-  T TB = B;
-  return A.s0() == TB;
-}
-
-template <typename T> bool checkEqual(vec<T, 4> A, size_t B) {
-  T TB = B;
-  return A.x() == TB && A.y() == TB && A.z() == TB && A.w() == TB;
-}
 
 template <typename T>
 typename std::enable_if_t<!is_vec<T>::value, bool> checkEqual(T A, size_t B) {
@@ -54,9 +44,43 @@ typename std::enable_if_t<!is_vec<T>::value, bool> checkEqual(T A, size_t B) {
   return A == TB;
 }
 
+template <typename T> bool checkEqual(vec<T, 1> A, size_t B) {
+  T TB = B;
+  return A.s0() == TB;
+}
+
+template <typename T> bool checkEqual(vec<T, 2> A, size_t B) {
+  T TB = B;
+  return A.s0() == TB && A.s1() == TB;
+}
+
+template <typename T> bool checkEqual(vec<T, 4> A, size_t B) {
+  T TB = B;
+  return A.x() == TB && A.y() == TB && A.z() == TB && A.w() == TB;
+}
+
+template <typename T> bool checkEqual(vec<T, 8> A, size_t B) {
+  T TB = B;
+  return A.s0() == TB && A.s1() == TB && A.s2() == TB && A.s3() == TB &&
+         A.s4() == TB && A.s5() == TB && A.s6() == TB && A.s7() == TB;
+}
+
+template <typename T> bool checkEqual(vec<T, 16> A, size_t B) {
+  T TB = B;
+  return A.s0() == TB && A.s1() == TB && A.s2() == TB && A.s3() == TB &&
+         A.s4() == TB && A.s5() == TB && A.s6() == TB && A.s7() == TB &&
+         A.s8() == TB && A.s9() == TB && A.sA() == TB && A.sB() == TB &&
+         A.sC() == TB && A.sD() == TB && A.sE() == TB && A.sF() == TB;
+}
+
 template <typename T> std::string toString(vec<T, 1> A) {
   std::string R("(");
   return R + std::to_string(A.s0()) + ")";
+}
+
+template <typename T> std::string toString(vec<T, 2> A) {
+  std::string R("(");
+  return R + std::to_string(A.s0()) + "," + std::to_string(A.s1()) + ")";
 }
 
 template <typename T> std::string toString(vec<T, 4> A) {
@@ -64,6 +88,26 @@ template <typename T> std::string toString(vec<T, 4> A) {
   R += std::to_string(A.x()) + "," + std::to_string(A.y()) + "," +
        std::to_string(A.z()) + "," + std::to_string(A.w()) + ")";
   return R;
+}
+
+template <typename T> std::string toString(vec<T, 8> A) {
+  std::string R("(");
+  return R + std::to_string(A.s0()) + "," + std::to_string(A.s1()) + "," +
+         std::to_string(A.s2()) + "," + std::to_string(A.s3()) + "," +
+         std::to_string(A.s4()) + "," + std::to_string(A.s5()) + "," +
+         std::to_string(A.s6()) + "," + std::to_string(A.s7()) + ")";
+}
+
+template <typename T> std::string toString(vec<T, 16> A) {
+  std::string R("(");
+  return R + std::to_string(A.s0()) + "," + std::to_string(A.s1()) + "," +
+         std::to_string(A.s2()) + "," + std::to_string(A.s3()) + "," +
+         std::to_string(A.s4()) + "," + std::to_string(A.s5()) + "," +
+         std::to_string(A.s6()) + "," + std::to_string(A.s7()) + "," +
+         std::to_string(A.s8()) + "," + std::to_string(A.s9()) + "," +
+         std::to_string(A.sA()) + "," + std::to_string(A.sB()) + "," +
+         std::to_string(A.sC()) + "," + std::to_string(A.sD()) + "," +
+         std::to_string(A.sE()) + "," + std::to_string(A.sF()) + ")";
 }
 
 template <typename T = void>
@@ -84,7 +128,7 @@ template <typename T> int checkResults(buffer<T, 1> &OutBuf, size_t Stride) {
   auto Out = OutBuf.template get_access<access::mode::read>();
   int EarlyFailout = 20;
 
-  for (size_t I = 0; I < OutBuf.get_count(); I += WorkGroupSize) {
+  for (size_t I = 0; I < OutBuf.size(); I += WorkGroupSize) {
     for (size_t J = 0; J < WorkGroupSize; J++) {
       size_t ExpectedVal = (J % Stride == 0) ? (100 + I + J) : 0;
       if (!checkEqual(Out[I + J], ExpectedVal)) {
@@ -153,6 +197,71 @@ int main() {
   for (int Stride = 1; Stride < WorkGroupSize; Stride++) {
     if (test<int>(Stride))
       return 1;
+    if (test<int2>(Stride))
+      return 1;
+    if (test<int4>(Stride))
+      return 1;
+    if (test<uint>(Stride))
+      return 1;
+    if (test<uint2>(Stride))
+      return 1;
+    if (test<uint4>(Stride))
+      return 1;
+    if (test<double>(Stride))
+      return 1;
+    if (test<double2>(Stride))
+      return 1;
+    if (test<float>(Stride))
+      return 1;
+    if (test<float2>(Stride))
+      return 1;
+    if (test<float4>(Stride))
+      return 1;
+    if (test<long>(Stride))
+      return 1;
+    if (test<long2>(Stride))
+      return 1;
+    if (test<ulong>(Stride))
+      return 1;
+    if (test<ulong2>(Stride))
+      return 1;
+    if (test<char4>(Stride))
+      return 1;
+    if (test<char8>(Stride))
+      return 1;
+    if (test<char16>(Stride))
+      return 1;
+    if (test<schar4>(Stride))
+      return 1;
+    if (test<schar8>(Stride))
+      return 1;
+    if (test<schar16>(Stride))
+      return 1;
+    if (test<uchar4>(Stride))
+      return 1;
+    if (test<uchar8>(Stride))
+      return 1;
+    if (test<uchar16>(Stride))
+      return 1;
+    if (test<short2>(Stride))
+      return 1;
+    if (test<short4>(Stride))
+      return 1;
+    if (test<short8>(Stride))
+      return 1;
+    if (test<ushort2>(Stride))
+      return 1;
+    if (test<ushort4>(Stride))
+      return 1;
+    if (test<ushort8>(Stride))
+      return 1;
+    if (test<half2>(Stride))
+      return 1;
+    if (test<half4>(Stride))
+      return 1;
+    if (test<half8>(Stride))
+      return 1;
+
     if (test<vec<int, 1>>(Stride))
       return 1;
     if (test<int4>(Stride))
