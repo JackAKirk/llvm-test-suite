@@ -79,11 +79,10 @@ void test(BinaryOperation Op) {
       Sub_Tiles_K * K; // total number of K dimension matrix elements for the
                        // "Big matrix" divided by 32.
 
-
   // Each bit of each uint32_t A/B array element is an element of a single-bit
-  // matrix. joint_matrix_bmad performs Binary Dot Products on these matrices (see
-  // M. Rastegari et al. Computer Vision – ECCV 2016, 525-542 and A. Li et al.
-  // IEEE Transactions on Parallel and Distributed Systems, 32(7):1878-1891,
+  // matrix. joint_matrix_bmad performs Binary Dot Products on these matrices
+  // (see M. Rastegari et al. Computer Vision – ECCV 2016, 525-542 and A. Li et
+  // al. IEEE Transactions on Parallel and Distributed Systems, 32(7):1878-1891,
   // 2021))
   uint32_t A[Big_M * Big_K];
   uint32_t B[Big_K * Big_N];
