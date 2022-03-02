@@ -43,29 +43,27 @@ class TypeHelper;
 template <typename T1, typename T2, size_t M, size_t K, size_t N>
 using KernelName = class TypeHelper<T1, T2, M, K, N>;
 
-float make_fp32(short x) {
-  unsigned int y = x;
+float make_fp32(uint16_t x) {
+  uint32_t y = x;
   y = y << 16;
   float *res = reinterpret_cast<float *>(&y);
   return *res;
 }
 
-unsigned short make_bf16(float x) {
-  int *res = reinterpret_cast<int *>(&x);
+uint16_t make_bf16(float x) {
+  uint32_t *res = reinterpret_cast<uint32_t *>(&x);
   *res = *res >> 16;
-  return (unsigned short)*res;
+  return (uint16_t)*res;
 }
 
 uint32_t make_tf32(float const &x) {
   uint32_t res = reinterpret_cast<uint32_t const &>(x);
-
   res += 0x1000u;
   return res;
 }
 
 float tf32_to_fp32(uint32_t x) {
-
-  unsigned bits = (x & ~0x1fffu);
+  uint32_t bits = (x & ~0x1fffu);
   return reinterpret_cast<float const &>(bits);
 }
 
@@ -231,7 +229,7 @@ int main() {
   test<uint16_t, float, SUB_TILES_M, SUB_TILES_K, SUB_TILES_N, 8, 16, 32>();
   test<uint16_t, float, SUB_TILES_M, SUB_TILES_K, SUB_TILES_N, 32, 16, 8>();
 
-  // A/B fp19/tf32 (using the fp19 storage type uint32_t directly)
+  // A/B fp19 (aka tf32) (using the fp19 storage type uint32_t directly)
   test<uint32_t, float, SUB_TILES_M, SUB_TILES_K, SUB_TILES_N, 16, 8, 16>();
 
   return 0;
