@@ -15,9 +15,9 @@ using namespace sycl::ext::oneapi::experimental::matrix;
 // Example usage of Nvidia matrix multiply.
 // Optimizations such as memory paddings for avoiding bank conflicts are not
 // included in this test which aids clarity for what is going on. This example
-// forms a "Big matrix" corresponding to a single "TILE" using cuda example
-// terminology.  Multiple TILES can be used to construct yet larger matrices.
-// This example uses row_major a, b, and accumulator matrices.
+// forms a "Big matrix" corresponding to a single "TILE". Multiple TILES can be
+// used to construct yet larger matrices. This example uses row_major a, b, and
+// accumulator matrices.
 
 // M, N, K define the unit sizes of dimensions of the three types (a, b,
 // accumulator) of matrices per subgroup operation:
@@ -56,6 +56,19 @@ unsigned short make_bf16(float x) {
   return (unsigned short)*res;
 }
 
+uint32_t make_tf32(float const &x) {
+  uint32_t res = reinterpret_cast<uint32_t const &>(x);
+
+  res += 0x1000u;
+  return res;
+}
+
+float tf32_to_fp32(uint32_t x) {
+
+  unsigned bits = (x & ~0x1fffu);
+  return reinterpret_cast<float const &>(bits);
+}
+
 template <typename T1, typename T2, size_t Big_N, size_t Big_K>
 T2 matrix_ref_mn(const int &m, const int &n, T1 *A, T1 *B, T2 *C) {
   T2 res = C[m * Big_N + n];
@@ -63,9 +76,11 @@ T2 matrix_ref_mn(const int &m, const int &n, T1 *A, T1 *B, T2 *C) {
   if constexpr (std::is_same<T1, uint16_t>::value) {
     for (int k = 0; k < Big_K; k++)
       res += make_fp32(A[m * Big_K + k]) * make_fp32(B[k * Big_N + n]);
+  } else if constexpr (std::is_same<T1, uint32_t>::value) {
+    for (int k = 0; k < Big_K; k++)
+      res += tf32_to_fp32(A[m * Big_K + k]) * tf32_to_fp32(B[k * Big_N + n]);
   } else {
     for (int k = 0; k < Big_K; k++)
-
       res +=
           static_cast<T2>(A[m * Big_K + k]) * static_cast<T2>(B[k * Big_N + n]);
   }
@@ -104,6 +119,14 @@ void test() {
 
     for (int i = 0; i < Big_K * Big_N; i++) {
       B[i] = make_bf16(0.1f * (i % 10));
+    }
+  } else if constexpr (std::is_same<T1, uint32_t>::value) {
+    for (int i = 0; i < Big_M * Big_K; i++) {
+      A[i] = make_tf32(1.0f * (i % 10));
+    }
+
+    for (int i = 0; i < Big_K * Big_N; i++) {
+      B[i] = make_tf32(1.0f * (i % 10));
     }
   } else {
     for (int i = 0; i < Big_M * Big_K; i++) {
@@ -203,10 +226,13 @@ int main() {
 
   test<double, double, SUB_TILES_M, SUB_TILES_K, SUB_TILES_N, 8, 4, 8>();
 
-  // A/B bf16
+  // A/B bfloat16 (using the bfloat16 storage type uint16_t directly)
   test<uint16_t, float, SUB_TILES_M, SUB_TILES_K, SUB_TILES_N, 16, 16, 16>();
   test<uint16_t, float, SUB_TILES_M, SUB_TILES_K, SUB_TILES_N, 8, 16, 32>();
   test<uint16_t, float, SUB_TILES_M, SUB_TILES_K, SUB_TILES_N, 32, 16, 8>();
+
+  // A/B fp19/tf32 (using the fp19 storage type uint32_t directly)
+  test<uint32_t, float, SUB_TILES_M, SUB_TILES_K, SUB_TILES_N, 16, 8, 16>();
 
   return 0;
 };
