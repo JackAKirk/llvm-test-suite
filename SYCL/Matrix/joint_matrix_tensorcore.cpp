@@ -56,13 +56,13 @@ uint16_t make_bf16(float x) {
   return (uint16_t)*res;
 }
 
-uint32_t make_tf32(float const &x) {
+uint32_t make_fp19(float const &x) {
   uint32_t res = reinterpret_cast<uint32_t const &>(x);
   res += 0x1000u;
   return res;
 }
 
-float tf32_to_fp32(uint32_t x) {
+float fp19_to_fp32(uint32_t x) {
   uint32_t bits = (x & ~0x1fffu);
   return reinterpret_cast<float const &>(bits);
 }
@@ -76,7 +76,7 @@ T2 matrix_ref_mn(const int &m, const int &n, T1 *A, T1 *B, T2 *C) {
       res += make_fp32(A[m * Big_K + k]) * make_fp32(B[k * Big_N + n]);
   } else if constexpr (std::is_same<T1, uint32_t>::value) {
     for (int k = 0; k < Big_K; k++)
-      res += tf32_to_fp32(A[m * Big_K + k]) * tf32_to_fp32(B[k * Big_N + n]);
+      res += fp19_to_fp32(A[m * Big_K + k]) * fp19_to_fp32(B[k * Big_N + n]);
   } else {
     for (int k = 0; k < Big_K; k++)
       res +=
@@ -120,11 +120,11 @@ void test() {
     }
   } else if constexpr (std::is_same<T1, uint32_t>::value) {
     for (int i = 0; i < Big_M * Big_K; i++) {
-      A[i] = make_tf32(1.0f * (i % 10));
+      A[i] = make_fp19(1.0f * (i % 10));
     }
 
     for (int i = 0; i < Big_K * Big_N; i++) {
-      B[i] = make_tf32(1.0f * (i % 10));
+      B[i] = make_fp19(1.0f * (i % 10));
     }
   } else {
     for (int i = 0; i < Big_M * Big_K; i++) {
