@@ -187,7 +187,7 @@ template <typename T1, typename T2, size_t M, size_t K, size_t N> void test() {
           sycl::ext::oneapi::experimental::wait_for(Group, Ev_group);
 
           joint_matrix_load(
-              sg, sub_c, LocalC.get_pointer() + (m)*M * Sub_Tiles_N * N + (n)*N,
+              sg, sub_c, LocalC.get_pointer() + (m * M * Sub_Tiles_N * N) + (n * N),
               Sub_Tiles_N * N);
 
           for (int k = 0; k < Sub_Tiles_K;
