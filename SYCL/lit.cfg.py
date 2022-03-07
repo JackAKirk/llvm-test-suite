@@ -97,6 +97,9 @@ config.substitutions.append( ('%sycl_include',  config.sycl_include ) )
 if lit_config.params.get('gpu-intel-dg1', False):
     config.available_features.add('gpu-intel-dg1')
 
+if lit_config.params.get('gpu-intel-pvc', False):
+    config.available_features.add('gpu-intel-pvc')
+
 if lit_config.params.get('matrix', False):
     config.available_features.add('matrix')
 
@@ -393,7 +396,7 @@ if find_executable('cmc'):
 
 # Device AOT compilation tools aren't part of the SYCL project,
 # so they need to be pre-installed on the machine
-aot_tools = ["ocloc", "aoc", "opencl-aot"]
+aot_tools = ["ocloc", "opencl-aot"]
 
 for aot_tool in aot_tools:
     if find_executable(aot_tool) is not None:

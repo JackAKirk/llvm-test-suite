@@ -7,6 +7,8 @@
 //===----------------------------------------------------------------------===//
 // REQUIRES: gpu
 // UNSUPPORTED: cuda || hip
+// TODO: esimd_emulator fails due to unimplemented 'half' type
+// XFAIL: esimd_emulator
 // RUN: %clangxx -fsycl %s -o %t.out
 // RUN: %GPU_RUN_PLACEHOLDER %t.out
 
@@ -231,6 +233,7 @@ int main(void) {
 
   bool Pass = true;
 
+#ifdef ESIMD_TESTS_FULL_COVERAGE
   Pass &= testUSM<int8_t>(Q);
   Pass &= testUSM<uint16_t>(Q);
   Pass &= testUSM<int32_t>(Q);
@@ -246,6 +249,13 @@ int main(void) {
   Pass &= testAcc<float>(Q);
   Pass &= testAcc<double>(Q);
   Pass &= testAcc<half>(Q);
+#else
+  Pass &= testUSM<uint16_t>(Q);
+  Pass &= testUSM<float>(Q);
+
+  Pass &= testAcc<int16_t>(Q);
+  Pass &= testAcc<float>(Q);
+#endif
 
   std::cout << (Pass ? "Test Passed\n" : "Test FAILED\n");
   return Pass ? 0 : 1;

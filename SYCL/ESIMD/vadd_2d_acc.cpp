@@ -10,6 +10,8 @@
 // RUN: %GPU_RUN_PLACEHOLDER %t.out
 
 // UNSUPPORTED: cuda || hip
+// TODO: esimd_emulator fails due to unimplemented __esimd_oword_ld_unaligned
+// XFAIL: esimd_emulator
 
 // The test checks that 2D workitem addressing works correctly with SIMD
 // kernels.

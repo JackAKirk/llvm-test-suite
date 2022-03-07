@@ -7,6 +7,8 @@
 //===----------------------------------------------------------------------===//
 // REQUIRES: gpu
 // UNSUPPORTED: cuda || hip
+// TODO: esimd_emulator fails due to unimplemented __esimd_scatter_scaled
+// XFAIL: esimd_emulator
 // RUN: %clangxx -fsycl -I%S/.. %s -o %t.out
 // RUN: %GPU_RUN_PLACEHOLDER %t.out
 
@@ -30,9 +32,9 @@
 
 inline void
 foo(sycl::ext::intel::experimental::esimd::simd<std::uint32_t, 16> &k) {
-  sycl::ext::intel::experimental::esimd::simd<std::uint32_t, 16> k_add = {
-      VAL1, VAL2, VAL1, VAL2, VAL1, VAL2, VAL1, VAL2,
-      VAL1, VAL2, VAL1, VAL2, VAL1, VAL2, VAL1, VAL2};
+  sycl::ext::intel::experimental::esimd::simd<std::uint32_t, 16> k_add(
+      {VAL1, VAL2, VAL1, VAL2, VAL1, VAL2, VAL1, VAL2, VAL1, VAL2, VAL1, VAL2,
+       VAL1, VAL2, VAL1, VAL2});
   k += k_add;
 }
 
@@ -57,8 +59,8 @@ int main(int argc, char **argv) {
           sycl::range<1>{nsamples / SIMD_WIDTH},
           [=](sycl::item<1> item) SYCL_ESIMD_KERNEL {
             size_t id = item.get_id(0);
-            sycl::ext::intel::experimental::esimd::simd<std::uint32_t, 16> key{
-                1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
+            sycl::ext::intel::experimental::esimd::simd<std::uint32_t, 16> key(
+                {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1});
             foo(key);
             key.copy_to(r_acc, id * SIMD_WIDTH * sizeof(std::uint32_t));
           });

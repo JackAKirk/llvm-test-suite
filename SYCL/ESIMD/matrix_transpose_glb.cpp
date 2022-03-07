@@ -20,6 +20,8 @@ using namespace cl::sycl;
 using namespace std;
 using namespace sycl::ext::intel::experimental::esimd;
 
+const unsigned int ESIMD_EMULATOR_SIZE_LIMIT = 1U << 10;
+
 void initMatrix(int *M, unsigned N) {
   assert(N >= 8 && (((N - 1) & N) == 0) &&
          "only power of 2 (>= 16) is supported");
@@ -82,34 +84,34 @@ ESIMD_NOINLINE void transpose_matrix(int InR, int OuR) {
       OuR >> 1, 0);
 
   // j = 1
-  t2.row(0).merge(t1.template replicate<8, 1, 2, 0>(0, 0),
-                  t1.template replicate<8, 1, 2, 0>(2, 0), mask);
-  t2.row(1).merge(t1.template replicate<8, 1, 2, 0>(0, 8),
-                  t1.template replicate<8, 1, 2, 0>(2, 8), mask);
-  t2.row(2).merge(t1.template replicate<8, 1, 2, 0>(1, 0),
-                  t1.template replicate<8, 1, 2, 0>(3, 0), mask);
-  t2.row(3).merge(t1.template replicate<8, 1, 2, 0>(1, 8),
-                  t1.template replicate<8, 1, 2, 0>(3, 8), mask);
+  t2.row(0).merge(t1.template replicate_vs_w_hs<8, 1, 2, 0>(0, 0),
+                  t1.template replicate_vs_w_hs<8, 1, 2, 0>(2, 0), mask);
+  t2.row(1).merge(t1.template replicate_vs_w_hs<8, 1, 2, 0>(0, 8),
+                  t1.template replicate_vs_w_hs<8, 1, 2, 0>(2, 8), mask);
+  t2.row(2).merge(t1.template replicate_vs_w_hs<8, 1, 2, 0>(1, 0),
+                  t1.template replicate_vs_w_hs<8, 1, 2, 0>(3, 0), mask);
+  t2.row(3).merge(t1.template replicate_vs_w_hs<8, 1, 2, 0>(1, 8),
+                  t1.template replicate_vs_w_hs<8, 1, 2, 0>(3, 8), mask);
 
   // j = 2
-  t1.row(0).merge(t2.template replicate<8, 1, 2, 0>(0, 0),
-                  t2.template replicate<8, 1, 2, 0>(2, 0), mask);
-  t1.row(1).merge(t2.template replicate<8, 1, 2, 0>(0, 8),
-                  t2.template replicate<8, 1, 2, 0>(2, 8), mask);
-  t1.row(2).merge(t2.template replicate<8, 1, 2, 0>(1, 0),
-                  t2.template replicate<8, 1, 2, 0>(3, 0), mask);
-  t1.row(3).merge(t2.template replicate<8, 1, 2, 0>(1, 8),
-                  t2.template replicate<8, 1, 2, 0>(3, 8), mask);
+  t1.row(0).merge(t2.template replicate_vs_w_hs<8, 1, 2, 0>(0, 0),
+                  t2.template replicate_vs_w_hs<8, 1, 2, 0>(2, 0), mask);
+  t1.row(1).merge(t2.template replicate_vs_w_hs<8, 1, 2, 0>(0, 8),
+                  t2.template replicate_vs_w_hs<8, 1, 2, 0>(2, 8), mask);
+  t1.row(2).merge(t2.template replicate_vs_w_hs<8, 1, 2, 0>(1, 0),
+                  t2.template replicate_vs_w_hs<8, 1, 2, 0>(3, 0), mask);
+  t1.row(3).merge(t2.template replicate_vs_w_hs<8, 1, 2, 0>(1, 8),
+                  t2.template replicate_vs_w_hs<8, 1, 2, 0>(3, 8), mask);
 
   // j = 4
-  t2.row(0).merge(t1.template replicate<8, 1, 2, 0>(0, 0),
-                  t1.template replicate<8, 1, 2, 0>(2, 0), mask);
-  t2.row(1).merge(t1.template replicate<8, 1, 2, 0>(0, 8),
-                  t1.template replicate<8, 1, 2, 0>(2, 8), mask);
-  t2.row(2).merge(t1.template replicate<8, 1, 2, 0>(1, 0),
-                  t1.template replicate<8, 1, 2, 0>(3, 0), mask);
-  t2.row(3).merge(t1.template replicate<8, 1, 2, 0>(1, 8),
-                  t1.template replicate<8, 1, 2, 0>(3, 8), mask);
+  t2.row(0).merge(t1.template replicate_vs_w_hs<8, 1, 2, 0>(0, 0),
+                  t1.template replicate_vs_w_hs<8, 1, 2, 0>(2, 0), mask);
+  t2.row(1).merge(t1.template replicate_vs_w_hs<8, 1, 2, 0>(0, 8),
+                  t1.template replicate_vs_w_hs<8, 1, 2, 0>(2, 8), mask);
+  t2.row(2).merge(t1.template replicate_vs_w_hs<8, 1, 2, 0>(1, 0),
+                  t1.template replicate_vs_w_hs<8, 1, 2, 0>(3, 0), mask);
+  t2.row(3).merge(t1.template replicate_vs_w_hs<8, 1, 2, 0>(1, 8),
+                  t1.template replicate_vs_w_hs<8, 1, 2, 0>(3, 8), mask);
 }
 
 // read a N-by-N sub-matrix
@@ -245,6 +247,16 @@ bool runTest(unsigned MZ, unsigned block_size, unsigned num_iters,
   initMatrix(M, MZ);
   cerr << "\nTranspose square matrix of size " << MZ << "\n";
   // printMatrix("Initial matrix:", M, MZ);
+
+  if ((q.get_backend() == cl::sycl::backend::ext_intel_esimd_emulator) &&
+      (MZ > ESIMD_EMULATOR_SIZE_LIMIT)) {
+    cerr << "Matrix Size larger than " << ESIMD_EMULATOR_SIZE_LIMIT
+         << " is skipped"
+         << "\n";
+    cerr << "for esimd_emulator backend due to timeout"
+         << "\n";
+    return true;
+  }
 
   // Each C-for-Metal thread works on one or two blocks of size 8 x 8.
   int thread_width = MZ / block_size;

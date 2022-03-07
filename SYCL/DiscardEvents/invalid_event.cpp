@@ -1,6 +1,7 @@
 // FIXME: Fails on HIP and OpenCL accelerator
+// See https://github.com/intel/llvm-test-suite/issues/810
+// REQUIRES: TEMPORARILY_DISABLED
 // UNSUPPORTED: hip, (opencl && accelerator)
-// UNSUPPORTED: ze_debug-1,ze_debug4
 // RUN: %clangxx -fsycl -fsycl-targets=%sycl_triple %s -o %t.out
 //
 // RUN: %HOST_RUN_PLACEHOLDER %t.out
@@ -22,8 +23,9 @@ void QueueAPIsReturnDiscardedEvent(sycl::queue Q) {
   sycl::range<1> range(BUFFER_SIZE);
 
   auto Dev = Q.get_device();
-  const int MemAdvice =
-      ((Dev.get_backend() == sycl::backend::ext_oneapi_cuda) ? 1 : 0);
+  const int MemAdvice = ((Dev.get_backend() == sycl::backend::ext_oneapi_cuda)
+                             ? PI_MEM_ADVICE_CUDA_SET_READ_MOSTLY
+                             : PI_MEM_ADVICE_UNKNOWN);
   int *x = sycl::malloc_shared<int>(BUFFER_SIZE, Q);
   assert(x != nullptr);
   int *y = sycl::malloc_shared<int>(BUFFER_SIZE, Q);
