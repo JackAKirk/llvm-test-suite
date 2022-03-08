@@ -8,7 +8,7 @@
 #include <vector>
 
 using namespace sycl;
-using namespace sycl::ext::oneapi::cuda;
+using namespace sycl::ext::oneapi::experimental::cuda;
 
 void basic() {
   queue q{};
@@ -145,6 +145,11 @@ void interface() {
 }
 
 int main() {
+  queue q;
+  if(!q.get_device().has(aspect::ext_oneapi_cuda_async_barrier)){
+    std::cout << "Barrier is not supported by the device. Skipping test." << std::endl;
+    return 0;
+  }
   basic();
   interface();
 
