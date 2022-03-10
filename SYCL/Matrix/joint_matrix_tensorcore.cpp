@@ -56,13 +56,13 @@ uint16_t make_bf16(float x) {
   return (uint16_t)*res;
 }
 
-uint32_t make_fp19(float const &x) {
+uint32_t make_tf32(float const &x) {
   uint32_t res = reinterpret_cast<uint32_t const &>(x);
   res += 0x1000u;
   return res;
 }
 
-float fp19_to_fp32(uint32_t x) {
+float tf32_to_fp32(uint32_t x) {
   uint32_t bits = (x & ~0x1fffu);
   return reinterpret_cast<float const &>(bits);
 }
@@ -76,7 +76,7 @@ T2 matrix_ref_mn(const int &m, const int &n, T1 *A, T1 *B, T2 *C) {
       res += make_fp32(A[m * Big_K + k]) * make_fp32(B[k * Big_N + n]);
   } else if constexpr (std::is_same<T1, uint32_t>::value) {
     for (int k = 0; k < Big_K; k++)
-      res += fp19_to_fp32(A[m * Big_K + k]) * fp19_to_fp32(B[k * Big_N + n]);
+      res += tf32_to_fp32(A[m * Big_K + k]) * tf32_to_fp32(B[k * Big_N + n]);
   } else {
     for (int k = 0; k < Big_K; k++)
       res +=
@@ -120,11 +120,11 @@ void test() {
     }
   } else if constexpr (std::is_same<T1, uint32_t>::value) {
     for (int i = 0; i < Big_M * Big_K; i++) {
-      A[i] = make_fp19(1.0f * (i % 10));
+      A[i] = make_tf32(1.0f * (i % 10));
     }
 
     for (int i = 0; i < Big_K * Big_N; i++) {
-      B[i] = make_fp19(1.0f * (i % 10));
+      B[i] = make_tf32(1.0f * (i % 10));
     }
   } else {
     for (int i = 0; i < Big_M * Big_K; i++) {
@@ -154,13 +154,13 @@ void test() {
     cgh.parallel_for<KernelName<T1, T2, M, K, N>>(
         nd_range<2>(GlobalRange, LocalRange), [=
     ](nd_item<2> item) [[sycl::reqd_work_group_size(1, 1, 32)]] {
-          sycl::sub_group sg = item.get_sub_group();
-          const auto m =
-              item.get_group()
-                  .get_id()[0]; // row id of current submatrix of BIG C matrix
-          const auto n =
-              item.get_group().get_id()[1]; // column id of current
-                                            // submatrix of BIG C matrix
+          auto sg = item.get_sub_group();
+          auto Group = item.get_group();
+          const auto m = Group.get_group_id()[0];
+          // row id of current submatrix of BIG C matrix
+          const auto n = Group.get_group_id()[1];
+          // column id of current
+          // submatrix of BIG C matrix
 
           joint_matrix<T1, matrix_use::a, M, K, matrix_layout::row_major> sub_a;
 
@@ -229,7 +229,7 @@ int main() {
   test<uint16_t, float, SUB_TILES_M, SUB_TILES_K, SUB_TILES_N, 8, 16, 32>();
   test<uint16_t, float, SUB_TILES_M, SUB_TILES_K, SUB_TILES_N, 32, 16, 8>();
 
-  // A/B fp19 (aka tf32) (using the fp19 storage type uint32_t directly)
+  // A/B tf32 (using the tf32 storage type uint32_t directly)
   test<uint32_t, float, SUB_TILES_M, SUB_TILES_K, SUB_TILES_N, 16, 8, 16>();
 
   return 0;
