@@ -152,8 +152,8 @@ void test() {
     range<2> GlobalRange = {Sub_Tiles_M, Sub_Tiles_N * N_THREADS_PER_MATRIX_OP};
 
     cgh.parallel_for<KernelName<T1, T2, M, K, N>>(
-        nd_range<2>(GlobalRange, LocalRange), [=
-    ](nd_item<2> item) [[sycl::reqd_work_group_size(1, 1, 32)]] {
+        nd_range<2>(GlobalRange, LocalRange),
+        [=](nd_item<2> item) [[sycl::reqd_work_group_size(1, 1, 32)]] {
           auto sg = item.get_sub_group();
           auto Group = item.get_group();
           const auto m = Group.get_group_id()[0];
