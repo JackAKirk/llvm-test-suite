@@ -9,8 +9,6 @@
 // REQUIRES: gpu
 // UNSUPPORTED: cuda || hip
 // CUDA and HIP don't support printf.
-// TODO: esimd_emulator fails due to unimplemented 'single_task()' method
-// XFAIL: esimd_emulator
 //
 // RUN: %clangxx -fsycl %s -o %t.out
 // RUN: %GPU_RUN_PLACEHOLDER %t.out %GPU_CHECK_PLACEHOLDER
@@ -23,7 +21,7 @@
 #include "esimd_test_utils.hpp"
 
 #include <CL/sycl.hpp>
-#include <sycl/ext/intel/experimental/esimd.hpp>
+#include <sycl/ext/intel/esimd.hpp>
 
 #include <cstdint>
 #include <iostream>

@@ -15,11 +15,11 @@
 #include <CL/sycl.hpp>
 #include <algorithm>
 #include <iostream>
-#include <sycl/ext/intel/experimental/esimd.hpp>
+#include <sycl/ext/intel/esimd.hpp>
 
 using namespace cl::sycl;
-using namespace sycl::ext::intel::experimental;
-using namespace sycl::ext::intel::experimental::esimd;
+using namespace sycl::ext::intel;
+using namespace sycl::ext::intel::esimd;
 using namespace std;
 
 #define LOG2_ELEMENTS 16 // 24
@@ -521,6 +521,12 @@ int BitonicSort::Solve(uint32_t *pInputs, uint32_t *pOutputs, uint32_t size) {
   double kernel_times = 0;
   unsigned num_iters = 10;
 
+  // Reducing number of iterations for esimd_emulator backend in order
+  // to avoid timeout failure
+  if (pQueue_->get_backend() == cl::sycl::backend::ext_intel_esimd_emulator) {
+    num_iters = 2;
+  }
+
   // num_iters + 1, iteration#0 is for warmup
   for (int iter = 0; iter <= num_iters; ++iter) {
     // enqueue sort265 kernel
@@ -528,7 +534,7 @@ int BitonicSort::Solve(uint32_t *pInputs, uint32_t *pOutputs, uint32_t size) {
       auto e = pQueue_->submit([&](handler &cgh) {
         cgh.parallel_for<class Sort256>(
             SortGlobalRange * SortLocalRange, [=](id<1> i) SYCL_ESIMD_KERNEL {
-              using namespace sycl::ext::intel::experimental::esimd;
+              using namespace sycl::ext::intel::esimd;
               cmk_bitonic_sort_256(pInputs, pOutputs, i);
             });
       });
@@ -569,7 +575,7 @@ int BitonicSort::Solve(uint32_t *pInputs, uint32_t *pOutputs, uint32_t size) {
             cgh.parallel_for<class Merge>(
                 MergeGlobalRange * MergeLocalRange,
                 [=](id<1> tid) SYCL_ESIMD_KERNEL {
-                  using namespace sycl::ext::intel::experimental::esimd;
+                  using namespace sycl::ext::intel::esimd;
                   cmk_bitonic_merge(pOutputs, j, i, tid);
                 });
           });
@@ -611,8 +617,8 @@ int main(int argc, char *argv[]) {
   int size = 1 << LOG2_ELEMENTS;
   cout << "BitonicSort (" << size << ") Start..." << std::endl;
 
-  cl::sycl::property_list props{property::queue::enable_profiling{},
-                                property::queue::in_order()};
+  cl::sycl::property_list props{cl::sycl::property::queue::enable_profiling{},
+                                cl::sycl::property::queue::in_order()};
 
   queue q(esimd_test::ESIMDSelector{}, esimd_test::createExceptionHandler(),
           props);

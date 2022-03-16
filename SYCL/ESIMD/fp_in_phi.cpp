@@ -14,8 +14,6 @@
 // RUN: %GPU_RUN_PLACEHOLDER %t.out
 // UNSUPPORTED: cuda || hip
 // UNSUPPORTED: ze_debug-1,ze_debug4
-// TODO: esimd_emulator fails due to unimplemented __esimd_scatter_scaled
-// XFAIL: esimd_emulator
 //
 // The test checks that ESIMD kernels correctly handle function pointers as
 // arguments of LLVM's PHI function.
@@ -23,7 +21,7 @@
 #include "esimd_test_utils.hpp"
 
 #include <CL/sycl.hpp>
-#include <sycl/ext/intel/experimental/esimd.hpp>
+#include <sycl/ext/intel/esimd.hpp>
 
 #include <iostream>
 #include <vector>
@@ -53,21 +51,21 @@ bool test(queue q, bool flag) {
       auto o_acc = o_buf.get_access<access::mode::write>(cgh);
       auto y_acc = y_buf.get_access<access::mode::write>(cgh);
 
-      cgh.parallel_for<KernelID>(
-          sycl::range<1>{1}, [=](id<1> i) SYCL_ESIMD_KERNEL {
-            using namespace sycl::ext::intel::experimental::esimd;
-            using f = int (*)(int);
+      cgh.parallel_for<KernelID>(sycl::range<1>{1},
+                                 [=](id<1> i) SYCL_ESIMD_KERNEL {
+                                   using namespace sycl::ext::intel::esimd;
+                                   using f = int (*)(int);
 
-            f a[] = {f1, f2};
-            if (flag) {
-              a[0] = f3;
-              scalar_store(y_acc, 0, 2);
-            }
+                                   f a[] = {f1, f2};
+                                   if (flag) {
+                                     a[0] = f3;
+                                     scalar_store(y_acc, 0, 2);
+                                   }
 
-            auto res = a[0](in1) + a[1](in2);
+                                   auto res = a[0](in1) + a[1](in2);
 
-            scalar_store(o_acc, 0, res);
-          });
+                                   scalar_store(o_acc, 0, res);
+                                 });
     });
   } catch (cl::sycl::exception const &e) {
     std::cout << "SYCL exception caught: " << e.what() << std::endl;

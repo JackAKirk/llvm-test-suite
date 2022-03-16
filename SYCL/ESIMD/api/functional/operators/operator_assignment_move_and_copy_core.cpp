@@ -24,12 +24,14 @@
 
 #include "operator_assignment.hpp"
 
-using namespace sycl::ext::intel::experimental::esimd;
+using namespace sycl::ext::intel::esimd;
 using namespace esimd_test::api::functional;
 
 // Descriptor class for the case of calling move assignment operator.
 struct move_assignment {
   static std::string get_description() { return "move assignment operator"; }
+
+  static constexpr bool is_move_expected() { return true; }
 
   template <typename DataT, int NumElems>
   static bool run(const DataT *const ref_data, DataT *const out) {
@@ -38,13 +40,15 @@ struct move_assignment {
     simd<DataT, NumElems> simd_obj;
     simd_obj = std::move(source_simd);
     simd_obj.copy_to(out);
-    return simd_obj.get_test_proxy().was_move_destination() == true;
+    return simd_obj.get_test_proxy().was_move_destination();
   }
 };
 
 // Descriptor class for the case of calling copy assignment operator.
 struct copy_assignment {
   static std::string get_description() { return "copy assignment operator"; }
+
+  static constexpr bool is_move_expected() { return false; }
 
   template <typename DataT, int NumElems>
   static bool run(const DataT *const ref_data, DataT *const out) {
@@ -53,7 +57,7 @@ struct copy_assignment {
     simd<DataT, NumElems> simd_obj;
     simd_obj = source_simd;
     simd_obj.copy_to(out);
-    return simd_obj.get_test_proxy().was_move_destination() == false;
+    return simd_obj.get_test_proxy().was_move_destination();
   }
 };
 
