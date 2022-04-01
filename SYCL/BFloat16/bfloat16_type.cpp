@@ -7,7 +7,7 @@
 //      introduced
 // TODO once the above is addressed and the invocations below are switched on
 // device filters should be added to ensure that the CUDA backend is not
-// executed as part of these invocations.
+// executed as part of these invocations
 // RUNx: %CPU_RUN_PLACEHOLDER %t.out
 // RUNx: %GPU_RUN_PLACEHOLDER %t.out
 // RUNx: %ACC_RUN_PLACEHOLDER %t.out
@@ -102,8 +102,7 @@ void verify_sub(queue &q, buffer<float, 1> &a, buffer<float, 1> &b, range<1> &r,
   assert_close(c.get_access<access::mode::read>(), ref);
 }
 
-void verify_minus(queue &q, buffer<float, 1> &a, range<1> &r,
-                const float ref) {
+void verify_minus(queue &q, buffer<float, 1> &a, range<1> &r, const float ref) {
   buffer<float, 1> c{r};
 
   q.submit([&](handler &cgh) {
