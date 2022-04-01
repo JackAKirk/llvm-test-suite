@@ -1,8 +1,13 @@
-// UNSUPPORTED: cuda || hip
-// RUN: %clangxx -fsycl -fsycl-targets=%sycl_triple %s -o %t.out
+// UNSUPPORTED: hip
+// RUN: %clangxx -fsycl -fsycl-targets=nvptx64-nvidia-cuda -Xsycl-target-backend --cuda-gpu-arch=sm_80 %s -o %t.out
+// RUN: env SYCL_DEVICE_FILTER=cuda %t.out
+// RUN: %clangxx -fsycl -fsycl-targets=spir64 %s -o %t.out
 // TODO currently the feature isn't supported on most of the devices
 //      need to enable the test when the aspect and device_if feature are
 //      introduced
+// TODO once the above is addressed and the invocations below are switched on
+// device filters should be added to ensure that the CUDA backend is not
+// executed as part of these invocations.
 // RUNx: %CPU_RUN_PLACEHOLDER %t.out
 // RUNx: %GPU_RUN_PLACEHOLDER %t.out
 // RUNx: %ACC_RUN_PLACEHOLDER %t.out
@@ -90,6 +95,23 @@ void verify_sub(queue &q, buffer<float, 1> &a, buffer<float, 1> &b, range<1> &r,
       cl::sycl::ext::oneapi::experimental::bfloat16 AVal{A[index]};
       cl::sycl::ext::oneapi::experimental::bfloat16 BVal{B[index]};
       cl::sycl::ext::oneapi::experimental::bfloat16 CVal = AVal - BVal;
+      C[index] = CVal;
+    });
+  });
+
+  assert_close(c.get_access<access::mode::read>(), ref);
+}
+
+void verify_minus(queue &q, buffer<float, 1> &a, range<1> &r,
+                const float ref) {
+  buffer<float, 1> c{r};
+
+  q.submit([&](handler &cgh) {
+    auto A = a.get_access<access::mode::read>(cgh);
+    auto C = c.get_access<access::mode::write>(cgh);
+    cgh.parallel_for<class calc_minus>(r, [=](id<1> index) {
+      cl::sycl::ext::oneapi::experimental::bfloat16 AVal{A[index]};
+      cl::sycl::ext::oneapi::experimental::bfloat16 CVal = -AVal;
       C[index] = CVal;
     });
   });
@@ -199,6 +221,7 @@ int main() {
   verify_logic(q, a, b, r, 7.0);
   verify_add(q, a, b_neg, r, 3.0);
   verify_sub(q, a, b_neg, r, 7.0);
+  verify_minus(q, a, r, -5.0);
   verify_mul(q, a, b_neg, r, -10.0);
   verify_div(q, a, b_neg, r, -2.5);
   verify_logic(q, a, b_neg, r, 3.0);
