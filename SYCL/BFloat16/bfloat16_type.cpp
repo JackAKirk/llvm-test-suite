@@ -17,7 +17,4 @@
 
 #include "bfloat16_type.hpp"
 
-int main() {
-
-  return run_tests();
-}
+int main() { return run_tests(); }
