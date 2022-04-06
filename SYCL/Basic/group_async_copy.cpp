@@ -144,8 +144,7 @@ template <typename T> int checkResults(buffer<T, 1> &OutBuf, size_t Stride) {
   return EarlyFailout - 20;
 }
 
-template <typename T> int test(size_t Stride) {
-  queue Q;
+template <typename T> int test(size_t Stride, queue Q) {
 
   buffer<T, 1> InBuf(NElems);
   buffer<T, 1> OutBuf(NElems);
@@ -194,27 +193,34 @@ template <typename T> int test(size_t Stride) {
 }
 
 int main() {
+  queue Q;
   for (int Stride = 1; Stride < WorkGroupSize; Stride++) {
-    if ((test<int>(Stride)) || (test<int2>(Stride)) || (test<int4>(Stride)) ||
-        (test<uint>(Stride)) || (test<uint2>(Stride)) ||
-        (test<uint4>(Stride)) || (test<float>(Stride)) ||
-        (test<float2>(Stride)) || (test<float4>(Stride)) ||
-        (test<long>(Stride)) || (test<long2>(Stride)) ||
-        (test<ulong>(Stride)) || (test<ulong2>(Stride)) ||
-        (test<char4>(Stride)) || (test<char8>(Stride)) ||
-        (test<char16>(Stride)) || (test<schar4>(Stride)) ||
-        (test<schar8>(Stride)) || (test<schar16>(Stride)) ||
-        (test<uchar4>(Stride)) || (test<uchar8>(Stride)) ||
-        (test<uchar16>(Stride)) || (test<short2>(Stride)) ||
-        (test<short4>(Stride)) || (test<short8>(Stride)) ||
-        (test<ushort2>(Stride)) || (test<ushort4>(Stride)) ||
-        (test<ushort8>(Stride)) || (test<half2>(Stride)) ||
-        (test<half4>(Stride)) || (test<half8>(Stride)) ||
-        (test<vec<int, 1>>(Stride)) || (test<int4>(Stride)) ||
-        (test<bool>(Stride)) || (test<vec<bool, 1>>(Stride)) ||
-        (test<vec<bool, 4>>(Stride)) || (test<cl::sycl::cl_bool>(Stride)) ||
-        (test<std::byte>(Stride)))
+
+    if (test<int>(Stride, Q) || test<vec<int, 1>>(Stride, Q) ||
+        test<int4>(Stride, Q) || test<bool>(Stride, Q) ||
+        test<vec<bool, 1>>(Stride, Q) || test<vec<bool, 4>>(Stride, Q) ||
+        test<cl::sycl::cl_bool>(Stride, Q) || test<std::byte>(Stride, Q))
       return 1;
+    // TODO Add below cases to other backends once they are supported/fixed.
+    if (Q.get_backend() == backend::ext_oneapi_cuda) {
+      if (test<int2>(Stride, Q) || test<uint>(Stride, Q) ||
+          test<uint2>(Stride, Q) || test<uint4>(Stride, Q) ||
+          test<float>(Stride, Q) || test<float2>(Stride, Q) ||
+          test<float4>(Stride, Q) || test<long>(Stride, Q) ||
+          test<long2>(Stride, Q) || test<ulong>(Stride, Q) ||
+          test<ulong2>(Stride, Q) || test<char4>(Stride, Q) ||
+          test<char8>(Stride, Q) || test<char16>(Stride, Q) ||
+          test<schar4>(Stride, Q) || test<schar8>(Stride, Q) ||
+          test<schar16>(Stride, Q) || test<uchar4>(Stride, Q) ||
+          test<uchar8>(Stride, Q) || test<uchar16>(Stride, Q) ||
+          test<short2>(Stride, Q) || test<short4>(Stride, Q) ||
+          test<short8>(Stride, Q) || test<ushort2>(Stride, Q) ||
+          test<ushort4>(Stride, Q) || test<ushort8>(Stride, Q) ||
+          test<half2>(Stride, Q) || test<half4>(Stride, Q) ||
+          test<half8>(Stride, Q) || test<int4>(Stride, Q) ||
+          test<bool>(Stride, Q))
+        return 1;
+    }
   }
 
   std::cout << "Test passed.\n";
