@@ -13,6 +13,7 @@
 
 #pragma once
 
+#include "logger.hpp"
 #include "type_traits.hpp"
 
 #include <cassert>
@@ -22,12 +23,147 @@
 
 namespace esimd_test::api::functional {
 
+//----------------------------------------------------------------------------//
+// Forward-declare all type and value packs provided below
+//----------------------------------------------------------------------------//
+
+template <typename... Types> struct unnamed_type_pack;
+template <typename... Types> struct named_type_pack;
+template <typename T, T... values> struct value_pack;
+
+// Alias to use mainly for simd vector sizes; no overhead as alias doesn't
+// declare a new type
+template <int... values> using integer_pack = value_pack<int, values...>;
+
+//----------------------------------------------------------------------------//
+// SFINAE helpers for type and value packs
+//----------------------------------------------------------------------------//
+
+namespace sfinae {
+namespace details {
+template <typename T> struct is_type_pack_t : std::false_type {};
+
+template <typename... Types>
+struct is_type_pack_t<named_type_pack<Types...>> : std::true_type {};
+
+template <typename... Types>
+struct is_type_pack_t<unnamed_type_pack<Types...>> : std::true_type {};
+} // namespace details
+
+template <typename T>
+using is_not_a_type_pack =
+    std::enable_if_t<!details::is_type_pack_t<T>::value, bool>;
+
+} // namespace sfinae
+
+//----------------------------------------------------------------------------//
+// Implementation details for type packs filtration support
+//----------------------------------------------------------------------------//
+
+namespace detail {
+
+template <typename... T> struct type_accumulator {};
+
+// Helper function to accumulate the filtered types without re-ordering them
+template <template <typename> class FilterT, bool ExpectedValue, typename T,
+          typename... Types, typename... PackTypesT>
+auto filter_unnamed_type_pack_impl(
+    const type_accumulator<PackTypesT...> & = {}) {
+  // Define if we should filter out the current type or store it
+  constexpr bool store_type = FilterT<T>::value == ExpectedValue;
+
+  if constexpr (sizeof...(Types) == 0) {
+    if constexpr (store_type) {
+      return unnamed_type_pack<PackTypesT..., T>::generate();
+    } else {
+      static_assert(sizeof...(PackTypesT) > 0, "All types were filtered out");
+      return unnamed_type_pack<PackTypesT...>::generate();
+    }
+  } else {
+    using next_pack_type =
+        std::conditional_t<store_type, type_accumulator<PackTypesT..., T>,
+                           type_accumulator<PackTypesT...>>;
+    return filter_unnamed_type_pack_impl<FilterT, ExpectedValue, Types...>(
+        next_pack_type{});
+  }
+}
+
+// Helper function to accumulate the filtered types and corresponding type names
+// without re-ordering them
+template <template <typename> class FilterT, bool ExpectedValue, typename T,
+          typename... Types, int N, typename... PackTypesT,
+          typename... NameListT>
+auto filter_named_type_pack_impl(const std::string (&names)[N],
+                                 int typeNameIndex,
+                                 const type_accumulator<PackTypesT...> &,
+                                 const NameListT &...nameList) {
+  // Define if we should filter out the current type or store it
+  constexpr bool store_type = FilterT<T>::value == ExpectedValue;
+  const auto &name = names[typeNameIndex];
+
+  ++typeNameIndex;
+
+  if constexpr (sizeof...(Types) == 0) {
+    if constexpr (store_type) {
+      return named_type_pack<PackTypesT..., T>::generate(nameList..., name);
+    } else {
+      static_assert(sizeof...(PackTypesT) > 0, "All types were filtered out");
+      return named_type_pack<PackTypesT...>::generate(nameList...);
+    }
+  } else {
+    if constexpr (store_type) {
+      return filter_named_type_pack_impl<FilterT, ExpectedValue, Types...>(
+          names, typeNameIndex, type_accumulator<PackTypesT..., T>{},
+          nameList..., name);
+    } else {
+      return filter_named_type_pack_impl<FilterT, ExpectedValue, Types...>(
+          names, typeNameIndex, type_accumulator<PackTypesT...>{}, nameList...);
+    }
+  }
+}
+
+// Filters out types using the filter functor template
+template <template <typename> class FilterT, bool ExpectedValue,
+          typename... Types>
+inline auto filter_type_pack() {
+  return filter_unnamed_type_pack_impl<FilterT, ExpectedValue, Types...>();
+}
+
+// Filters out types using the filter functor template and stores corrensponding
+// type names appropriately
+template <template <typename> class FilterT, bool ExpectedValue,
+          typename... Types, int N>
+inline auto filter_type_pack(const std::string (&names)[N]) {
+  return filter_named_type_pack_impl<FilterT, ExpectedValue, Types...>(
+      names, 0, type_accumulator<>{});
+}
+
+} // namespace detail
+
+//----------------------------------------------------------------------------//
+// All type and value packs implementation
+//----------------------------------------------------------------------------//
+
 // Generic type pack with no specific type names provided
 template <typename... Types> struct unnamed_type_pack {
   static_assert(sizeof...(Types) > 0, "Empty pack is not supported");
 
   // Syntax sugar to align usage with the named_type_pack
   static auto inline generate() { return unnamed_type_pack<Types...>{}; }
+
+  // Makes possible to generate new unnamed type pack by filtering out types
+  // with the given filter functor. Does not allow to filter out all the types.
+  //
+  // For example:
+  //   const auto types = unnamed_type_pack<int, unsigned int>::generate();
+  //   const auto unsigned_types = types.filter_by<std::is_unsigned>();
+  //   const auto non_fp_types =
+  //       types.filter_by<std::is_floating_point, false>();
+  //
+  template <template <typename> class FilterT, bool ExpectedValue = true>
+  auto filter_by() const {
+    return detail::filter_type_pack<FilterT, ExpectedValue, Types...>();
+  }
 };
 
 // Generic type pack with specific type names provided; intended to use mainly
@@ -86,6 +222,25 @@ public:
       return named_type_pack<Types...>(std::forward<nameListT>(nameList)...);
     }
   }
+
+  // Makes possible to generate new named type pack by filtering out types and
+  // names with the given filter functor.
+  // Does not allow to filter out all the types.
+  //
+  // For example:
+  //   const auto types = named_type_pack<int, unsigned int>::generate("int",
+  //                                                                   "uint");
+  //  template <typename DataT> using is_uint =
+  //      std::bool_constant<std::is_unsigned_v<DataT> &&
+  //                         std::is_integral_v<DataT>>;
+  //
+  //   const auto uint_types = types.filter_by<is_uint>();
+  //   const auto unsigned_types = types.filter_by<std::is_unsigned>();
+  //
+  template <template <typename> class FilterT, bool ExpectedValue = true>
+  auto filter_by() const {
+    return detail::filter_type_pack<FilterT, ExpectedValue, Types...>(names);
+  }
 };
 
 // Generic value pack to use for any type of compile-time lists
@@ -103,16 +258,14 @@ template <typename T, T... values> struct value_pack {
   }
 
   // Factory function to generate the type pack with stringified values stored
-  // within
+  // within. Would work with or without specific StringMaker specializations.
+  // For example:
+  //   const auto targets =
+  //     value_pack<sycl::target, sycl::target::device>::generate_named();
+  //
   static inline auto generate_named() {
-    if constexpr (std::is_enum_v<T>) {
-      // Any enumeration requires explicit cast to the underlying type
-      return named_type_pack<std::integral_constant<T, values>...>::generate(
-          std::to_string(static_cast<std::underlying_type_t<T>>(values))...);
-    } else {
-      return named_type_pack<std::integral_constant<T, values>...>::generate(
-          std::to_string(values)...);
-    }
+    return named_type_pack<std::integral_constant<T, values>...>::generate(
+        log::stringify(values)...);
   }
 
   // Factory function to generate the type pack with names given for each value
@@ -131,28 +284,36 @@ template <typename T, T... values> struct value_pack {
     return named_type_pack<std::integral_constant<T, values>...>::generate(
         std::forward<argsT>(args)...);
   }
+
+  // Factory function to generate the type pack using generator function
+  //
+  // It could be especially usefull for value packs with enums. For example:
+  //   enum class access {read, write};
+  //   template <access ... values>
+  //   using access_pack = value_pack<access, values...>;
+  //
+  //   const auto generator = [&](const access& value) {
+  //        switch (value) {
+  //        case access:read:
+  //           return "read access";
+  //           break;
+  //        ...
+  //        };
+  //     };
+  //   const auto accesses =
+  //     access_pack<access::read, access::write>::generate_named_by(generator);
+  //
+  template <typename GeneratorT>
+  static auto generate_named_by(const GeneratorT &nameGenerator) {
+    static_assert(std::is_invocable_v<GeneratorT, T>,
+                  "Unexpected name generator type");
+    return generate_named(nameGenerator(values)...);
+  }
 };
 
-// Alias to use mainly for simd vector sizes; no overhead as alias doesn't
-// declare a new type
-template <int... values> using integer_pack = value_pack<int, values...>;
-
-namespace sfinae {
-namespace details {
-template <typename T> struct is_type_pack_t : std::false_type {};
-
-template <typename... Types>
-struct is_type_pack_t<named_type_pack<Types...>> : std::true_type {};
-
-template <typename... Types>
-struct is_type_pack_t<unnamed_type_pack<Types...>> : std::true_type {};
-} // namespace details
-
-template <typename T>
-using is_not_a_type_pack =
-    std::enable_if_t<!details::is_type_pack_t<T>::value, bool>;
-
-} // namespace sfinae
+//----------------------------------------------------------------------------//
+// Support of the combinatorial type and value packs usage
+//----------------------------------------------------------------------------//
 
 // Generic function to run specific action for every combination of each of the
 // types given by appropriate type pack instances.
@@ -227,6 +388,10 @@ inline bool for_all_combinations() {
   constexpr auto always_false = sizeof...(ArgsT) != sizeof...(ArgsT);
   static_assert(always_false, "No packs provided to iterate over");
 }
+
+//----------------------------------------------------------------------------//
+// Specific pack generation helpers
+//----------------------------------------------------------------------------//
 
 // Provides alias to types that can be used in tests:
 //  core - all C++ data types, except specific data types

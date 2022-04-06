@@ -14,7 +14,7 @@
 
 #pragma once
 
-#include <sycl/ext/intel/experimental/esimd.hpp>
+#include <sycl/ext/intel/esimd.hpp>
 #include <sycl/sycl.hpp>
 
 #include "../../esimd_test_utils.hpp"
@@ -54,6 +54,12 @@ using shared_allocator = sycl::usm_allocator<DataT, sycl::usm::alloc::shared>;
 
 template <typename DataT>
 using shared_vector = std::vector<DataT, shared_allocator<DataT>>;
+
+// Divides a on b and returns integer value not less than result of division
+// given remainder.
+constexpr int round_up_int_division(int a, int b) {
+  return ((a % b) > 0) ? (a / b + 1) : (a / b);
+}
 
 // Provides verification that provided device has necessary aspects to interact
 // with current data type.

@@ -9,18 +9,16 @@
 // RUN: %clangxx -fsycl %s -o %t.out
 // RUN: %GPU_RUN_PLACEHOLDER %t.out
 // UNSUPPORTED: cuda || hip
-// TODO: esimd_emulator fails due to unimplemented __esimd_scatter4_scaled
-// XFAIL: esimd_emulator
 
 #include "esimd_test_utils.hpp"
 
 #include <CL/sycl.hpp>
 #include <iostream>
-#include <sycl/ext/intel/experimental/esimd.hpp>
+#include <sycl/ext/intel/esimd.hpp>
 
 using namespace cl::sycl;
-using namespace sycl::ext::intel::experimental;
-using namespace sycl::ext::intel::experimental::esimd;
+using namespace sycl::ext::intel;
+using namespace sycl::ext::intel::esimd;
 
 #define LOCAL_SIZE 4
 #define GLOBAL_SIZE 6
@@ -71,8 +69,10 @@ void load_to_slm(uint grpSize, uint localId, uint slmOffset, char *addr,
   }
 
   esimd::fence(fence_mask::global_coherent_fence);
-  esimd::sbarrier(split_barrier_action::signal);
-  esimd::sbarrier(split_barrier_action::wait);
+  experimental::esimd::split_barrier(
+      experimental::esimd::split_barrier_action::signal);
+  experimental::esimd::split_barrier(
+      experimental::esimd::split_barrier_action::wait);
 }
 
 int main(void) {

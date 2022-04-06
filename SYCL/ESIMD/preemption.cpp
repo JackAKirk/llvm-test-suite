@@ -7,6 +7,7 @@
 //===----------------------------------------------------------------------===//
 // REQUIRES: gpu && linux
 // UNSUPPORTED: cuda || hip
+// UNSUPPORTED: esimd_emulator
 // RUN: %clangxx -fsycl %s -o %t.out
 // RUN: %GPU_RUN_PLACEHOLDER IGC_DumpToCustomDir=%t.dump IGC_ShaderDumpEnable=1 %t.out
 // RUN: grep enablePreemption %t.dump/*.asm
@@ -18,7 +19,7 @@
 
 #include <CL/sycl.hpp>
 #include <iostream>
-#include <sycl/ext/intel/experimental/esimd.hpp>
+#include <sycl/ext/intel/esimd.hpp>
 
 using namespace cl::sycl;
 

@@ -7,8 +7,6 @@
 //===----------------------------------------------------------------------===//
 // REQUIRES: gpu
 // UNSUPPORTED: cuda || hip
-// TODO: esimd_emulator fails due to unimplemented __esimd_oword_ld_unaligned
-// XFAIL: esimd_emulator
 // RUN: %clangxx -fsycl -I%S/.. %s -o %t.out
 // RUN: %GPU_RUN_PLACEHOLDER %t.out
 
@@ -16,7 +14,7 @@
 // copy_from invocation.
 
 #include <CL/sycl.hpp>
-#include <sycl/ext/intel/experimental/esimd.hpp>
+#include <sycl/ext/intel/esimd.hpp>
 
 #include <iostream>
 
@@ -41,12 +39,12 @@ int main() {
 
       auto acc0 = buf0.get_access<access::mode::read_write>(cgh);
 
-      cgh.parallel_for<class Test>(
-          range<1>(1), [=](sycl::id<1> i) SYCL_ESIMD_KERNEL {
-            using namespace sycl::ext::intel::experimental::esimd;
-            simd<Ty, VL> var;
-            var.copy_from(acc0, 0);
-          });
+      cgh.parallel_for<class Test>(range<1>(1),
+                                   [=](sycl::id<1> i) SYCL_ESIMD_KERNEL {
+                                     using namespace sycl::ext::intel::esimd;
+                                     simd<Ty, VL> var;
+                                     var.copy_from(acc0, 0);
+                                   });
     });
     q.wait();
   } catch (cl::sycl::exception const &e) {

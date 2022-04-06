@@ -7,8 +7,6 @@
 //===----------------------------------------------------------------------===//
 // REQUIRES: gpu
 // UNSUPPORTED: cuda || hip
-// TODO: esimd_emulator fails due to unimplemented __esimd_oword_ld_unaligned
-// XFAIL: esimd_emulator
 // RUN: %clangxx -fsycl %s -o %t.out
 // RUN: %GPU_RUN_PLACEHOLDER %t.out
 //
@@ -21,12 +19,12 @@
 #include "../esimd_test_utils.hpp"
 
 #include <CL/sycl.hpp>
-#include <sycl/ext/intel/experimental/esimd.hpp>
+#include <sycl/ext/intel/esimd.hpp>
 
 #include <iostream>
 
 using namespace cl::sycl;
-using namespace sycl::ext::intel::experimental::esimd;
+using namespace sycl::ext::intel::esimd;
 
 template <class T> class TestID;
 
@@ -56,7 +54,7 @@ template <class T> bool test(queue &q) {
       auto PA = bufA.template get_access<access::mode::read>(cgh);
       auto PB = bufB.template get_access<access::mode::read_write>(cgh);
       cgh.parallel_for<TestID<T>>(glob_range, [=](id<1> i) SYCL_ESIMD_KERNEL {
-        using namespace sycl::ext::intel::experimental::esimd;
+        using namespace sycl::ext::intel::esimd;
         simd<T, VL> va;
         va.copy_from(PA, 0);
         simd<T, VL> vb;

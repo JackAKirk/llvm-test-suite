@@ -7,8 +7,6 @@
 //===----------------------------------------------------------------------===//
 // REQUIRES: gpu
 // UNSUPPORTED: cuda || hip
-// TODO: esimd_emulator fails due to unimplemented 'single_task()' method
-// XFAIL: esimd_emulator
 // RUN: %clangxx -fsycl %s -o %t.out
 // RUN: %GPU_RUN_PLACEHOLDER %t.out
 
@@ -17,12 +15,12 @@
 #include "../esimd_test_utils.hpp"
 
 #include <CL/sycl.hpp>
-#include <sycl/ext/intel/experimental/esimd.hpp>
+#include <sycl/ext/intel/esimd.hpp>
 
 #include <iostream>
 
 using namespace cl::sycl;
-using namespace sycl::ext::intel::experimental::esimd;
+using namespace sycl::ext::intel::esimd;
 
 static constexpr unsigned NAllChs =
     get_num_channels_enabled(rgba_channel_mask::ABGR);
@@ -69,16 +67,15 @@ template <class, int, int> class TestID;
 template <rgba_channel_mask ChMask, unsigned NPixels, class T>
 bool test_impl(queue q) {
   constexpr unsigned NOnChs = get_num_channels_enabled(ChMask);
-  unsigned SizeIn = NPixels * NAllChs;
-  unsigned SizeOut = NPixels * NOnChs;
+  const unsigned Size = NPixels * NAllChs;
 
   std::cout << "Testing mask=";
   print_mask(ChMask);
   std::cout << ", T=" << typeid(T).name() << ", NPixels=" << NPixels << "\n";
 
-  T *A = malloc_shared<T>(SizeIn, q);
-  T *B = malloc_shared<T>(SizeOut, q);
-  T *C = malloc_shared<T>(SizeOut, q);
+  T *A = malloc_shared<T>(Size, q);
+  T *B = malloc_shared<T>(Size, q);
+  T *C = malloc_shared<T>(Size, q);
 
   for (unsigned p = 0; p < NPixels; ++p) {
     char ch_names[] = {'R', 'G', 'B', 'A'};
