@@ -197,7 +197,6 @@ int main() {
   for (int Stride = 1; Stride < WorkGroupSize; Stride++) {
 if ((test<int>(Stride)) || (test<int2>(Stride)) || (test<int4>(Stride)) ||
     (test<uint>(Stride)) || (test<uint2>(Stride)) || (test<uint4>(Stride)) ||
-    (test<double>(Stride)) || (test<double2>(Stride)) ||
     (test<float>(Stride)) || (test<float2>(Stride)) || (test<float4>(Stride)) ||
     (test<long>(Stride)) || (test<long2>(Stride)) || (test<ulong>(Stride)) ||
     (test<ulong2>(Stride)) || (test<char4>(Stride)) || (test<char8>(Stride)) ||
