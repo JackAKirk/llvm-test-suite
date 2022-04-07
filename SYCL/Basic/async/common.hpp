@@ -17,7 +17,7 @@ const size_t NWorkGroups = NElems / WorkGroupSize;
 
 template <typename T> void initInputBuffer(buffer<T, 1> &Buf, size_t Stride) {
   auto Acc = Buf.template get_access<access::mode::write>();
-  for (size_t I = 0; I < Buf.size(); I += WorkGroupSize) {
+  for (size_t I = 0; I < Buf.get_count(); I += WorkGroupSize) {
     for (size_t J = 0; J < WorkGroupSize; J++)
       Acc[I + J] = static_cast<T>(I + J + ((J % Stride == 0) ? 100 : 0));
   }
@@ -25,7 +25,7 @@ template <typename T> void initInputBuffer(buffer<T, 1> &Buf, size_t Stride) {
 
 template <typename T> void initOutputBuffer(buffer<T, 1> &Buf) {
   auto Acc = Buf.template get_access<access::mode::write>();
-  for (size_t I = 0; I < Buf.size(); I++)
+  for (size_t I = 0; I < Buf.get_count(); I++)
     Acc[I] = static_cast<T>(0);
 }
 
@@ -122,7 +122,7 @@ template <typename T> int checkResults(buffer<T, 1> &OutBuf, size_t Stride) {
   auto Out = OutBuf.template get_access<access::mode::read>();
   int EarlyFailout = 20;
 
-  for (size_t I = 0; I < OutBuf.size(); I += WorkGroupSize) {
+  for (size_t I = 0; I < OutBuf.get_count(); I += WorkGroupSize) {
     for (size_t J = 0; J < WorkGroupSize; J++) {
       size_t ExpectedVal = (J % Stride == 0) ? (100 + I + J) : 0;
       if (!checkEqual(Out[I + J], ExpectedVal)) {
