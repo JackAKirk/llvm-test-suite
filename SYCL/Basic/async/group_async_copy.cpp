@@ -4,7 +4,7 @@
 // RUN: %ACC_RUN_PLACEHOLDER %t.run
 // RUN: env SYCL_DEVICE_FILTER=host %t.run
 
-#include "common.h"
+#include "common.hpp"
 
 int main() {
   for (int Stride = 1; Stride < WorkGroupSize; Stride++) {

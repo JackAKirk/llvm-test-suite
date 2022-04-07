@@ -6,7 +6,7 @@
 // execution once it does.
 // RUNx: %t.run
 
-#include "common.h"
+#include "common.hpp"
 
 int main() {
   for (int Stride = 1; Stride < WorkGroupSize; Stride++) {
