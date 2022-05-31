@@ -196,7 +196,8 @@ void test(queue &q) {
                 marray<bfloat16, sub_a.wi_marray.size()> b, c;
                 b = 2;
                 c = 1;
-                sub_a.wi_marray = sycl::ext::oneapi::experimental::fma(sub_a.wi_marray, b, c);
+                sub_a.wi_marray =
+                    sycl::ext::oneapi::experimental::fma(sub_a.wi_marray, b, c);
               }
 
               joint_matrix_load(sg, sub_b,

@@ -55,8 +55,8 @@ void matrix_verify_op(queue q, big_matrix<T2, M * nWGperDim, N * nWGperDim> &C,
                                                                       cgh);
 
        cgh.parallel_for<KernelName<T, T2, M, K, N, Operation>>(
-           r, [ accC,
-                Op ](nd_item<2> spmd_item)[[sycl::reqd_sub_group_size(SG_SZ)]] {
+           r, [accC,
+               Op](nd_item<2> spmd_item) [[sycl::reqd_sub_group_size(SG_SZ)]] {
              const auto global_idx = spmd_item.get_global_id(0);
              const auto global_idy = spmd_item.get_global_id(1);
              const auto sg_startx = global_idx - spmd_item.get_local_id(0);
@@ -106,8 +106,7 @@ void matrix_verify_op(queue q, big_matrix<T2, M * nWGperDim, N * nWGperDim> &C,
                                     sg_starty / SG_SZ * N,
                                 (N * nWGperDim));
            }); // parallel for
-     })
-        .wait();
+     }).wait();
   }
   assert_ops_ref<T2, M * nWGperDim, N * nWGperDim>(C.get_data(), ref);
 }
