@@ -1,5 +1,4 @@
 // REQUIRES: cuda
-
 // RUN: %clangxx -fsycl -fsycl-targets=%sycl_triple -Xsycl-target-backend --cuda-gpu-arch=sm_80 -DSYCL_EXT_ONEAPI_MATRIX=3 %s -o %t.out
 // RUN: %t.out
 //
@@ -68,8 +67,8 @@ T2 matrix_ref_mn(const int &m, const int &n, T1 *A, T1 *B, T2 *C) {
       res += make_fp32(A[m * Big_K + k]) * make_fp32(B[k * Big_N + n]);
   } else if constexpr (std::is_same<T1, bfloat16>::value) {
     for (int k = 0; k < Big_K; k++)
-      res += make_fp32(A[m * Big_K + k].raw()) *
-             make_fp32(B[k * Big_N + n].raw());
+      res +=
+          make_fp32(A[m * Big_K + k].raw()) * make_fp32(B[k * Big_N + n].raw());
   } else {
     for (int k = 0; k < Big_K; k++)
 

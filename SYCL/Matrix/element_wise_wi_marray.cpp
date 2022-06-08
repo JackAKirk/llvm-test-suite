@@ -6,6 +6,7 @@
 //
 //===----------------------------------------------------------------------===//
 // REQUIRES: cuda
+
 // RUN: %clangxx -fsycl -fsycl-targets=%sycl_triple -Xsycl-target-backend --cuda-gpu-arch=sm_80 -DSYCL_EXT_ONEAPI_MATRIX=3 %s -o %t.out 
 // RUN: %t.out
 
@@ -26,7 +27,7 @@ template <typename T, size_t M, size_t K> void verify_wi_marray(queue q) {
 
        cgh.parallel_for<class marray_kernel>(
            nd_range<2>({1, 1 * SG_SZ}, {1, 1 * SG_SZ}),
-           [ERR](nd_item<2> spmd_item)[[sycl::reqd_sub_group_size(SG_SZ)]] {
+           [ERR](nd_item<2> spmd_item) [[sycl::reqd_sub_group_size(SG_SZ)]] {
              auto sg = spmd_item.get_sub_group();
 
              joint_matrix<T, matrix_use::a, M, K> sub_a;
@@ -47,8 +48,7 @@ template <typename T, size_t M, size_t K> void verify_wi_marray(queue q) {
                }
              }
            }); // parallel for
-     })
-        .wait();
+     }).wait();
   }
   assert(err == 0);
 }
