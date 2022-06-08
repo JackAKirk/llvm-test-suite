@@ -2,7 +2,7 @@
 // RUN: %clangxx -fsycl -fsycl-targets=%sycl_triple %s -o %t.out -Xsycl-target-backend --cuda-gpu-arch=sm_80
 // RUN: %t.out
 
-#include <CL/sycl.hpp>
+#include <sycl/sycl.hpp>
 
 #include <cmath>
 #include <vector>
@@ -33,8 +33,7 @@ bool check(float a, float b) {
                                                                      cgh);     \
       accessor<int, 1, access::mode::write, target::device> ERR(err_buf, cgh); \
       cgh.parallel_for(N, [=](id<1> index) {                                   \
-        if (check(make_fp32(NAME(bfloat16{A[index]}).raw()),                   \
-                  NAME(A[index]))) {                                           \
+        if (check(NAME(bfloat16{A[index]}), NAME(A[index]))) {                 \
           ERR[0] = 1;                                                          \
         }                                                                      \
       });                                                                      \
@@ -57,7 +56,7 @@ bool check(float a, float b) {
         }                                                                      \
         marray<bfloat16, SZ> res = NAME(arg);                                  \
         for (int i = 0; i < SZ; i++) {                                         \
-          if (check(make_fp32(res[i].raw()), NAME(A[index][i]))) {             \
+          if (check(res[i], NAME(A[index][i]))) {                              \
             ERR[0] = 1;                                                        \
           }                                                                    \
         }                                                                      \
@@ -86,9 +85,8 @@ bool check(float a, float b) {
                                                                      cgh);     \
       accessor<int, 1, access::mode::write, target::device> ERR(err_buf, cgh); \
       cgh.parallel_for(N, [=](id<1> index) {                                   \
-        if (check(                                                             \
-                make_fp32(NAME(bfloat16{A[index]}, bfloat16{B[index]}).raw()), \
-                NAME(A[index], B[index]))) {                                   \
+        if (check(NAME(bfloat16{A[index]}, bfloat16{B[index]}),                \
+                  NAME(A[index], B[index]))) {                                 \
           ERR[0] = 1;                                                          \
         }                                                                      \
       });                                                                      \
@@ -115,8 +113,7 @@ bool check(float a, float b) {
         }                                                                      \
         marray<bfloat16, SZ> res = NAME(arg0, arg1);                           \
         for (int i = 0; i < SZ; i++) {                                         \
-          if (check(make_fp32(res[i].raw()),                                   \
-                    NAME(A[index][i], B[index][i]))) {                         \
+          if (check(res[i], NAME(A[index][i], B[index][i]))) {                 \
             ERR[0] = 1;                                                        \
           }                                                                    \
         }                                                                      \
@@ -148,9 +145,8 @@ bool check(float a, float b) {
                                                                      cgh);     \
       accessor<int, 1, access::mode::write, target::device> ERR(err_buf, cgh); \
       cgh.parallel_for(N, [=](id<1> index) {                                   \
-        if (check(make_fp32(NAME(bfloat16{A[index]}, bfloat16{B[index]},       \
-                                 bfloat16{C[index]})                           \
-                                .raw()),                                       \
+        if (check(NAME(bfloat16{A[index]}, bfloat16{B[index]},                 \
+                       bfloat16{C[index]}),                                    \
                   NAME(A[index], B[index], C[index]))) {                       \
           ERR[0] = 1;                                                          \
         }                                                                      \
@@ -182,8 +178,7 @@ bool check(float a, float b) {
         }                                                                      \
         marray<bfloat16, SZ> res = NAME(arg0, arg1, arg2);                     \
         for (int i = 0; i < SZ; i++) {                                         \
-          if (check(make_fp32(res[i].raw()),                                   \
-                    NAME(A[index][i], B[index][i], C[index][i]))) {            \
+          if (check(res[i], NAME(A[index][i], B[index][i], C[index][i]))) {    \
             ERR[0] = 1;                                                        \
           }                                                                    \
         }                                                                      \
@@ -209,9 +204,9 @@ bool check(float a, float b) {
       accessor<float, 1, access::mode::write, target::device> checkNAN(        \
           nan_buf, cgh);                                                       \
       cgh.single_task([=]() {                                                  \
-        checkNAN[0] = make_fp32(NAME(bfloat16{NAN}, bfloat16{NAN}).raw());     \
-        if ((make_fp32(NAME(bfloat16{2}, bfloat16{NAN}).raw()) != 2) ||        \
-            (make_fp32(NAME(bfloat16{NAN}, bfloat16{2}).raw()) != 2)) {        \
+        checkNAN[0] = NAME(bfloat16{NAN}, bfloat16{NAN});                      \
+        if ((NAME(bfloat16{2}, bfloat16{NAN}) != 2) ||                         \
+            (NAME(bfloat16{NAN}, bfloat16{2}) != 2)) {                         \
           ERR[0] = 1;                                                          \
         }                                                                      \
       });                                                                      \
