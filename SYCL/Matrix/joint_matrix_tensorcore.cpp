@@ -68,7 +68,7 @@ T2 matrix_ref_mn(const int &m, const int &n, T1 *A, T1 *B, T2 *C) {
       res += make_fp32(A[m * Big_K + k]) * make_fp32(B[k * Big_N + n]);
   } else if constexpr (std::is_same<T1, bfloat16>::value) {
     for (int k = 0; k < Big_K; k++)
-      res += (make_fp32(A[m * Big_K + k].raw()) * 2 + 1) *
+      res += make_fp32(A[m * Big_K + k].raw()) *
              make_fp32(B[k * Big_N + n].raw());
   } else {
     for (int k = 0; k < Big_K; k++)
@@ -191,14 +191,6 @@ void test(queue &q) {
               joint_matrix_load(sg, sub_a,
                                 accA.get_pointer() + (k * K) + (m * M * Big_K),
                                 Big_K);
-
-              if constexpr (std::is_same<T1, bfloat16>::value) {
-                marray<bfloat16, sub_a.wi_marray.size()> b, c;
-                b = 2;
-                c = 1;
-                sub_a.wi_marray =
-                    sycl::ext::oneapi::experimental::fma(sub_a.wi_marray, b, c);
-              }
 
               joint_matrix_load(sg, sub_b,
                                 accB.get_pointer() + (k * K * Big_N) + (n * N),
