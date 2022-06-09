@@ -91,19 +91,18 @@ int main() {
                                    {tu[0], tu[1]});
   native_tanh_tester<sycl::float3>(
       q, {tv[0], tv[1], tv[2]}, {tl[0], tl[1], tl[2]}, {tu[0], tu[1], tu[2]});
-  
+
   native_tanh_tester<sycl::float4>(q, {tv[0], tv[1], tv[2], tv[3]},
                                    {tl[0], tl[1], tl[2], tl[3]},
                                    {tu[0], tu[1], tu[2], tu[3]});
-  native_tanh_tester<sycl::marray<float, 3>>(q, {tv[0], tv[1], tv[2]},
-                                           {tl[0], tl[1], tl[2]},
-                                           {tu[0], tu[1], tu[2]});
+  native_tanh_tester<sycl::marray<float, 3>>(
+      q, {tv[0], tv[1], tv[2]}, {tl[0], tl[1], tl[2]}, {tu[0], tu[1], tu[2]});
   native_tanh_tester<sycl::marray<float, 4>>(q, {tv[0], tv[1], tv[2], tv[3]},
-                                           {tl[0], tl[1], tl[2], tl[3]},
-                                           {tu[0], tu[1], tu[2], tu[3]});
+                                             {tl[0], tl[1], tl[2], tl[3]},
+                                             {tu[0], tu[1], tu[2], tu[3]});
   native_tanh_tester<sycl::marray<float, 4>>(q, {tv[0], tv[1], tv[2], tv[3]},
-                                   {tl[0], tl[1], tl[2], tl[3]},
-                                   {tu[0], tu[1], tu[2], tu[3]});
+                                             {tl[0], tl[1], tl[2], tl[3]},
+                                             {tu[0], tu[1], tu[2], tu[3]});
   native_tanh_tester<sycl::float8>(
       q, {tv[0], tv[1], tv[2], tv[3], tv[4], tv[5], tv[6], tv[7]},
       {tl[0], tl[1], tl[2], tl[3], tl[4], tl[5], tl[6], tl[7]},
@@ -129,9 +128,9 @@ int main() {
     native_tanh_tester<sycl::half4>(q, {tv[0], tv[1], tv[2], tv[3]},
                                     {tl[0], tl[1], tl[2], tl[3]},
                                     {tu[0], tu[1], tu[2], tu[3]});
-    native_tanh_tester<sycl::marray<sycl::half, 4>>(q, {tv[0], tv[1], tv[2], tv[3]},
-                                    {tl[0], tl[1], tl[2], tl[3]},
-                                    {tu[0], tu[1], tu[2], tu[3]});
+    native_tanh_tester<sycl::marray<sycl::half, 4>>(
+        q, {tv[0], tv[1], tv[2], tv[3]}, {tl[0], tl[1], tl[2], tl[3]},
+        {tu[0], tu[1], tu[2], tu[3]});
     native_tanh_tester<sycl::half8>(
         q, {tv[0], tv[1], tv[2], tv[3], tv[4], tv[5], tv[6], tv[7]},
         {tl[0], tl[1], tl[2], tl[3], tl[4], tl[5], tl[6], tl[7]},
@@ -160,12 +159,11 @@ int main() {
     native_exp2_tester<sycl::half4>(q, {ev[0], ev[1], ev[2], ev[3]},
                                     {el[0], el[1], el[2], el[3]},
                                     {eu[0], eu[1], eu[2], eu[3]});
-    native_exp2_tester<sycl::marray<sycl::half, 3>>(q, {ev[0], ev[1], ev[2]},
-                                                {el[0], el[1], el[2]},
-                                                {eu[0], eu[1], eu[2]});
-    native_exp2_tester<sycl::marray<sycl::half, 4>>(q, {ev[0], ev[1], ev[2], ev[3]},
-                                                {el[0], el[1], el[2], el[3]},
-                                                {eu[0], eu[1], eu[2], eu[3]});
+    native_exp2_tester<sycl::marray<sycl::half, 3>>(
+        q, {ev[0], ev[1], ev[2]}, {el[0], el[1], el[2]}, {eu[0], eu[1], eu[2]});
+    native_exp2_tester<sycl::marray<sycl::half, 4>>(
+        q, {ev[0], ev[1], ev[2], ev[3]}, {el[0], el[1], el[2], el[3]},
+        {eu[0], eu[1], eu[2], eu[3]});
     native_exp2_tester<sycl::half8>(
         q, {ev[0], ev[1], ev[2], ev[3], ev[4], ev[5], ev[6], ev[7]},
         {el[0], el[1], el[2], el[3], el[4], el[5], el[6], el[7]},

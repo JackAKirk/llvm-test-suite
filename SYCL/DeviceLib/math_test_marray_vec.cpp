@@ -29,8 +29,6 @@ template <typename T, size_t N> bool checkEqual(marray<T, N> A, size_t B) {
   return true;
 }
 
-#define COMMA ,
-
 #define OPERATOR(NAME)                                                         \
   template <typename T>                                                        \
   void math_test_##NAME(queue &deviceQueue, T result, T input, size_t ref) {   \
@@ -163,117 +161,117 @@ OPERATOR_3(fma)
 
 #undef OPERATOR_3
 
-#define TESTS_4(TYPE)                                                          \
-  math_test_tanh(deviceQueue, TYPE{-1, -1, -1, -1}, TYPE{0, 0, 0, 0}, 0);      \
-  math_test_cosh(deviceQueue, TYPE{-1, -1, -1, -1}, TYPE{0, 0, 0, 0}, 1);      \
-  math_test_sinh(deviceQueue, TYPE{-1, -1, -1, -1}, TYPE{0, 0, 0, 0}, 0);      \
-  math_test_acos(deviceQueue, TYPE{-1, -1, -1, -1}, TYPE{1, 1, 1, 1}, 0);      \
-  math_test_acospi(deviceQueue, TYPE{-1, -1, -1, -1}, TYPE{1, 1, 1, 1}, 0);    \
-  math_test_acosh(deviceQueue, TYPE{-1, -1, -1, -1}, TYPE{1, 1, 1, 1}, 0);     \
-  math_test_asin(deviceQueue, TYPE{-1, -1, -1, -1}, TYPE{0, 0, 0, 0}, 0);      \
-  math_test_asinpi(deviceQueue, TYPE{-1, -1, -1, -1}, TYPE{0, 0, 0, 0}, 0);    \
-  math_test_asinh(deviceQueue, TYPE{-1, -1, -1, -1}, TYPE{0, 0, 0, 0}, 0);     \
-  math_test_cbrt(deviceQueue, TYPE{-1, -1, -1, -1}, TYPE{1, 1, 1, 1}, 1);      \
-  math_test_atan(deviceQueue, TYPE{-1, -1, -1, -1}, TYPE{0, 0, 0, 0}, 0);      \
-  math_test_atanpi(deviceQueue, TYPE{-1, -1, -1, -1}, TYPE{0, 0, 0, 0}, 0);    \
-  math_test_atanh(deviceQueue, TYPE{-1, -1, -1, -1}, TYPE{0, 0, 0, 0}, 0);     \
-  math_test_exp(deviceQueue, TYPE{-1, -1, -1, -1}, TYPE{0, 0, 0, 0}, 1);       \
-  math_test_exp2(deviceQueue, TYPE{-1, -1, -1, -1}, TYPE{2, 2, 2, 2}, 4);      \
-  math_test_exp10(deviceQueue, TYPE{-1, -1, -1, -1}, TYPE{2, 2, 2, 2}, 100);   \
-  math_test_expm1(deviceQueue, TYPE{-1, -1, -1, -1}, TYPE{0, 0, 0, 0}, 0);     \
-  math_test_ceil(deviceQueue, TYPE{-1, -1, -1, -1}, TYPE{0.6, 0.6, 0.6, 0.6},  \
-                 1);                                                           \
-  math_test_tgamma(deviceQueue, TYPE{-1, -1, -1, -1}, TYPE{1, 1, 1, 1}, 1);    \
-  math_test_lgamma(deviceQueue, TYPE{-1, -1, -1, -1}, TYPE{1, 1, 1, 1}, 0);    \
-  math_test_erf(deviceQueue, TYPE{-1, -1, -1, -1}, TYPE{0, 0, 0, 0}, 0);       \
-  math_test_erfc(deviceQueue, TYPE{-1, -1, -1, -1}, TYPE{0, 0, 0, 0}, 1);      \
-  math_test_2_pow(deviceQueue, TYPE{-1, -1, -1, -1}, TYPE{2, 2, 2, 2},         \
-                  TYPE{2, 2, 2, 2}, 4);                                        \
-  math_test_2_powr(deviceQueue, TYPE{-1, -1, -1, -1}, TYPE{2, 2, 2, 2},        \
-                   TYPE{2, 2, 2, 2}, 4);                                       \
-  math_test_2_atan2(deviceQueue, TYPE{-1, -1, -1, -1}, TYPE{0, 0, 0, 0},       \
-                    TYPE{2, 2, 2, 2}, 0);                                      \
-  math_test_2_atan2pi(deviceQueue, TYPE{-1, -1, -1, -1}, TYPE{0, 0, 0, 0},     \
-                      TYPE{2, 2, 2, 2}, 0);                                    \
-  math_test_2_copysign(deviceQueue, TYPE{-1, -1, -1, -1},                      \
-                       TYPE{-3, -3, -3, -3}, TYPE{2, 2, 2, 2}, 3);             \
-  math_test_2_fmin(deviceQueue, TYPE{-1, -1, -1, -1}, TYPE{2, 2, 2, 2},        \
-                   TYPE{3, 3, 3, 3}, 2);                                       \
-  math_test_2_fmax(deviceQueue, TYPE{-1, -1, -1, -1}, TYPE{2, 2, 2, 2},        \
-                   TYPE{3, 3, 3, 3}, 3);                                       \
-  math_test_2_hypot(deviceQueue, TYPE{-1, -1, -1, -1}, TYPE{4, 4, 4, 4},       \
-                    TYPE{3, 3, 3, 3}, 5);                                      \
-  math_test_2_maxmag(deviceQueue, TYPE{-1, -1, -1, -1}, TYPE{-2, -2, -2, -2},  \
-                     TYPE{3, 3, 3, 3}, 3);                                     \
-  math_test_2_minmag(deviceQueue, TYPE{-1, -1, -1, -1}, TYPE{2, 2, 2, 2},      \
-                     TYPE{-3, -3, -3, -3}, 2);                                 \
-  math_test_2_remainder(deviceQueue, TYPE{-1, -1, -1, -1}, TYPE{5, 5, 5, 5},   \
-                        TYPE{2, 2, 2, 2}, 1);                                  \
-  math_test_2_fdim(deviceQueue, TYPE{-1, -1, -1, -1}, TYPE{3, 3, 3, 3},        \
-                   TYPE{3, 3, 3, 3}, 0);                                       \
-  math_test_2_fmod(deviceQueue, TYPE{-1, -1, -1, -1}, TYPE{5, 5, 5, 5},        \
-                   TYPE{3, 3, 3, 3}, 2);                                       \
-  math_test_2_nextafter(deviceQueue, TYPE{-1, -1, -1, -1},                     \
-                        TYPE{-0, -0, -0, -0}, TYPE{+0, +0, +0, +0}, 0);        \
-  math_test_3_fma(deviceQueue, TYPE{-1, -1, -1, -1}, TYPE{2, 2, 2, 2},         \
-                  TYPE{2, 2, 2, 2}, TYPE{1, 1, 1, 1}, 5);                      \
-  math_test_3_mad(deviceQueue, TYPE{-1, -1, -1, -1}, TYPE{2, 2, 2, 2},         \
-                  TYPE{2, 2, 2, 2}, TYPE{1, 1, 1, 1}, 5);                      \
-  math_test_3_mix(deviceQueue, TYPE{-1, -1, -1, -1}, TYPE{3, 3, 3, 3},         \
-                  TYPE{5, 5, 5, 5}, TYPE{0.5, 0.5, 0.5, 0.5}, 4);
+template <typename T> void math_tests_4(queue &deviceQueue) {
+  math_test_tanh(deviceQueue, T{-1, -1, -1, -1}, T{0, 0, 0, 0}, 0);
+  math_test_cosh(deviceQueue, T{-1, -1, -1, -1}, T{0, 0, 0, 0}, 1);
+  math_test_sinh(deviceQueue, T{-1, -1, -1, -1}, T{0, 0, 0, 0}, 0);
+  math_test_acos(deviceQueue, T{-1, -1, -1, -1}, T{1, 1, 1, 1}, 0);
+  math_test_acospi(deviceQueue, T{-1, -1, -1, -1}, T{1, 1, 1, 1}, 0);
+  math_test_acosh(deviceQueue, T{-1, -1, -1, -1}, T{1, 1, 1, 1}, 0);
+  math_test_asin(deviceQueue, T{-1, -1, -1, -1}, T{0, 0, 0, 0}, 0);
+  math_test_asinpi(deviceQueue, T{-1, -1, -1, -1}, T{0, 0, 0, 0}, 0);
+  math_test_asinh(deviceQueue, T{-1, -1, -1, -1}, T{0, 0, 0, 0}, 0);
+  math_test_cbrt(deviceQueue, T{-1, -1, -1, -1}, T{1, 1, 1, 1}, 1);
+  math_test_atan(deviceQueue, T{-1, -1, -1, -1}, T{0, 0, 0, 0}, 0);
+  math_test_atanpi(deviceQueue, T{-1, -1, -1, -1}, T{0, 0, 0, 0}, 0);
+  math_test_atanh(deviceQueue, T{-1, -1, -1, -1}, T{0, 0, 0, 0}, 0);
+  math_test_exp(deviceQueue, T{-1, -1, -1, -1}, T{0, 0, 0, 0}, 1);
+  math_test_exp2(deviceQueue, T{-1, -1, -1, -1}, T{2, 2, 2, 2}, 4);
+  math_test_exp10(deviceQueue, T{-1, -1, -1, -1}, T{2, 2, 2, 2}, 100);
+  math_test_expm1(deviceQueue, T{-1, -1, -1, -1}, T{0, 0, 0, 0}, 0);
+  math_test_ceil(deviceQueue, T{-1, -1, -1, -1}, T{0.6, 0.6, 0.6, 0.6}, 1);
+  math_test_tgamma(deviceQueue, T{-1, -1, -1, -1}, T{1, 1, 1, 1}, 1);
+  math_test_lgamma(deviceQueue, T{-1, -1, -1, -1}, T{1, 1, 1, 1}, 0);
+  math_test_erf(deviceQueue, T{-1, -1, -1, -1}, T{0, 0, 0, 0}, 0);
+  math_test_erfc(deviceQueue, T{-1, -1, -1, -1}, T{0, 0, 0, 0}, 1);
+  math_test_2_pow(deviceQueue, T{-1, -1, -1, -1}, T{2, 2, 2, 2}, T{2, 2, 2, 2},
+                  4);
+  math_test_2_powr(deviceQueue, T{-1, -1, -1, -1}, T{2, 2, 2, 2}, T{2, 2, 2, 2},
+                   4);
+  math_test_2_atan2(deviceQueue, T{-1, -1, -1, -1}, T{0, 0, 0, 0},
+                    T{2, 2, 2, 2}, 0);
+  math_test_2_atan2pi(deviceQueue, T{-1, -1, -1, -1}, T{0, 0, 0, 0},
+                      T{2, 2, 2, 2}, 0);
+  math_test_2_copysign(deviceQueue, T{-1, -1, -1, -1}, T{-3, -3, -3, -3},
+                       T{2, 2, 2, 2}, 3);
+  math_test_2_fmin(deviceQueue, T{-1, -1, -1, -1}, T{2, 2, 2, 2}, T{3, 3, 3, 3},
+                   2);
+  math_test_2_fmax(deviceQueue, T{-1, -1, -1, -1}, T{2, 2, 2, 2}, T{3, 3, 3, 3},
+                   3);
+  math_test_2_hypot(deviceQueue, T{-1, -1, -1, -1}, T{4, 4, 4, 4},
+                    T{3, 3, 3, 3}, 5);
+  math_test_2_maxmag(deviceQueue, T{-1, -1, -1, -1}, T{-2, -2, -2, -2},
+                     T{3, 3, 3, 3}, 3);
+  math_test_2_minmag(deviceQueue, T{-1, -1, -1, -1}, T{2, 2, 2, 2},
+                     T{-3, -3, -3, -3}, 2);
+  math_test_2_remainder(deviceQueue, T{-1, -1, -1, -1}, T{5, 5, 5, 5},
+                        T{2, 2, 2, 2}, 1);
+  math_test_2_fdim(deviceQueue, T{-1, -1, -1, -1}, T{3, 3, 3, 3}, T{3, 3, 3, 3},
+                   0);
+  math_test_2_fmod(deviceQueue, T{-1, -1, -1, -1}, T{5, 5, 5, 5}, T{3, 3, 3, 3},
+                   2);
+  math_test_2_nextafter(deviceQueue, T{-1, -1, -1, -1}, T{-0, -0, -0, -0},
+                        T{+0, +0, +0, +0}, 0);
+  math_test_3_fma(deviceQueue, T{-1, -1, -1, -1}, T{2, 2, 2, 2}, T{2, 2, 2, 2},
+                  T{1, 1, 1, 1}, 5);
+  math_test_3_mad(deviceQueue, T{-1, -1, -1, -1}, T{2, 2, 2, 2}, T{2, 2, 2, 2},
+                  T{1, 1, 1, 1}, 5);
+  math_test_3_mix(deviceQueue, T{-1, -1, -1, -1}, T{3, 3, 3, 3}, T{5, 5, 5, 5},
+                  T{0.5, 0.5, 0.5, 0.5}, 4);
+}
 
-#define TESTS_3(TYPE)                                                          \
-  math_test_tan(deviceQueue, TYPE{-1, -1, -1}, TYPE{0, 0, 0}, 0);              \
-  math_test_tanh(deviceQueue, TYPE{-1, -1, -1}, TYPE{0, 0, 0}, 0);             \
-  math_test_cos(deviceQueue, TYPE{-1, -1, -1}, TYPE{0, 0, 0}, 1);              \
-  math_test_sin(deviceQueue, TYPE{-1, -1, -1}, TYPE{0, 0, 0}, 0);              \
-  math_test_cosh(deviceQueue, TYPE{-1, -1, -1}, TYPE{0, 0, 0}, 1);             \
-  math_test_sinh(deviceQueue, TYPE{-1, -1, -1}, TYPE{0, 0, 0}, 0);             \
-  math_test_acos(deviceQueue, TYPE{-1, -1, -1}, TYPE{1, 1, 1}, 0);             \
-  math_test_acosh(deviceQueue, TYPE{-1, -1, -1}, TYPE{1, 1, 1}, 0);            \
-  math_test_asin(deviceQueue, TYPE{-1, -1, -1}, TYPE{0, 0, 0}, 0);             \
-  math_test_asinh(deviceQueue, TYPE{-1, -1, -1}, TYPE{0, 0, 0}, 0);            \
-  math_test_cbrt(deviceQueue, TYPE{-1, -1, -1}, TYPE{1, 1, 1}, 1);             \
-  math_test_atan(deviceQueue, TYPE{-1, -1, -1}, TYPE{0, 0, 0}, 0);             \
-  math_test_atanh(deviceQueue, TYPE{-1, -1, -1}, TYPE{0, 0, 0}, 0);            \
-  math_test_exp(deviceQueue, TYPE{-1, -1, -1}, TYPE{0, 0, 0}, 1);              \
-  math_test_exp2(deviceQueue, TYPE{-1, -1, -1}, TYPE{2, 2, 2}, 4);             \
-  math_test_exp10(deviceQueue, TYPE{-1, -1, -1}, TYPE{2, 2, 2}, 100);          \
-  math_test_expm1(deviceQueue, TYPE{-1, -1, -1}, TYPE{0, 0, 0}, 0);            \
-  math_test_ceil(deviceQueue, TYPE{-1, -1, -1}, TYPE{0.6, 0.6, 0.6}, 1);       \
-  math_test_tgamma(deviceQueue, TYPE{-1, -1, -1}, TYPE{1, 1, 1}, 1);           \
-  math_test_lgamma(deviceQueue, TYPE{-1, -1, -1}, TYPE{1, 1, 1}, 0);           \
-  math_test_erf(deviceQueue, TYPE{-1, -1, -1}, TYPE{0, 0, 0}, 0);              \
-  math_test_erfc(deviceQueue, TYPE{-1, -1, -1}, TYPE{0, 0, 0}, 1);             \
-  math_test_log(deviceQueue, TYPE{-1, -1, -1}, TYPE{1, 1, 1}, 0);              \
-  math_test_log2(deviceQueue, TYPE{-1, -1, -1}, TYPE{4, 4, 4}, 2);             \
-  math_test_log10(deviceQueue, TYPE{-1, -1, -1}, TYPE{100, 100, 100}, 2);      \
-  math_test_log1p(deviceQueue, TYPE{-1, -1, -1}, TYPE{0, 0, 0}, 0);            \
-  math_test_logb(deviceQueue, TYPE{-1, -1, -1}, TYPE{1.1, 1.1, 1.1}, 0);       \
-  math_test_sqrt(deviceQueue, TYPE{-1, -1, -1}, TYPE{4, 4, 4}, 2);             \
-  math_test_rsqrt(deviceQueue, TYPE{-1, -1, -1}, TYPE{0.25, 0.25, 0.25}, 2);   \
-  math_test_rint(deviceQueue, TYPE{-1, -1, -1}, TYPE{2.9, 2.9, 2.9}, 3);       \
-  math_test_round(deviceQueue, TYPE{-1, -1, -1}, TYPE{0.5, 0.5, 0.5}, 1);      \
-  math_test_trunc(deviceQueue, TYPE{-1, -1, -1}, TYPE{1.9, 1.9, 1.9}, 1);
+template <typename T> void math_tests_3(queue &deviceQueue) {
+  math_test_tan(deviceQueue, T{-1, -1, -1}, T{0, 0, 0}, 0);
+  math_test_tanh(deviceQueue, T{-1, -1, -1}, T{0, 0, 0}, 0);
+  math_test_cos(deviceQueue, T{-1, -1, -1}, T{0, 0, 0}, 1);
+  math_test_sin(deviceQueue, T{-1, -1, -1}, T{0, 0, 0}, 0);
+  math_test_cosh(deviceQueue, T{-1, -1, -1}, T{0, 0, 0}, 1);
+  math_test_sinh(deviceQueue, T{-1, -1, -1}, T{0, 0, 0}, 0);
+  math_test_acos(deviceQueue, T{-1, -1, -1}, T{1, 1, 1}, 0);
+  math_test_acosh(deviceQueue, T{-1, -1, -1}, T{1, 1, 1}, 0);
+  math_test_asin(deviceQueue, T{-1, -1, -1}, T{0, 0, 0}, 0);
+  math_test_asinh(deviceQueue, T{-1, -1, -1}, T{0, 0, 0}, 0);
+  math_test_cbrt(deviceQueue, T{-1, -1, -1}, T{1, 1, 1}, 1);
+  math_test_atan(deviceQueue, T{-1, -1, -1}, T{0, 0, 0}, 0);
+  math_test_atanh(deviceQueue, T{-1, -1, -1}, T{0, 0, 0}, 0);
+  math_test_exp(deviceQueue, T{-1, -1, -1}, T{0, 0, 0}, 1);
+  math_test_exp2(deviceQueue, T{-1, -1, -1}, T{2, 2, 2}, 4);
+  math_test_exp10(deviceQueue, T{-1, -1, -1}, T{2, 2, 2}, 100);
+  math_test_expm1(deviceQueue, T{-1, -1, -1}, T{0, 0, 0}, 0);
+  math_test_ceil(deviceQueue, T{-1, -1, -1}, T{0.6, 0.6, 0.6}, 1);
+  math_test_tgamma(deviceQueue, T{-1, -1, -1}, T{1, 1, 1}, 1);
+  math_test_lgamma(deviceQueue, T{-1, -1, -1}, T{1, 1, 1}, 0);
+  math_test_erf(deviceQueue, T{-1, -1, -1}, T{0, 0, 0}, 0);
+  math_test_erfc(deviceQueue, T{-1, -1, -1}, T{0, 0, 0}, 1);
+  math_test_log(deviceQueue, T{-1, -1, -1}, T{1, 1, 1}, 0);
+  math_test_log2(deviceQueue, T{-1, -1, -1}, T{4, 4, 4}, 2);
+  math_test_log10(deviceQueue, T{-1, -1, -1}, T{100, 100, 100}, 2);
+  math_test_log1p(deviceQueue, T{-1, -1, -1}, T{0, 0, 0}, 0);
+  math_test_logb(deviceQueue, T{-1, -1, -1}, T{1.1, 1.1, 1.1}, 0);
+  math_test_sqrt(deviceQueue, T{-1, -1, -1}, T{4, 4, 4}, 2);
+  math_test_rsqrt(deviceQueue, T{-1, -1, -1}, T{0.25, 0.25, 0.25}, 2);
+  math_test_rint(deviceQueue, T{-1, -1, -1}, T{2.9, 2.9, 2.9}, 3);
+  math_test_round(deviceQueue, T{-1, -1, -1}, T{0.5, 0.5, 0.5}, 1);
+  math_test_trunc(deviceQueue, T{-1, -1, -1}, T{1.9, 1.9, 1.9}, 1);
+}
 
 int main() {
   queue deviceQueue;
+  math_tests_4<float4>(deviceQueue);
+  math_tests_4<double4>(deviceQueue);
+  math_tests_4<marray<float, 4>>(deviceQueue);
+  math_tests_4<marray<double, 4>>(deviceQueue);
 
-  TESTS_4(float4)
-  TESTS_4(double4)
-  TESTS_4(marray<float COMMA 4>)
-  TESTS_4(marray<double COMMA 4>)
-
-  TESTS_3(float3)
-  TESTS_3(double3)
-  TESTS_3(marray<float COMMA 3>)
-  TESTS_3(marray<double COMMA 3>)
+  math_tests_3<float3>(deviceQueue);
+  math_tests_3<double3>(deviceQueue);
+  math_tests_3<marray<float, 3>>(deviceQueue);
+  math_tests_3<marray<double, 3>>(deviceQueue);
 
   if (deviceQueue.get_device().has(sycl::aspect::fp16)) {
-    TESTS_4(half4)
-    TESTS_4(marray<half COMMA 4>)
-    TESTS_3(half3)
-    TESTS_3(marray<half COMMA 3>)
+    math_tests_4<half4>(deviceQueue);
+    math_tests_4<marray<half, 4>>(deviceQueue);
+    math_tests_3<half3>(deviceQueue);
+    math_tests_3<marray<half, 3>>(deviceQueue);
   }
 
   std::cout << "Pass" << std::endl;

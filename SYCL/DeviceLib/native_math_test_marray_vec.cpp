@@ -29,8 +29,6 @@ template <typename T, size_t N> bool checkEqual(marray<T, N> A, size_t B) {
   return true;
 }
 
-#define COMMA ,
-
 #define NATIVE_OPERATOR(NAME)                                                  \
   template <typename T>                                                        \
   void native_math_test_##NAME(queue &deviceQueue, T result, T input,          \
@@ -94,62 +92,53 @@ NATIVE_OPERATOR_2(powr)
 
 #undef NATIVE_OPERATOR_2
 
-#define NATIVE_TESTS_3(TYPE)                                                   \
-  native_math_test_sin(deviceQueue, TYPE{-1, -1, -1}, TYPE{0, 0, 0}, 0);       \
-  native_math_test_tan(deviceQueue, TYPE{-1, -1, -1}, TYPE{0, 0, 0}, 0);       \
-  native_math_test_cos(deviceQueue, TYPE{-1, -1, -1}, TYPE{0, 0, 0}, 1);       \
-  native_math_test_exp(deviceQueue, TYPE{-1, -1, -1}, TYPE{0, 0, 0}, 1);       \
-  native_math_test_exp2(deviceQueue, TYPE{-1, -1, -1}, TYPE{2, 2, 2}, 4);      \
-  native_math_test_log(deviceQueue, TYPE{-1, -1, -1}, TYPE{1, 1, 1}, 0);       \
-  native_math_test_log2(deviceQueue, TYPE{-1, -1, -1}, TYPE{4, 4, 4}, 2);      \
-  native_math_test_log10(deviceQueue, TYPE{-1, -1, -1}, TYPE{100, 100, 100},   \
-                         2);                                                   \
-  native_math_test_sqrt(deviceQueue, TYPE{-1, -1, -1}, TYPE{4, 4, 4}, 2);      \
-  native_math_test_rsqrt(deviceQueue, TYPE{-1, -1, -1},                        \
-                         TYPE{0.25, 0.25, 0.25}, 2);                           \
-  native_math_test_recip(deviceQueue, TYPE{-1, -1, -1},                        \
-                         TYPE{0.25, 0.25, 0.25}, 4);                           \
-  native_math_test_2_powr(deviceQueue, TYPE{-1, -1, -1}, TYPE{2, 2, 2},        \
-                          TYPE{2, 2, 2}, 4);                                   \
-  native_math_test_2_divide(deviceQueue, TYPE{-1, -1, -1}, TYPE{4, 4, 4},      \
-                            TYPE{2, 2, 2}, 2);
+template <typename T> void native_tests_3(queue &deviceQueue) {
+  native_math_test_sin(deviceQueue, T{-1, -1, -1}, T{0, 0, 0}, 0);
+  native_math_test_tan(deviceQueue, T{-1, -1, -1}, T{0, 0, 0}, 0);
+  native_math_test_cos(deviceQueue, T{-1, -1, -1}, T{0, 0, 0}, 1);
+  native_math_test_exp(deviceQueue, T{-1, -1, -1}, T{0, 0, 0}, 1);
+  native_math_test_exp2(deviceQueue, T{-1, -1, -1}, T{2, 2, 2}, 4);
+  native_math_test_log(deviceQueue, T{-1, -1, -1}, T{1, 1, 1}, 0);
+  native_math_test_log2(deviceQueue, T{-1, -1, -1}, T{4, 4, 4}, 2);
+  native_math_test_log10(deviceQueue, T{-1, -1, -1}, T{100, 100, 100}, 2);
+  native_math_test_sqrt(deviceQueue, T{-1, -1, -1}, T{4, 4, 4}, 2);
+  native_math_test_rsqrt(deviceQueue, T{-1, -1, -1}, T{0.25, 0.25, 0.25}, 2);
+  native_math_test_recip(deviceQueue, T{-1, -1, -1}, T{0.25, 0.25, 0.25}, 4);
+  native_math_test_2_powr(deviceQueue, T{-1, -1, -1}, T{2, 2, 2}, T{2, 2, 2},
+                          4);
+  native_math_test_2_divide(deviceQueue, T{-1, -1, -1}, T{4, 4, 4}, T{2, 2, 2},
+                            2);
+}
 
-#define NATIVE_TESTS_4(TYPE)                                                   \
-  native_math_test_sin(deviceQueue, TYPE{-1, -1, -1, -1}, TYPE{0, 0, 0, 0},    \
-                       0);                                                     \
-  native_math_test_tan(deviceQueue, TYPE{-1, -1, -1, -1}, TYPE{0, 0, 0, 0},    \
-                       0);                                                     \
-  native_math_test_cos(deviceQueue, TYPE{-1, -1, -1, -1}, TYPE{0, 0, 0, 0},    \
-                       1);                                                     \
-  native_math_test_exp(deviceQueue, TYPE{-1, -1, -1, -1}, TYPE{0, 0, 0, 0},    \
-                       1);                                                     \
-  native_math_test_exp2(deviceQueue, TYPE{-1, -1, -1, -1}, TYPE{2, 2, 2, 2},   \
-                        4);                                                    \
-  native_math_test_log(deviceQueue, TYPE{-1, -1, -1, -1}, TYPE{1, 1, 1, 1},    \
-                       0);                                                     \
-  native_math_test_log2(deviceQueue, TYPE{-1, -1, -1, -1}, TYPE{4, 4, 4, 4},   \
-                        2);                                                    \
-  native_math_test_log10(deviceQueue, TYPE{-1, -1, -1, -1},                    \
-                         TYPE{100, 100, 100, 100}, 2);                         \
-  native_math_test_sqrt(deviceQueue, TYPE{-1, -1, -1, -1}, TYPE{4, 4, 4, 4},   \
-                        2);                                                    \
-  native_math_test_rsqrt(deviceQueue, TYPE{-1, -1, -1, -1},                    \
-                         TYPE{0.25, 0.25, 0.25, 0.25}, 2);                     \
-  native_math_test_recip(deviceQueue, TYPE{-1, -1, -1, -1},                    \
-                         TYPE{0.25, 0.25, 0.25, 0.25}, 4);                     \
-  native_math_test_2_powr(deviceQueue, TYPE{-1, -1, -1, -1}, TYPE{2, 2, 2, 2}, \
-                          TYPE{2, 2, 2, 2}, 4);                                \
-  native_math_test_2_divide(deviceQueue, TYPE{-1, -1, -1, -1},                 \
-                            TYPE{4, 4, 4, 4}, TYPE{2, 2, 2, 2}, 2);
+template <typename T> void native_tests_4(queue &deviceQueue) {
+  native_math_test_sin(deviceQueue, T{-1, -1, -1, -1}, T{0, 0, 0, 0}, 0);
+  native_math_test_tan(deviceQueue, T{-1, -1, -1, -1}, T{0, 0, 0, 0}, 0);
+  native_math_test_cos(deviceQueue, T{-1, -1, -1, -1}, T{0, 0, 0, 0}, 1);
+  native_math_test_exp(deviceQueue, T{-1, -1, -1, -1}, T{0, 0, 0, 0}, 1);
+  native_math_test_exp2(deviceQueue, T{-1, -1, -1, -1}, T{2, 2, 2, 2}, 4);
+  native_math_test_log(deviceQueue, T{-1, -1, -1, -1}, T{1, 1, 1, 1}, 0);
+  native_math_test_log2(deviceQueue, T{-1, -1, -1, -1}, T{4, 4, 4, 4}, 2);
+  native_math_test_log10(deviceQueue, T{-1, -1, -1, -1}, T{100, 100, 100, 100},
+                         2);
+  native_math_test_sqrt(deviceQueue, T{-1, -1, -1, -1}, T{4, 4, 4, 4}, 2);
+  native_math_test_rsqrt(deviceQueue, T{-1, -1, -1, -1},
+                         T{0.25, 0.25, 0.25, 0.25}, 2);
+  native_math_test_recip(deviceQueue, T{-1, -1, -1, -1},
+                         T{0.25, 0.25, 0.25, 0.25}, 4);
+  native_math_test_2_powr(deviceQueue, T{-1, -1, -1, -1}, T{2, 2, 2, 2},
+                          T{2, 2, 2, 2}, 4);
+  native_math_test_2_divide(deviceQueue, T{-1, -1, -1, -1}, T{4, 4, 4, 4},
+                            T{2, 2, 2, 2}, 2);
+}
 
 int main() {
   queue deviceQueue;
 
-  NATIVE_TESTS_3(float3)
-  NATIVE_TESTS_3(marray<float COMMA 3>)
+  native_tests_3<float3>(deviceQueue);
+  native_tests_3<marray<float, 3>>(deviceQueue);
 
-  NATIVE_TESTS_4(float4)
-  NATIVE_TESTS_4(marray<float COMMA 4>)
+  native_tests_4<float4>(deviceQueue);
+  native_tests_4<marray<float, 4>>(deviceQueue);
 
   std::cout << "Pass" << std::endl;
   return 0;
