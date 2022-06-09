@@ -195,15 +195,15 @@ void test(queue &q) {
                                 accB.get_pointer() + (k * K * Big_N) + (n * N),
                                 Big_N);
 
-            // round values to correct precision if using tf32
-            if constexpr (std::is_same<T3, precision::tf32>::value) {
-              auto wi_size = sub_a.wi_marray.size();
-              assert(wi_size == sub_b.wi_marray.size());
-              for (auto i = 0; i < wi_size; ++i) {
-                sub_a.wi_marray[i] = round_to_tf32(sub_a.wi_marray[i]);
-                sub_b.wi_marray[i] = round_to_tf32(sub_b.wi_marray[i]);
+              // round values to correct precision if using tf32
+              if constexpr (std::is_same<T3, precision::tf32>::value) {
+                auto wi_size = sub_a.wi_marray.size();
+                assert(wi_size == sub_b.wi_marray.size());
+                for (auto i = 0; i < wi_size; ++i) {
+                  sub_a.wi_marray[i] = round_to_tf32(sub_a.wi_marray[i]);
+                  sub_b.wi_marray[i] = round_to_tf32(sub_b.wi_marray[i]);
+                }
               }
-            }
 
               sub_c = joint_matrix_mad(sg, sub_a, sub_b, sub_c);
             }
