@@ -4,9 +4,9 @@
 // RUN: %CPU_RUN_PLACEHOLDER %t.out
 // RUN: %ACC_RUN_PLACEHOLDER %t.out
 
-// CUDA and HIP backends have no support for the generic address space yet.
+// HIP backend has no support for the generic address space yet.
 // Barrier is not supported on host.
-// XFAIL: cuda, hip, host
+// XFAIL: hip, host
 
 #define TEST_GENERIC_IN_LOCAL 1
 
