@@ -80,7 +80,7 @@ T2 matrix_ref_mn(const int &m, const int &n, T1 *A, T1 *B, T2 *C) {
 }
 
 template <typename T1, typename T2, size_t Sub_Tiles_M, size_t Sub_Tiles_K,
-          size_t Sub_Tiles_N, size_t M, size_t K, size_t N>
+          size_t Sub_Tiles_N, size_t M, size_t K, size_t N, typename T3 = T1>
 void test(queue &q) {
 
   constexpr auto Big_M =
@@ -171,10 +171,10 @@ void test(queue &q) {
                 item.get_group().get_group_id()[1]; // column id of current
                                                     // submatrix of BIG C matrix
 
-            joint_matrix<T1, matrix_use::a, M, K, matrix_layout::row_major>
+            joint_matrix<T3, matrix_use::a, M, K, matrix_layout::row_major>
                 sub_a;
 
-            joint_matrix<T1, matrix_use::b, K, N, matrix_layout::row_major>
+            joint_matrix<T3, matrix_use::b, K, N, matrix_layout::row_major>
                 sub_b;
 
             joint_matrix<T2, matrix_use::accumulator, M, N,
@@ -194,6 +194,16 @@ void test(queue &q) {
               joint_matrix_load(sg, sub_b,
                                 accB.get_pointer() + (k * K * Big_N) + (n * N),
                                 Big_N);
+
+            // round values to correct precision if using tf32
+            if constexpr (std::is_same<T3, precision::tf32>::value) {
+              auto wi_size = sub_a.wi_marray.size();
+              assert(wi_size == sub_b.wi_marray.size());
+              for (auto i = 0; i < wi_size; ++i) {
+                sub_a.wi_marray[i] = round_to_tf32(sub_a.wi_marray[i]);
+                sub_b.wi_marray[i] = round_to_tf32(sub_b.wi_marray[i]);
+              }
+            }
 
               sub_c = joint_matrix_mad(sg, sub_a, sub_b, sub_c);
             }
@@ -257,6 +267,10 @@ int main() {
     test<bfloat16, float, SUB_TILES_M, SUB_TILES_K, SUB_TILES_N, 16, 16, 16>(Q);
     test<bfloat16, float, SUB_TILES_M, SUB_TILES_K, SUB_TILES_N, 8, 16, 32>(Q);
     test<bfloat16, float, SUB_TILES_M, SUB_TILES_K, SUB_TILES_N, 32, 16, 8>(Q);
+    
+    // A/B tf32
+    test<float, float, SUB_TILES_M, SUB_TILES_K, SUB_TILES_N, 16, 8, 16,
+         precision::tf32>(Q);
   }
   return 0;
 };

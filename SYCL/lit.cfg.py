@@ -92,6 +92,12 @@ if config.extra_environment:
            llvm_config.with_environment(var,"")
 
 config.substitutions.append( ('%sycl_libs_dir',  config.sycl_libs_dir ) )
+if platform.system() == "Windows":
+    config.substitutions.append( ('%sycl_static_libs_dir',  config.sycl_libs_dir + '/../lib' ) )
+    config.substitutions.append( ('%obj_ext', '.obj') )
+elif platform.system() == "Linux":
+    config.substitutions.append( ('%sycl_static_libs_dir',  config.sycl_libs_dir ) )
+    config.substitutions.append( ('%obj_ext', '.o') )
 config.substitutions.append( ('%sycl_include',  config.sycl_include ) )
 
 if lit_config.params.get('gpu-intel-dg1', False):
