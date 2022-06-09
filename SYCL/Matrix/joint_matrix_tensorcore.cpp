@@ -1,5 +1,4 @@
 // REQUIRES: cuda
-
 // RUN: %clangxx -fsycl -fsycl-targets=%sycl_triple -Xsycl-target-backend --cuda-gpu-arch=sm_80 -DSYCL_EXT_ONEAPI_MATRIX=3 %s -o %t.out
 // RUN: %t.out
 //
@@ -196,6 +195,16 @@ void test(queue &q) {
                                 accB.get_pointer() + (k * K * Big_N) + (n * N),
                                 Big_N);
 
+              // round values to correct precision if using tf32
+              if constexpr (std::is_same<T3, precision::tf32>::value) {
+                auto wi_size = sub_a.wi_marray.size();
+                assert(wi_size == sub_b.wi_marray.size());
+                for (auto i = 0; i < wi_size; ++i) {
+                  sub_a.wi_marray[i] = round_to_tf32(sub_a.wi_marray[i]);
+                  sub_b.wi_marray[i] = round_to_tf32(sub_b.wi_marray[i]);
+                }
+              }
+
               sub_c = joint_matrix_mad(sg, sub_a, sub_b, sub_c);
             }
             joint_matrix_store(
@@ -255,12 +264,13 @@ int main() {
     test<uint16_t, float, SUB_TILES_M, SUB_TILES_K, SUB_TILES_N, 8, 16, 32>(Q);
     test<uint16_t, float, SUB_TILES_M, SUB_TILES_K, SUB_TILES_N, 32, 16, 8>(Q);
 
-    // A/B tf32
-    test<float, float, SUB_TILES_M, SUB_TILES_K, SUB_TILES_N, 16, 8, 16,
-         precision::tf32>(Q);
     test<bfloat16, float, SUB_TILES_M, SUB_TILES_K, SUB_TILES_N, 16, 16, 16>(Q);
     test<bfloat16, float, SUB_TILES_M, SUB_TILES_K, SUB_TILES_N, 8, 16, 32>(Q);
     test<bfloat16, float, SUB_TILES_M, SUB_TILES_K, SUB_TILES_N, 32, 16, 8>(Q);
+
+    // A/B tf32
+    test<float, float, SUB_TILES_M, SUB_TILES_K, SUB_TILES_N, 16, 8, 16,
+         precision::tf32>(Q);
   }
   return 0;
 };
