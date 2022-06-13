@@ -7,7 +7,7 @@
 // supported for the Nvidia matrix extension, although some JIT optimizations
 // are performed at the level of the PTX assembly code.
 
-#include <CL/sycl.hpp>
+#include <sycl/sycl.hpp>
 
 using namespace sycl;
 using namespace sycl::ext::oneapi::experimental::matrix;
