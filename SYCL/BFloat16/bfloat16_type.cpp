@@ -1,4 +1,6 @@
 // UNSUPPORTED: cuda || hip
+// Note: cuda is supported and tested in bfloat16_type_cuda.cpp.
+//       cuda compilation requires specifying the sm version.
 // RUN: %clangxx -fsycl -fsycl-targets=%sycl_triple %s -o %t.out
 // TODO currently the feature isn't supported on most of the devices
 //      need to enable the test when the aspect and device_if feature are
