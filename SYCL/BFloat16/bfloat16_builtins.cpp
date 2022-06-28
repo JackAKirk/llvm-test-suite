@@ -218,12 +218,7 @@ bool check(float a, float b) {
 int main() {
   queue q;
 
-  auto computeCapability =
-      std::stof(q.get_device().get_info<sycl::info::device::backend_version>());
-  // TODO check for "ext_oneapi_bfloat16" aspect instead once aspect is
-  // supported. Since this test only covers CUDA the current check is
-  // functionally equivalent to "ext_oneapi_bfloat16".
-  if (computeCapability >= 8.0) {
+  if (q.get_device().has(aspect::ext_oneapi_bfloat16)) {
     std::vector<float> a(N), b(N), c(N);
     int err = 0;
 
