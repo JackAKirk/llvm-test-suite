@@ -13,8 +13,8 @@
 #include <sycl/sycl.hpp>
 
 using namespace sycl;
+using namespace sycl::ext::oneapi::experimental;
 using namespace sycl::ext::oneapi::experimental::matrix;
-using sycl::ext::oneapi::experimental::bfloat16;
 
 #define SG_SZ 32
 
