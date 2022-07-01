@@ -7,7 +7,8 @@
 // OpenCL CPU driver does not support cl_khr_fp16 extension for this reason this
 // test is compiled with the -fsycl-device-code-split flag
 
-#include <CL/sycl.hpp>
+#include <sycl/ext/oneapi/experimental/builtins.hpp>
+#include <sycl/sycl.hpp>
 #include <cassert>
 
 template <typename T> void assert_out_of_bound(T val, T lower, T upper) {

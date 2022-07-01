@@ -6,7 +6,7 @@
 // for the Nvidia case.  DPC++ JIT compilation is not
 // supported for the Nvidia matrix extension, although some JIT optimizations
 // are performed at the level of the PTX assembly code.
-#include <sycl/ext/oneapi/experimental/bfloat16.hpp>
+
 #include <sycl/sycl.hpp>
 
 using namespace sycl;
