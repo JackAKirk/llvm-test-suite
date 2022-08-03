@@ -7,7 +7,7 @@
 // supported for the Nvidia matrix extension, although some JIT optimizations
 // are performed at the level of the PTX assembly code.
 
-#include <CL/sycl.hpp>
+#include <sycl/sycl.hpp>
 
 using namespace sycl;
 using namespace sycl::ext::oneapi::experimental::matrix;
@@ -48,16 +48,17 @@ int32_t matrix_ref_mn(const int &m, const int &n, uint32_t *A, uint32_t *B,
   int32_t res = C[m * Big_N + n];
 
   {
-    for (int k = 0; k < Big_K; k++)
+    for (int k = 0; k < Big_K / 32; k++)
       if constexpr (std::is_same<BinaryOperation,
-                                 sycl::bit_and<uint32_t>>::value) {
-        res += popcount(A[m * Big_K + k] & B[n * Big_K + k]);
+                                 sycl::bit_and<precision::b1>>::value) {
+        res += popcount(A[m * (Big_K / 32) + k] & B[n * (Big_K / 32) + k]);
       } else if constexpr (std::is_same<BinaryOperation,
-                                        sycl::bit_xor<uint32_t>>::value) {
-        res += popcount(A[m * Big_K + k] ^ B[n * Big_K + k]);
+                                        sycl::bit_xor<precision::b1>>::value) {
+        res += popcount(A[m * (Big_K / 32) + k] ^ B[n * (Big_K / 32) + k]);
       } else {
         throw std::runtime_error(
-            "Only sycl::bit_xor<uint32_t> and sycl::bit_and<uint32_t> "
+            "Only sycl::bit_xor<precision::b1> and "
+            "sycl::bit_and<precision::b1> "
             "operators are currently supported for binary matrix "
             "multiplication and addition.");
       }
@@ -75,17 +76,16 @@ void test(BinaryOperation Op) {
   constexpr auto Big_N =
       Sub_Tiles_N *
       N; // total number of N dimension matrix elements for the "Big matrix".
-  constexpr auto Big_K =
-      Sub_Tiles_K * K; // total number of K dimension matrix elements for the
-                       // "Big matrix" divided by 32.
+  constexpr auto Big_K = Sub_Tiles_K * K; // total number of K dimension matrix
+                                          // elements for the "Big matrix".
 
   // Each bit of each uint32_t A/B array element is an element of a single-bit
   // matrix. joint_matrix_bmad performs Binary Dot Products on these matrices
   // (see M. Rastegari et al. Computer Vision – ECCV 2016, 525-542 and A. Li et
   // al. IEEE Transactions on Parallel and Distributed Systems, 32(7):1878-1891,
   // 2021))
-  uint32_t A[Big_M * Big_K];
-  uint32_t B[Big_K * Big_N];
+  uint32_t A[Big_M * (Big_K / 32)];
+  uint32_t B[(Big_K / 32) * Big_N];
   int32_t C[Big_M * Big_N];
   int32_t D[Big_M * Big_N];
 
@@ -98,15 +98,15 @@ void test(BinaryOperation Op) {
 
   // Randomly set each of the 32 single-bit matrix elements held by each array
   // element of A/B
-  for (int i = 0; i < Big_M * Big_K; i++) {
+  for (int i = 0; i < Big_M * (Big_K / 32); i++) {
     A[i] = (uint32_t)rand();
   }
-  for (int i = 0; i < Big_K * Big_N; i++) {
+  for (int i = 0; i < (Big_K / 32) * Big_N; i++) {
     B[i] = (uint32_t)rand();
   }
 
-  buffer<uint32_t, 1> bufA(A, range<1>(Big_M * Big_K));
-  buffer<uint32_t, 1> bufB(B, range<1>(Big_K * Big_N));
+  buffer<uint32_t, 1> bufA(A, range<1>(Big_M * (Big_K / 32)));
+  buffer<uint32_t, 1> bufB(B, range<1>((Big_K / 32) * Big_N));
   buffer<int32_t, 1> bufC(C, range<1>(Big_M * Big_N));
   buffer<int32_t, 1> bufD(D, range<1>(Big_M * Big_N));
 
@@ -120,48 +120,49 @@ void test(BinaryOperation Op) {
     range<2> LocalRange = {1, N_THREADS_PER_MATRIX_OP};
     range<2> GlobalRange = {Sub_Tiles_M, Sub_Tiles_N * N_THREADS_PER_MATRIX_OP};
 
-    cgh.parallel_for<KernelName<M, K, N, BinaryOperation>>(
-        nd_range<2>(GlobalRange, LocalRange),
-        [=](nd_item<2> item) [[sycl::reqd_work_group_size(1, 1, 32)]] {
-          sycl::sub_group sg = item.get_sub_group();
-          const auto m =
-              item.get_group()
-                  .get_id()[0]; // row id of current submatrix of BIG C matrix
-          const auto n =
-              item.get_group().get_id()[1]; // column id of current
-                                            // submatrix of BIG C matrix
-          // matrix_use::a must have matrix_layout::row_major for single-bit
-          // cases
-          joint_matrix<uint32_t, matrix_use::a, M, K, matrix_layout::row_major>
-              sub_a;
-          // matrix_use::b must have matrix_layout::col_major for single-bit
-          // cases
-          joint_matrix<uint32_t, matrix_use::b, K, N, matrix_layout::col_major>
-              sub_b;
+    cgh.parallel_for<KernelName<
+        M, K, N, BinaryOperation>>(nd_range<2>(GlobalRange, LocalRange), [=
+    ](nd_item<2> item)[[sycl::reqd_work_group_size(1, 1, 32)]] {
+      sycl::sub_group sg = item.get_sub_group();
+      const auto m =
+          item.get_group()
+              .get_id()[0]; // row id of current submatrix of BIG C matrix
+      const auto n = item.get_group().get_id()[1]; // column id of current
+                                                   // submatrix of BIG C matrix
+      // matrix_use::a must have matrix_layout::row_major for single-bit
+      // cases
+      joint_matrix<precision::b1, matrix_use::a, M, K, matrix_layout::row_major>
+          sub_a;
+      // matrix_use::b must have matrix_layout::col_major for single-bit
+      // cases
+      joint_matrix<precision::b1, matrix_use::b, K, N, matrix_layout::col_major>
+          sub_b;
 
-          joint_matrix<int32_t, matrix_use::accumulator, M, N,
-                       matrix_layout::row_major>
-              sub_c;
+      joint_matrix<int32_t, matrix_use::accumulator, M, N,
+                   matrix_layout::row_major>
+          sub_c;
 
-          joint_matrix_load(
-              sg, sub_c, accC.get_pointer() + (m * M) * Big_N + n * N, Big_N);
+      joint_matrix_load(sg, sub_c, accC.get_pointer() + (m * M) * Big_N + n * N,
+                        Big_N);
 
-          for (int k = 0; k < Sub_Tiles_K;
-               k++) // row/col id of current submatrix of BIG A/B matrices
-          {
-            joint_matrix_load(sg, sub_a,
-                              accA.get_pointer() + (k * K) + (m * M * Big_K),
-                              Big_K);
+      for (int k = 0; k < Sub_Tiles_K;
+           k++) // row/col id of current submatrix of BIG A/B matrices
+      {
+        joint_matrix_load(sg, sub_a,
+                          accA.get_pointer() + (k * (K / 32)) +
+                              (m * M * (Big_K / 32)),
+                          Big_K);
 
-            joint_matrix_load(sg, sub_b,
-                              accB.get_pointer() + (n * N * Big_K) + (k * K),
-                              Big_K);
+        joint_matrix_load(sg, sub_b,
+                          accB.get_pointer() + (n * N * (Big_K / 32)) +
+                              (k * (K / 32)),
+                          Big_K);
 
-            sub_c = joint_matrix_bmad(sg, sub_a, sub_b, sub_c, Op);
-          }
-          joint_matrix_store(
-              sg, sub_c, accD.get_pointer() + (m * M) * Big_N + n * N, Big_N);
-        });
+        sub_c = joint_matrix_bmad(sg, sub_a, sub_b, sub_c, Op);
+      }
+      joint_matrix_store(sg, sub_c,
+                         accD.get_pointer() + (m * M) * Big_N + n * N, Big_N);
+    });
   });
 
   q.wait();
@@ -176,10 +177,10 @@ void test(BinaryOperation Op) {
 
 int main() {
 
-  test<SUB_TILES_M, SUB_TILES_K, SUB_TILES_N, 8, 4, 8>(
-      sycl::bit_and<uint32_t>());
-  test<SUB_TILES_M, SUB_TILES_K, SUB_TILES_N, 8, 4, 8>(
-      sycl::bit_xor<uint32_t>());
+  test<SUB_TILES_M, SUB_TILES_K, SUB_TILES_N, 8, 128, 8>(
+      sycl::bit_and<precision::b1>());
+  test<SUB_TILES_M, SUB_TILES_K, SUB_TILES_N, 8, 128, 8>(
+      sycl::bit_xor<precision::b1>());
 
   return 0;
 };
