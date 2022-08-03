@@ -4,6 +4,9 @@
 // Hip is missing some of the parameters tested here so it fails with NVIDIA
 // XFAIL: hip_nvidia
 
+// XFAIL: hip
+// Expected failure because hip does not have atomic64 check implementation
+
 //==--------------- aspects.cpp - SYCL device test ------------------------==//
 //
 // Returns the various aspects of a device  and platform.
@@ -53,6 +56,9 @@ int main() {
     }
     if (plt.has(aspect::fp64)) {
       std::cout << "  fp64" << std::endl;
+    }
+    if (plt.has(aspect::ext_oneapi_bfloat16)) {
+      std::cout << " ext_oneapi_bfloat16" << std::endl;
     }
     if (plt.has(aspect::int64_base_atomics)) {
       std::cout << "  base atomic operations" << std::endl;

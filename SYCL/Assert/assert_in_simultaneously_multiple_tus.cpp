@@ -1,6 +1,7 @@
-// FIXME unsupported on CUDA and HIP until fallback libdevice becomes available
-// UNSUPPORTED: cuda || hip
-// RUN: %clangxx -DSYCL_ENABLE_FALLBACK_ASSERT -fsycl -fsycl-targets=%sycl_triple -I %S/Inputs %s %S/Inputs/kernels_in_file2.cpp -o %t.out %threads_lib
+// FIXME unsupported on HIP until fallback libdevice becomes available
+// FIXME flaky output on Level Zero
+// UNSUPPORTED: hip || level_zero
+// RUN: %clangxx -DSYCL_FALLBACK_ASSERT=1 -fsycl -fsycl-targets=%sycl_triple -I %S/Inputs %s %S/Inputs/kernels_in_file2.cpp -o %t.out %threads_lib
 // RUN: %CPU_RUN_PLACEHOLDER %t.out &> %t.txt || true
 // RUN: %CPU_RUN_PLACEHOLDER FileCheck %s --input-file %t.txt
 //
@@ -23,6 +24,7 @@
 
 #include "Inputs/kernels_in_file2.hpp"
 #include <CL/sycl.hpp>
+#include <cstdio>
 #include <iostream>
 #include <thread>
 
@@ -81,6 +83,15 @@ void runTestForTid(queue *Q, size_t Tid) {
 }
 
 int main(int Argc, const char *Argv[]) {
+#ifndef __SYCL_DEVICE_ONLY__
+  // On windows stderr output becomes messed up if several thread
+  // output simultaneously. Hence, setting explicit line buffering here.
+  if (setvbuf(stderr, nullptr, _IOLBF, BUFSIZ)) {
+    std::cerr << "Can't set line-buffering mode fo stderr\n";
+    return 1;
+  }
+#endif
+
   std::vector<std::thread> threadPool;
   threadPool.reserve(NUM_THREADS);
 

@@ -17,13 +17,13 @@
 
 #include <CL/sycl.hpp>
 #include <iostream>
-#include <sycl/ext/intel/experimental/esimd.hpp>
+#include <sycl/ext/intel/esimd.hpp>
 
 using namespace cl::sycl;
 
 constexpr int MASKED_LANE_NUM_REV = 1;
-constexpr int NUM_RGBA_CHANNELS = get_num_channels_enabled(
-    sycl::ext::intel::experimental::esimd::rgba_channel_mask::ABGR);
+constexpr int NUM_RGBA_CHANNELS =
+    get_num_channels_enabled(sycl::ext::intel::esimd::rgba_channel_mask::ABGR);
 
 template <typename T, unsigned VL, unsigned STRIDE, auto CH_MASK>
 struct Kernel {
@@ -32,7 +32,7 @@ struct Kernel {
   Kernel(T *bufIn, T *bufOut) : bufIn(bufIn), bufOut(bufOut) {}
 
   void operator()(id<1> i) const SYCL_ESIMD_KERNEL {
-    using namespace sycl::ext::intel::experimental::esimd;
+    using namespace sycl::ext::intel::esimd;
     constexpr int numChannels = get_num_channels_enabled(CH_MASK);
 
     // every workitem accesses contiguous block of VL * STRIDE elements,
@@ -40,19 +40,26 @@ struct Kernel {
     uint32_t global_offset = i * VL * STRIDE * NUM_RGBA_CHANNELS;
 
     simd<uint32_t, VL> byteOffsets(0, STRIDE * sizeof(T) * NUM_RGBA_CHANNELS);
-    simd<T, VL *numChannels> v =
-        gather_rgba<T, VL, CH_MASK>(bufIn + global_offset, byteOffsets);
+    simd<T, VL * numChannels> v;
+    if constexpr (CH_MASK == rgba_channel_mask::ABGR)
+      // Check that the default mask value is ABGR.
+      v = gather_rgba(bufIn + global_offset, byteOffsets);
+    else
+      v = gather_rgba<CH_MASK>(bufIn + global_offset, byteOffsets);
     v += (int)i;
 
     simd_mask<VL> pred = 1;
     pred[VL - MASKED_LANE_NUM_REV] = 0; // mask out the last lane
-    scatter_rgba<T, VL, CH_MASK>(bufOut + global_offset, byteOffsets, v, pred);
+    if constexpr (CH_MASK == rgba_channel_mask::ABGR)
+      // Check that the default mask value is ABGR.
+      scatter_rgba(bufOut + global_offset, byteOffsets, v, pred);
+    else
+      scatter_rgba<CH_MASK>(bufOut + global_offset, byteOffsets, v, pred);
   }
 };
 
-std::string convertMaskToStr(
-    sycl::ext::intel::experimental::esimd::rgba_channel_mask mask) {
-  using namespace sycl::ext::intel::experimental::esimd;
+std::string convertMaskToStr(sycl::ext::intel::esimd::rgba_channel_mask mask) {
+  using namespace sycl::ext::intel::esimd;
   switch (mask) {
   case rgba_channel_mask::R:
     return "R";
@@ -70,12 +77,12 @@ template <typename T, unsigned VL, unsigned STRIDE, auto CH_MASK>
 bool test(queue q) {
   size_t numWorkItems = 2;
   size_t size = VL * STRIDE * NUM_RGBA_CHANNELS * numWorkItems;
-  using namespace sycl::ext::intel::experimental::esimd;
+  using namespace sycl::ext::intel::esimd;
   constexpr int numChannels = get_num_channels_enabled(CH_MASK);
 
   std::cout << "Testing T=" << typeid(T).name() << " VL=" << VL
             << " STRIDE=" << STRIDE << " MASK=" << convertMaskToStr(CH_MASK)
-            << "...\n";
+            << "...\t";
 
   T *A = malloc_shared<T>(size, q);
   T *B = malloc_shared<T>(size, q);
@@ -124,14 +131,14 @@ bool test(queue q) {
   for (unsigned i = 0; i < size; ++i) {
     if (B[i] != gold[i]) {
       if (++err_cnt < 35) {
-        std::cout << "failed at index " << i << ": " << B[i]
-                  << " != " << gold[i] << " (gold)\n";
+        std::cout << "\nFAILED at index " << i << ": " << B[i]
+                  << " != " << gold[i] << " (gold)";
       }
     }
   }
 
   if (err_cnt > 0) {
-    std::cout << "  pass rate: "
+    std::cout << "\n  pass rate: "
               << ((float)(size - err_cnt) / (float)size) * 100.0f << "% ("
               << (size - err_cnt) << "/" << size << ")\n";
   }
@@ -140,12 +147,13 @@ bool test(queue q) {
   free(B, q);
   delete[] gold;
 
-  std::cout << (err_cnt > 0 ? "  FAILED\n" : "  Passed\n");
-  return err_cnt > 0 ? false : true;
+  if (err_cnt == 0)
+    std::cout << "Passed\n";
+  return err_cnt == 0;
 }
 
 template <typename T, unsigned VL, unsigned STRIDE> bool test(queue q) {
-  using namespace sycl::ext::intel::experimental::esimd;
+  using namespace sycl::ext::intel::esimd;
   bool passed = true;
   passed &= test<T, VL, STRIDE, rgba_channel_mask::R>(q);
   passed &= test<T, VL, STRIDE, rgba_channel_mask::GR>(q);
@@ -173,5 +181,13 @@ int main(void) {
   passed &= test<float, 32, 3>(q);
   passed &= test<float, 32, 8>(q);
 
+  passed &= test<int, 8, 1>(q);
+  passed &= test<int, 8, 3>(q);
+  passed &= test<int, 8, 8>(q);
+  passed &= test<float, 8, 1>(q);
+  passed &= test<float, 8, 2>(q);
+  passed &= test<float, 8, 4>(q);
+
+  std::cout << (passed ? "All tests passed.\n" : "Some tests failed!\n");
   return passed ? 0 : 1;
 }

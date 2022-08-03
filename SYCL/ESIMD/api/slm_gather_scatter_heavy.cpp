@@ -7,6 +7,8 @@
 //===----------------------------------------------------------------------===//
 // REQUIRES: gpu
 // UNSUPPORTED: cuda || hip
+// TODO: esimd_emulator fails due to outdated memory intrinsic
+// XFAIL: esimd_emulator
 // RUN: %clangxx -fsycl %s -o %t.out
 // RUN: %GPU_RUN_PLACEHOLDER %t.out
 //
@@ -29,15 +31,15 @@
 #include <CL/sycl.hpp>
 #include <iomanip>
 #include <iostream>
-#include <sycl/ext/intel/experimental/esimd.hpp>
+#include <sycl/ext/intel/esimd.hpp>
 
 using namespace cl::sycl;
 
 template <class T>
 using Acc = accessor<T, 1, access_mode::read_write, access::target::device>;
 
-using namespace sycl::ext::intel::experimental;
-using namespace sycl::ext::intel::experimental::esimd;
+using namespace sycl::ext::intel;
+using namespace sycl::ext::intel::esimd;
 constexpr int DEFAULT_VAL = -1;
 
 // Test case IDs - whether to use scalar or vector memory access, how to
@@ -109,7 +111,7 @@ struct GatherKernel : KernelBase<T, VL, STRIDE> {
   static const char *get_name() { return "slm_gather"; }
 
   void operator()(nd_item<1> i) const SYCL_ESIMD_KERNEL {
-    slm_init(B::SLM_CHUNK_SIZE);
+    slm_init<B::SLM_CHUNK_SIZE>();
 
     // first, read data w/o shuffling into SLM
     simd<T, VL> val;
@@ -172,7 +174,7 @@ struct ScatterKernel : KernelBase<T, VL, STRIDE> {
   static const char *get_name() { return "slm_scatter"; }
 
   ESIMD_INLINE void operator()(nd_item<1> i) const SYCL_ESIMD_KERNEL {
-    slm_init(B::SLM_CHUNK_SIZE);
+    slm_init<B::SLM_CHUNK_SIZE>();
 
     // first, read data from memory into registers w/o shuffling
     simd<T, VL> val;
@@ -240,7 +242,7 @@ struct GatherKernel<T, 1, STRIDE, TEST_VECTOR_NO_MASK>
   static const char *get_name() { return "slm_gather_vl1"; }
 
   void operator()(nd_item<1> i) const SYCL_ESIMD_KERNEL {
-    slm_init(B::SLM_CHUNK_SIZE);
+    slm_init<B::SLM_CHUNK_SIZE>();
 
     // first, read data into SLM
     T val = scalar_load<T>(B::acc_in, B::get_wi_offset(i) * sizeof(T));
@@ -266,7 +268,7 @@ struct ScatterKernel<T, 1, STRIDE, TEST_VECTOR_NO_MASK>
   static const char *get_name() { return "slm_scatter_vl1"; }
 
   ESIMD_INLINE void operator()(nd_item<1> i) const SYCL_ESIMD_KERNEL {
-    slm_init(B::SLM_CHUNK_SIZE);
+    slm_init<B::SLM_CHUNK_SIZE>();
 
     // first, read data from memory into registers
     simd<T, 1> val;
@@ -424,13 +426,11 @@ template <class T, unsigned VL, unsigned STRIDE> bool test(queue q) {
   passed &= test_impl<T, VL, STRIDE, MEM_GATHER, TEST_SCALAR>(q);
   passed &= test_impl<T, VL, STRIDE, MEM_GATHER, TEST_VECTOR_NO_MASK>(q);
   passed &= test_impl<T, VL, STRIDE, MEM_GATHER, TEST_VECTOR_CONST_MASK>(q);
-  // TODO FIXME enable TEST_VECTOR_VAR_MASK test cases once the VCBE bug with
-  // handling non-compile-time constant masks in scatter is fixed.
-  // passed &= test_impl<T, VL, STRIDE, MEM_GATHER, TEST_VECTOR_VAR_MASK>(q);
+  passed &= test_impl<T, VL, STRIDE, MEM_GATHER, TEST_VECTOR_VAR_MASK>(q);
   passed &= test_impl<T, VL, STRIDE, MEM_SCATTER, TEST_SCALAR>(q);
   passed &= test_impl<T, VL, STRIDE, MEM_SCATTER, TEST_VECTOR_NO_MASK>(q);
   passed &= test_impl<T, VL, STRIDE, MEM_SCATTER, TEST_VECTOR_CONST_MASK>(q);
-  // passed &= test_impl<T, VL, STRIDE, MEM_SCATTER, TEST_VECTOR_VAR_MASK>(q);
+  passed &= test_impl<T, VL, STRIDE, MEM_SCATTER, TEST_VECTOR_VAR_MASK>(q);
   return passed;
 }
 

@@ -4,7 +4,6 @@
 // RUN: env SYCL_CACHE_PERSISTENT=1 %GPU_RUN_PLACEHOLDER %t_gpu.out
 // RUN: env SYCL_CACHE_PERSISTENT=1 %ACC_RUN_PLACEHOLDER %t.out
 // XFAIL: cuda || hip
-// UNSUPPORTED: ze_debug-1,ze_debug4
 #include <CL/sycl.hpp>
 
 SYCL_EXTERNAL
@@ -39,7 +38,8 @@ void test() {
         Result = e.get_cl_code();
       } else {
         // Exception constantly adds info on its error code in the message
-        assert(Msg.find_first_of(e.what()) == 0 && "CL_BUILD_PROGRAM_FAILURE");
+        assert(Msg.find_first_of(e.what()) == 0 &&
+               "PI_ERROR_BUILD_PROGRAM_FAILURE");
         assert(Result == e.get_cl_code() && "Exception code differs");
       }
     } catch (...) {

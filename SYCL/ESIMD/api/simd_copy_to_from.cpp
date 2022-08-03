@@ -24,7 +24,7 @@
 #include <malloc.h>
 #endif // _WIN32
 
-#include <sycl/ext/intel/experimental/esimd.hpp>
+#include <sycl/ext/intel/esimd.hpp>
 
 // Workaround for absense of std::aligned_alloc on Windows.
 #ifdef _WIN32
@@ -36,8 +36,8 @@
 #endif // _WIN32
 
 using namespace cl::sycl;
-using namespace sycl::ext::intel::experimental;
-using namespace sycl::ext::intel::experimental::esimd;
+using namespace sycl::ext::intel;
+using namespace sycl::ext::intel::esimd;
 
 template <typename T, int N, typename Flags>
 bool testUSM(queue &Q, T *Src, T *Dst, unsigned Off, Flags) {
@@ -231,6 +231,7 @@ int main(void) {
 
   bool Pass = true;
 
+#ifdef ESIMD_TESTS_FULL_COVERAGE
   Pass &= testUSM<int8_t>(Q);
   Pass &= testUSM<uint16_t>(Q);
   Pass &= testUSM<int32_t>(Q);
@@ -246,6 +247,13 @@ int main(void) {
   Pass &= testAcc<float>(Q);
   Pass &= testAcc<double>(Q);
   Pass &= testAcc<half>(Q);
+#else
+  Pass &= testUSM<uint16_t>(Q);
+  Pass &= testUSM<float>(Q);
+
+  Pass &= testAcc<int16_t>(Q);
+  Pass &= testAcc<float>(Q);
+#endif
 
   std::cout << (Pass ? "Test Passed\n" : "Test FAILED\n");
   return Pass ? 0 : 1;

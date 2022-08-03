@@ -11,7 +11,7 @@ int main() {
   constexpr int Size = 100;
   queue Queue;
   auto D = Queue.get_device();
-
+  auto NumOfDevices = Queue.get_context().get_devices().size();
   buffer<::cl_int, 1> Buffer(Size);
   Queue.submit([&](handler &cgh) {
     accessor Accessor{Buffer, cgh, read_write};
@@ -19,7 +19,8 @@ int main() {
       std::cerr << "Integrated GPU should use zeMemAllocHost\n";
     else
       std::cerr << "Discrete GPU should use zeMemAllocDevice\n";
-    cgh.parallel_for<class CreateBuffer>(range<1>(Size), [=](id<1> ID) {});
+    cgh.parallel_for<class CreateBuffer>(range<1>(Size),
+                                         [=](id<1> ID) { Accessor[ID] = 0; });
   });
   Queue.wait();
 

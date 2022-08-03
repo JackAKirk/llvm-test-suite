@@ -1,6 +1,6 @@
 // REQUIRES: level_zero, level_zero_dev_kit
 // RUN: %clangxx -fsycl -fsycl-targets=%sycl_triple %level_zero_options %s -o %t.out
-// RUN: env SYCL_BE=PI_LEVEL_ZERO %GPU_RUN_PLACEHOLDER %t.out
+// RUN: env SYCL_BE=PI_LEVEL_ZERO SYCL_PI_LEVEL_ZERO_DEVICE_SCOPE_EVENTS=2 SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=0 %GPU_RUN_PLACEHOLDER %t.out
 // UNSUPPORTED: ze_debug-1,ze_debug4
 
 // Test for Level Zero interop API
@@ -47,12 +47,16 @@ int main() {
       make_context<backend::ext_oneapi_level_zero>(ContextInteropInput);
 
   backend_input_t<backend::ext_oneapi_level_zero, queue> QueueInteropInput = {
-      ZeQueue, ext::oneapi::level_zero::ownership::keep};
+      ZeQueue, Queue.get_device(), ext::oneapi::level_zero::ownership::keep};
   auto QueueInterop = make_queue<backend::ext_oneapi_level_zero>(
       QueueInteropInput, ContextInterop);
 
   backend_input_t<backend::ext_oneapi_level_zero, event> EventInteropInput = {
       ZeEvent};
+  // ZeEvent isn't owning the resource (it's owned by Event object), we cannot \
+  // transfer ownership that we don't have. As such, use "keep".
+  EventInteropInput.Ownership =
+      cl::sycl::ext::oneapi::level_zero::ownership::keep;
   auto EventInterop = make_event<backend::ext_oneapi_level_zero>(
       EventInteropInput, ContextInterop);
 

@@ -7,6 +7,8 @@
 //===----------------------------------------------------------------------===//
 // REQUIRES: gpu
 // UNSUPPORTED: cuda || hip
+// TODO: esimd_emulator fails due to unimplemented 'half' type
+// XFAIL: esimd_emulator
 // RUN: %clangxx -fsycl %s -o %t.out
 // RUN: %GPU_RUN_PLACEHOLDER %t.out
 
@@ -25,10 +27,10 @@
 
 #include <CL/sycl.hpp>
 #include <iostream>
-#include <sycl/ext/intel/experimental/esimd.hpp>
+#include <sycl/ext/intel/esimd.hpp>
 
 using namespace cl::sycl;
-using namespace sycl::ext::intel::experimental::esimd;
+using namespace sycl::ext::intel::esimd;
 
 template <class T, int VL, class Ops> class TestID;
 
@@ -193,7 +195,7 @@ int main(void) {
 
   auto not_ops = esimd_test::OpSeq<UnOp, UnOp::log_not, UnOp::bit_not>{};
   passed &= test<simd_mask<1>::element_type, 7, decltype(not_ops),
-                 __SEIEED::simd_mask_impl>(not_ops, q);
+                 __ESIMD_DNS::simd_mask_impl>(not_ops, q);
 
   std::cout << (passed ? "Test passed\n" : "Test FAILED\n");
   return passed ? 0 : 1;

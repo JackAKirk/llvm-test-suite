@@ -1,7 +1,7 @@
 // REQUIRES: xptifw, opencl
 // RUN: %clangxx %s -DXPTI_COLLECTOR -DXPTI_CALLBACK_API_EXPORTS %xptifw_lib %shared_lib %fPIC %cxx_std_optionc++17 -o %t_collector.dll
 // RUN: %clangxx -fsycl %s -o %t.out
-// RUN: env XPTI_TRACE_ENABLE=1 XPTI_FRAMEWORK_DISPATCHER=%xptifw_dispatcher XPTI_SUBSCRIBERS=%t_collector.dll SYCL_DEVICE_FILTER=opencl %t.out | FileCheck %s 2>&1
+// RUN: env XPTI_TRACE_ENABLE=1 XPTI_FRAMEWORK_DISPATCHER=%xptifw_dispatcher XPTI_SUBSCRIBERS=%t_collector.dll %BE_RUN_PLACEHOLDER %t.out | FileCheck %s 2>&1
 
 // It looks like order of events diffres on Windows
 #ifdef XPTI_COLLECTOR
@@ -53,18 +53,18 @@ int main() {
   // Create a SYCL queue.
   sycl::queue Queue{};
 
-  // CHECK:{{[0-9]+}}|Create buffer|[[#USERID1:]]|{{.*}}recursion.cpp:17:24|{{.*}}recursion.cpp:17:24
-  // CHECK:{{[0-9]+}}|Associate buffer|[[#USERID1]]|[[#BEID1:]]
-  // CHECK:{{[0-9]+}}|Create buffer|[[#USERID2:]]|{{.*}}recursion.cpp:17:24|{{.*}}recursion.cpp:17:24
-  // CHECK:{{[0-9]+}}|Associate buffer|[[#USERID2]]|[[#BEID2:]]
-  // CHECK:{{[0-9]+}}|Create buffer|[[#USERID3:]]|{{.*}}recursion.cpp:17:24|{{.*}}recursion.cpp:17:24
-  // CHECK:{{[0-9]+}}|Associate buffer|[[#USERID3]]|[[#BEID3:]]
-  // CHECK:{{[0-9]+}}|Release buffer|[[#USERID3]]|[[#BEID3:]]
-  // CHECK:{{[0-9]+}}|Destruct buffer|[[#USERID3]]
-  // CHECK:{{[0-9]+}}|Release buffer|[[#USERID2]]|[[#BEID2:]]
-  // CHECK:{{[0-9]+}}|Destruct buffer|[[#USERID2]]
-  // CHECK:{{[0-9]+}}|Release buffer|[[#USERID1]]|[[#BEID1:]]
-  // CHECK:{{[0-9]+}}|Destruct buffer|[[#USERID1]]
+  // CHECK:{{[0-9]+}}|Create buffer|[[USERID1:0x[0-9,a-f,x]+]]|0x0|{{i(nt)*}}|4|1|{4,0,0}|{{.*}}recursion.cpp:17:24
+  // CHECK:{{[0-9]+}}|Associate buffer|[[USERID1]]|[[BEID1:.*]]
+  // CHECK:{{[0-9]+}}|Create buffer|[[USERID2:0x[0-9,a-f,x]+]]|0x0|{{i(nt)*}}|4|1|{4,0,0}|{{.*}}recursion.cpp:17:24
+  // CHECK:{{[0-9]+}}|Associate buffer|[[USERID2]]|[[BEID2:.*]]
+  // CHECK:{{[0-9]+}}|Create buffer|[[USERID3:0x[0-9,a-f,x]+]]|0x0|{{i(nt)*}}|4|1|{4,0,0}|{{.*}}recursion.cpp:17:24
+  // CHECK:{{[0-9]+}}|Associate buffer|[[USERID3]]|[[BEID3:.*]]
+  // CHECK:{{[0-9]+}}|Release buffer|[[USERID3]]|[[BEID3]]
+  // CHECK:{{[0-9]+}}|Destruct buffer|[[USERID3]]
+  // CHECK:{{[0-9]+}}|Release buffer|[[USERID2]]|[[BEID2]]
+  // CHECK:{{[0-9]+}}|Destruct buffer|[[USERID2]]
+  // CHECK:{{[0-9]+}}|Release buffer|[[USERID1]]|[[BEID1]]
+  // CHECK:{{[0-9]+}}|Destruct buffer|[[USERID1]]
   MismatchFound &= func(Queue, 2);
 
   return MismatchFound;

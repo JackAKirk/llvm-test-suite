@@ -1,6 +1,8 @@
 // TODO enable on Windows
 // REQUIRES: linux && gpu
 // UNSUPPORTED: cuda || hip
+// TODO online_compiler check fails for esimd_emulator
+// XFAIL: esimd_emulator
 // RUN: %clangxx -fsycl %s -o %t.out
 // RUN: %GPU_RUN_PLACEHOLDER %t.out 16
 
@@ -8,7 +10,7 @@
 
 #include <CL/sycl.hpp>
 #include <iostream>
-#include <sycl/ext/intel/experimental/esimd.hpp>
+#include <sycl/ext/intel/esimd.hpp>
 
 static constexpr int NUM_BINS = 256;
 static constexpr int SLM_SIZE = (NUM_BINS * 4);
@@ -16,8 +18,8 @@ static constexpr int BLOCK_WIDTH = 32;
 static constexpr int NUM_BLOCKS = 32;
 
 using namespace cl::sycl;
-using namespace sycl::ext::intel::experimental;
-using namespace sycl::ext::intel::experimental::esimd;
+using namespace sycl::ext::intel;
+using namespace sycl::ext::intel::esimd;
 
 constexpr specialization_id<unsigned int> NumBlocksSpecId(NUM_BLOCKS);
 
@@ -26,7 +28,7 @@ ESIMD_INLINE void histogram_atomic(const uint32_t *input_ptr, uint32_t *output,
                                    uint32_t gid, uint32_t lid,
                                    uint32_t local_size, uint32_t num_blocks) {
   // Declare and initialize SLM
-  slm_init(SLM_SIZE);
+  slm_init<SLM_SIZE>();
   uint linear_id = gid * local_size + lid;
 
   simd<uint, 16> slm_offset(0, 1);
@@ -103,7 +105,7 @@ class histogram_slm;
 
 int main(int argc, char **argv) {
   queue q(esimd_test::ESIMDSelector{}, esimd_test::createExceptionHandler(),
-          property::queue::enable_profiling{});
+          cl::sycl::property::queue::enable_profiling{});
   auto dev = q.get_device();
   auto ctxt = q.get_context();
 

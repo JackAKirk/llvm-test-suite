@@ -14,11 +14,11 @@
 
 #include <CL/sycl.hpp>
 #include <iostream>
-#include <sycl/ext/intel/experimental/esimd.hpp>
+#include <sycl/ext/intel/esimd.hpp>
 
 using namespace cl::sycl;
-using namespace sycl::ext::intel::experimental;
-using namespace sycl::ext::intel::experimental::esimd;
+using namespace sycl::ext::intel;
+using namespace sycl::ext::intel::esimd;
 
 #define LOCAL_SIZE 4
 #define GLOBAL_SIZE 6
@@ -112,7 +112,7 @@ int main(void) {
             uint globalID = ndi.get_global_id(0);
             uint groupID = ndi.get_group(0);
 
-            slm_init(1024);
+            slm_init<1024>();
 
             int grpMemOffset = groupID * groupSize * VL * 4;
 
