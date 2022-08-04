@@ -34,8 +34,7 @@ void verify_conv_explicit(queue &q, buffer<float, 1> &a, range<1> &r,
   q.submit([&](handler &cgh) {
     auto A = a.get_access<access::mode::read_write>(cgh);
     cgh.parallel_for<class calc_conv_impl>(r, [=](id<1> index) {
-      uint16_t AVal =
-          sycl::ext::oneapi::bfloat16::from_float(A[index]);
+      uint16_t AVal = sycl::ext::oneapi::bfloat16::from_float(A[index]);
       A[index] = sycl::ext::oneapi::bfloat16::to_float(AVal);
     });
   });
@@ -149,8 +148,7 @@ void verify_logic(queue &q, buffer<float, 1> &a, buffer<float, 1> &b,
       if (AVal) {
         if (AVal > BVal || AVal >= BVal || AVal < BVal || AVal <= BVal ||
             !BVal) {
-          sycl::ext::oneapi::bfloat16 CVal =
-              AVal != BVal ? AVal : BVal;
+          sycl::ext::oneapi::bfloat16 CVal = AVal != BVal ? AVal : BVal;
           CVal--;
           CVal++;
           if (AVal == BVal) {
