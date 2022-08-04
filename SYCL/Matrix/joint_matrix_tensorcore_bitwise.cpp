@@ -120,49 +120,52 @@ void test(BinaryOperation Op) {
     range<2> LocalRange = {1, N_THREADS_PER_MATRIX_OP};
     range<2> GlobalRange = {Sub_Tiles_M, Sub_Tiles_N * N_THREADS_PER_MATRIX_OP};
 
-    cgh.parallel_for<KernelName<
-        M, K, N, BinaryOperation>>(nd_range<2>(GlobalRange, LocalRange), [=
-    ](nd_item<2> item)[[sycl::reqd_work_group_size(1, 1, 32)]] {
-      sycl::sub_group sg = item.get_sub_group();
-      const auto m =
-          item.get_group()
-              .get_id()[0]; // row id of current submatrix of BIG C matrix
-      const auto n = item.get_group().get_id()[1]; // column id of current
-                                                   // submatrix of BIG C matrix
-      // matrix_use::a must have matrix_layout::row_major for single-bit
-      // cases
-      joint_matrix<precision::b1, matrix_use::a, M, K, matrix_layout::row_major>
-          sub_a;
-      // matrix_use::b must have matrix_layout::col_major for single-bit
-      // cases
-      joint_matrix<precision::b1, matrix_use::b, K, N, matrix_layout::col_major>
-          sub_b;
+    cgh.parallel_for<KernelName<M, K, N, BinaryOperation>>(
+        nd_range<2>(GlobalRange, LocalRange),
+        [=](nd_item<2> item) [[sycl::reqd_work_group_size(1, 1, 32)]] {
+          sycl::sub_group sg = item.get_sub_group();
+          const auto m =
+              item.get_group()
+                  .get_id()[0]; // row id of current submatrix of BIG C matrix
+          const auto n =
+              item.get_group().get_id()[1]; // column id of current
+                                            // submatrix of BIG C matrix
+          // matrix_use::a must have matrix_layout::row_major for single-bit
+          // cases
+          joint_matrix<precision::b1, matrix_use::a, M, K,
+                       matrix_layout::row_major>
+              sub_a;
+          // matrix_use::b must have matrix_layout::col_major for single-bit
+          // cases
+          joint_matrix<precision::b1, matrix_use::b, K, N,
+                       matrix_layout::col_major>
+              sub_b;
 
-      joint_matrix<int32_t, matrix_use::accumulator, M, N,
-                   matrix_layout::row_major>
-          sub_c;
+          joint_matrix<int32_t, matrix_use::accumulator, M, N,
+                       matrix_layout::row_major>
+              sub_c;
 
-      joint_matrix_load(sg, sub_c, accC.get_pointer() + (m * M) * Big_N + n * N,
-                        Big_N);
+          joint_matrix_load(
+              sg, sub_c, accC.get_pointer() + (m * M) * Big_N + n * N, Big_N);
 
-      for (int k = 0; k < Sub_Tiles_K;
-           k++) // row/col id of current submatrix of BIG A/B matrices
-      {
-        joint_matrix_load(sg, sub_a,
-                          accA.get_pointer() + (k * (K / 32)) +
-                              (m * M * (Big_K / 32)),
-                          Big_K);
+          for (int k = 0; k < Sub_Tiles_K;
+               k++) // row/col id of current submatrix of BIG A/B matrices
+          {
+            joint_matrix_load(sg, sub_a,
+                              accA.get_pointer() + (k * (K / 32)) +
+                                  (m * M * (Big_K / 32)),
+                              Big_K);
 
-        joint_matrix_load(sg, sub_b,
-                          accB.get_pointer() + (n * N * (Big_K / 32)) +
-                              (k * (K / 32)),
-                          Big_K);
+            joint_matrix_load(sg, sub_b,
+                              accB.get_pointer() + (n * N * (Big_K / 32)) +
+                                  (k * (K / 32)),
+                              Big_K);
 
-        sub_c = joint_matrix_bmad(sg, sub_a, sub_b, sub_c, Op);
-      }
-      joint_matrix_store(sg, sub_c,
-                         accD.get_pointer() + (m * M) * Big_N + n * N, Big_N);
-    });
+            sub_c = joint_matrix_bmad(sg, sub_a, sub_b, sub_c, Op);
+          }
+          joint_matrix_store(
+              sg, sub_c, accD.get_pointer() + (m * M) * Big_N + n * N, Big_N);
+        });
   });
 
   q.wait();
