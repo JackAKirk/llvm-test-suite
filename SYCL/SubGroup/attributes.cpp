@@ -1,5 +1,3 @@
-// Test fails on Opencl CPU backend, disable temporarily to resolve the issue.
-// UNSUPPORTED: opencl && cpu
 // RUN: %clangxx -fsycl -fsycl-targets=%sycl_triple -fsycl-device-code-split=per_kernel %s -o %t.out
 // RUN: %CPU_RUN_PLACEHOLDER %t.out
 // RUN: %GPU_RUN_PLACEHOLDER %t.out
@@ -145,8 +143,8 @@ int main() {
 
       auto Kernel = TheKernel[0];
 
-      auto Res = Kernel.get_sub_group_info<
-          sycl::info::kernel_sub_group::compile_sub_group_size>(Device);
+      auto Res = Kernel.get_info<
+          sycl::info::kernel_device_specific::compile_sub_group_size>(Device);
 
       exit_if_not_equal<size_t>(Res, ReqdSize, "compile_sub_group_size");
     }
