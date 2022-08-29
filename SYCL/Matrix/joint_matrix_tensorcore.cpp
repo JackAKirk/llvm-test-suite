@@ -171,18 +171,17 @@ void test(queue &q) {
                 item.get_group().get_group_id()[1]; // column id of current
                                                     // submatrix of BIG C matrix
 
-            joint_matrix<T3, matrix_use::a, M, K, matrix_layout::row_major>
+            joint_matrix<T3, M, K, matrix_use::a, layout::row_major>
                 sub_a;
 
-            joint_matrix<T3, matrix_use::b, K, N, matrix_layout::row_major>
+            joint_matrix<T3, K, N, matrix_use::b, layout::row_major>
                 sub_b;
 
-            joint_matrix<T2, matrix_use::accumulator, M, N,
-                         matrix_layout::row_major>
+            joint_matrix<T2, M, N, matrix_use::accumulator>
                 sub_c;
 
             joint_matrix_load(
-                sg, sub_c, accC.get_pointer() + (m * M) * Big_N + n * N, Big_N);
+                sg, sub_c, accC.get_pointer() + (m * M) * Big_N + n * N, Big_N, layout::row_major);
 
             for (int k = 0; k < Sub_Tiles_K;
                  k++) // row/col id of current submatrix of BIG A/B matrices
@@ -208,7 +207,7 @@ void test(queue &q) {
               sub_c = joint_matrix_mad(sg, sub_a, sub_b, sub_c);
             }
             joint_matrix_store(
-                sg, sub_c, accD.get_pointer() + (m * M) * Big_N + n * N, Big_N);
+                sg, sub_c, accD.get_pointer() + (m * M) * Big_N + n * N, Big_N, layout::row_major);
           });
     });
     q.wait();
@@ -258,11 +257,6 @@ int main() {
   }
   if (computeCapability >= 8.0) {
     test<double, double, SUB_TILES_M, SUB_TILES_K, SUB_TILES_N, 8, 4, 8>(Q);
-
-    // A/B bfloat16 using storage type
-    test<uint16_t, float, SUB_TILES_M, SUB_TILES_K, SUB_TILES_N, 16, 16, 16>(Q);
-    test<uint16_t, float, SUB_TILES_M, SUB_TILES_K, SUB_TILES_N, 8, 16, 32>(Q);
-    test<uint16_t, float, SUB_TILES_M, SUB_TILES_K, SUB_TILES_N, 32, 16, 8>(Q);
 
     test<bfloat16, float, SUB_TILES_M, SUB_TILES_K, SUB_TILES_N, 16, 16, 16>(Q);
     test<bfloat16, float, SUB_TILES_M, SUB_TILES_K, SUB_TILES_N, 8, 16, 32>(Q);
