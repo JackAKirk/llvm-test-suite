@@ -203,8 +203,7 @@ void test(queue &q) {
                   sub_b.wi_marray[i] = round_to_tf32(sub_b.wi_marray[i]);
                 }
               }
-
-              sub_c = joint_matrix_mad(sg, sub_a, sub_b, sub_c);
+              joint_matrix_mad(sg, sub_c, sub_a, sub_b, sub_c);
             }
             joint_matrix_store(
                 sg, sub_c, accD.get_pointer() + (m * M) * Big_N + n * N, Big_N, layout::row_major);
