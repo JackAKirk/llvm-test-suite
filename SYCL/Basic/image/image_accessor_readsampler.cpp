@@ -15,13 +15,13 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include <CL/sycl.hpp>
+#include <sycl/sycl.hpp>
 
 #include <cassert>
 #include <iomanip>
 #include <iostream>
 
-namespace s = cl::sycl;
+namespace s = sycl;
 
 template <int unique_number> class kernel_class;
 

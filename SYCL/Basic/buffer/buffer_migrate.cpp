@@ -8,8 +8,9 @@
 // root-devices)
 //
 
-#include <CL/sycl.hpp>
-using namespace cl::sycl;
+#include <iostream>
+#include <sycl/sycl.hpp>
+using namespace sycl;
 
 int main() {
 

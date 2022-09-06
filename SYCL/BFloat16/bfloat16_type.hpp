@@ -1,9 +1,10 @@
-#include <CL/sycl.hpp>
+#include <iostream>
 #include <sycl/ext/oneapi/experimental/bfloat16.hpp>
+#include <sycl/sycl.hpp>
 
 #include <cmath>
 
-using namespace cl::sycl;
+using namespace sycl;
 
 constexpr size_t N = 100;
 
@@ -20,7 +21,7 @@ void verify_conv_implicit(queue &q, buffer<float, 1> &a, range<1> &r,
   q.submit([&](handler &cgh) {
     auto A = a.get_access<access::mode::read_write>(cgh);
     cgh.parallel_for<class calc_conv>(r, [=](id<1> index) {
-      cl::sycl::ext::oneapi::experimental::bfloat16 AVal{A[index]};
+      sycl::ext::oneapi::experimental::bfloat16 AVal{A[index]};
       A[index] = AVal;
     });
   });
@@ -34,8 +35,8 @@ void verify_conv_explicit(queue &q, buffer<float, 1> &a, range<1> &r,
     auto A = a.get_access<access::mode::read_write>(cgh);
     cgh.parallel_for<class calc_conv_impl>(r, [=](id<1> index) {
       uint16_t AVal =
-          cl::sycl::ext::oneapi::experimental::bfloat16::from_float(A[index]);
-      A[index] = cl::sycl::ext::oneapi::experimental::bfloat16::to_float(AVal);
+          sycl::ext::oneapi::experimental::bfloat16::from_float(A[index]);
+      A[index] = sycl::ext::oneapi::experimental::bfloat16::to_float(AVal);
     });
   });
 
@@ -51,9 +52,9 @@ void verify_add(queue &q, buffer<float, 1> &a, buffer<float, 1> &b, range<1> &r,
     auto B = b.get_access<access::mode::read>(cgh);
     auto C = c.get_access<access::mode::write>(cgh);
     cgh.parallel_for<class calc_add_expl>(r, [=](id<1> index) {
-      cl::sycl::ext::oneapi::experimental::bfloat16 AVal{A[index]};
-      cl::sycl::ext::oneapi::experimental::bfloat16 BVal{B[index]};
-      cl::sycl::ext::oneapi::experimental::bfloat16 CVal = AVal + BVal;
+      sycl::ext::oneapi::experimental::bfloat16 AVal{A[index]};
+      sycl::ext::oneapi::experimental::bfloat16 BVal{B[index]};
+      sycl::ext::oneapi::experimental::bfloat16 CVal = AVal + BVal;
       C[index] = CVal;
     });
   });
@@ -70,9 +71,9 @@ void verify_sub(queue &q, buffer<float, 1> &a, buffer<float, 1> &b, range<1> &r,
     auto B = b.get_access<access::mode::read>(cgh);
     auto C = c.get_access<access::mode::write>(cgh);
     cgh.parallel_for<class calc_sub>(r, [=](id<1> index) {
-      cl::sycl::ext::oneapi::experimental::bfloat16 AVal{A[index]};
-      cl::sycl::ext::oneapi::experimental::bfloat16 BVal{B[index]};
-      cl::sycl::ext::oneapi::experimental::bfloat16 CVal = AVal - BVal;
+      sycl::ext::oneapi::experimental::bfloat16 AVal{A[index]};
+      sycl::ext::oneapi::experimental::bfloat16 BVal{B[index]};
+      sycl::ext::oneapi::experimental::bfloat16 CVal = AVal - BVal;
       C[index] = CVal;
     });
   });
@@ -87,8 +88,8 @@ void verify_minus(queue &q, buffer<float, 1> &a, range<1> &r, const float ref) {
     auto A = a.get_access<access::mode::read>(cgh);
     auto C = c.get_access<access::mode::write>(cgh);
     cgh.parallel_for<class calc_minus>(r, [=](id<1> index) {
-      cl::sycl::ext::oneapi::experimental::bfloat16 AVal{A[index]};
-      cl::sycl::ext::oneapi::experimental::bfloat16 CVal = -AVal;
+      sycl::ext::oneapi::experimental::bfloat16 AVal{A[index]};
+      sycl::ext::oneapi::experimental::bfloat16 CVal = -AVal;
       C[index] = CVal;
     });
   });
@@ -105,9 +106,9 @@ void verify_mul(queue &q, buffer<float, 1> &a, buffer<float, 1> &b, range<1> &r,
     auto B = b.get_access<access::mode::read>(cgh);
     auto C = c.get_access<access::mode::write>(cgh);
     cgh.parallel_for<class calc_mul>(r, [=](id<1> index) {
-      cl::sycl::ext::oneapi::experimental::bfloat16 AVal{A[index]};
-      cl::sycl::ext::oneapi::experimental::bfloat16 BVal{B[index]};
-      cl::sycl::ext::oneapi::experimental::bfloat16 CVal = AVal * BVal;
+      sycl::ext::oneapi::experimental::bfloat16 AVal{A[index]};
+      sycl::ext::oneapi::experimental::bfloat16 BVal{B[index]};
+      sycl::ext::oneapi::experimental::bfloat16 CVal = AVal * BVal;
       C[index] = CVal;
     });
   });
@@ -124,9 +125,9 @@ void verify_div(queue &q, buffer<float, 1> &a, buffer<float, 1> &b, range<1> &r,
     auto B = b.get_access<access::mode::read>(cgh);
     auto C = c.get_access<access::mode::write>(cgh);
     cgh.parallel_for<class calc_div>(r, [=](id<1> index) {
-      cl::sycl::ext::oneapi::experimental::bfloat16 AVal{A[index]};
-      cl::sycl::ext::oneapi::experimental::bfloat16 BVal{B[index]};
-      cl::sycl::ext::oneapi::experimental::bfloat16 CVal = AVal / BVal;
+      sycl::ext::oneapi::experimental::bfloat16 AVal{A[index]};
+      sycl::ext::oneapi::experimental::bfloat16 BVal{B[index]};
+      sycl::ext::oneapi::experimental::bfloat16 CVal = AVal / BVal;
       C[index] = CVal;
     });
   });
@@ -143,12 +144,12 @@ void verify_logic(queue &q, buffer<float, 1> &a, buffer<float, 1> &b,
     auto B = b.get_access<access::mode::read>(cgh);
     auto C = c.get_access<access::mode::write>(cgh);
     cgh.parallel_for<class logic>(r, [=](id<1> index) {
-      cl::sycl::ext::oneapi::experimental::bfloat16 AVal{A[index]};
-      cl::sycl::ext::oneapi::experimental::bfloat16 BVal{B[index]};
+      sycl::ext::oneapi::experimental::bfloat16 AVal{A[index]};
+      sycl::ext::oneapi::experimental::bfloat16 BVal{B[index]};
       if (AVal) {
         if (AVal > BVal || AVal >= BVal || AVal < BVal || AVal <= BVal ||
             !BVal) {
-          cl::sycl::ext::oneapi::experimental::bfloat16 CVal =
+          sycl::ext::oneapi::experimental::bfloat16 CVal =
               AVal != BVal ? AVal : BVal;
           CVal--;
           CVal++;

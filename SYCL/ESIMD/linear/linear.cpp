@@ -13,12 +13,12 @@
 #include "bitmap_helpers.h"
 #include "esimd_test_utils.hpp"
 
-#include <CL/sycl.hpp>
 #include <array>
 #include <iostream>
 #include <sycl/ext/intel/esimd.hpp>
+#include <sycl/sycl.hpp>
 
-using namespace cl::sycl;
+using namespace sycl;
 
 int main(int argc, char *argv[]) {
   if (argc != 3) {

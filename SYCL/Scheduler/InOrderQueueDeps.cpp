@@ -17,11 +17,9 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include <CL/sycl.hpp>
+#include <sycl/sycl.hpp>
 
 class KernelA;
-
-using namespace cl;
 
 void submitKernel(sycl::queue &Queue, sycl::buffer<int, 1> &Buf) {
   Queue.submit([&](sycl::handler &Cgh) {

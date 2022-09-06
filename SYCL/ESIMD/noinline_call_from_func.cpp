@@ -19,8 +19,8 @@
 
 #include "esimd_test_utils.hpp"
 
-#include <CL/sycl.hpp>
 #include <sycl/ext/intel/esimd.hpp>
+#include <sycl/sycl.hpp>
 
 #include <iostream>
 
@@ -58,7 +58,7 @@ int main(int argc, char **argv) {
           sycl::range<1>{1},
           [=](id<1> i) SYCL_ESIMD_KERNEL { test(acc, in1, in2); });
     });
-  } catch (cl::sycl::exception const &e) {
+  } catch (sycl::exception const &e) {
     std::cout << "SYCL exception caught: " << e.what() << std::endl;
     return e.get_cl_code();
   }

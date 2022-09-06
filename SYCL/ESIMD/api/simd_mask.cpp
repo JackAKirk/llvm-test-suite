@@ -14,15 +14,15 @@
 
 #include "esimd_test_utils.hpp"
 
-#include <CL/sycl.hpp>
 #include <iostream>
 #include <limits>
 #include <memory>
 #include <sycl/ext/intel/esimd.hpp>
+#include <sycl/sycl.hpp>
 #include <utility>
 
 using namespace sycl::ext::intel::esimd;
-using namespace cl::sycl;
+using namespace sycl;
 
 template <int N> using value_type = typename simd_mask<N>::element_type;
 
@@ -145,7 +145,7 @@ template <int N> struct sub_test {
 
     // Submit the kernel.
     try {
-      cl::sycl::range<1> R{Size / N};
+      sycl::range<1> R{Size / N};
       auto E = Q.submit([&](handler &CGH) { CGH.parallel_for(R, F); });
       E.wait();
     } catch (sycl::exception &Exc) {

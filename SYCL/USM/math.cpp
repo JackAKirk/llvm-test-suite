@@ -4,13 +4,13 @@
 
 // REQUIRES: cpu
 
-#include <CL/sycl.hpp>
+#include <sycl/sycl.hpp>
 
 #include <array>
 #include <cassert>
 #include <cmath>
 
-namespace s = cl::sycl;
+namespace s = sycl;
 
 int main() {
   s::queue myQueue;

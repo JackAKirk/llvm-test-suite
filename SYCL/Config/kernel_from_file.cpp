@@ -17,10 +17,10 @@
 // RUN: %BE_RUN_PLACEHOLDER env SYCL_USE_KERNEL_SPV=%t.spv %t.out | FileCheck %s
 // CHECK: Passed
 
-#include <CL/sycl.hpp>
 #include <iostream>
+#include <sycl/sycl.hpp>
 
-using namespace cl::sycl;
+using namespace sycl;
 
 int main(int argc, char **argv) {
   int data = 5;
@@ -36,7 +36,7 @@ int main(int argc, char **argv) {
     });
     e.wait_and_throw();
 
-  } catch (cl::sycl::exception const &e) {
+  } catch (sycl::exception const &e) {
     std::cerr << "SYCL exception caught:\n";
     std::cerr << e.what() << "\n";
     return 2;

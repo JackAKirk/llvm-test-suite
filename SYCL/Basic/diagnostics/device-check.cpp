@@ -19,16 +19,16 @@
 // It also checks for SYCL_DEVICE being set incorrectly.
 //==---------------------------------------------------------------==//
 
-#include <CL/sycl.hpp>
 #include <iostream>
+#include <sycl/sycl.hpp>
 
-using namespace cl::sycl;
+using namespace sycl;
 
 int main() {
   try {
     queue q = queue();
     auto device = q.get_device();
-    auto deviceName = device.get_info<cl::sycl::info::device::name>();
+    auto deviceName = device.get_info<sycl::info::device::name>();
     std::cout << " Device Name: " << deviceName << std::endl;
   }
 

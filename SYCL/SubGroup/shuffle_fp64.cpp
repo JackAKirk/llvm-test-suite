@@ -12,13 +12,10 @@
 //===----------------------------------------------------------------------===//
 
 #include "shuffle.hpp"
+#include <iostream>
 
 int main() {
   queue Queue;
-  if (Queue.get_device().is_host()) {
-    std::cout << "Skipping test\n";
-    return 0;
-  }
   check<double>(Queue);
   std::cout << "Test passed." << std::endl;
   return 0;

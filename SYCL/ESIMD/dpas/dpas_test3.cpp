@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //===----------------------------------------------------------------------===//
-// REQUIRES: gpu-intel-pvc
+// REQUIRES: gpu-intel-pvc || esimd_emulator
 // UNSUPPORTED: cuda || hip
 // RUN: %clangxx -fsycl -DESIMD_XE_HPC %s -DVER1 -o %t.out1
 // RUN: %clangxx -fsycl -DESIMD_XE_HPC %s -DVER2 -o %t.out2
@@ -17,10 +17,10 @@
 // ways of initializing the input operands of DPAS. There were runtime
 // errors previously depending on what variant of initialization was used.
 
-#include <CL/sycl.hpp>
 #include <sycl/ext/intel/esimd.hpp>
+#include <sycl/sycl.hpp>
 
-using namespace cl::sycl;
+using namespace sycl;
 using namespace sycl::ext::intel::esimd;
 using namespace sycl::ext::intel::experimental::esimd;
 using BF16 = uint16_t;

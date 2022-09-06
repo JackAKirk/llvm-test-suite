@@ -5,9 +5,6 @@
 
 // UNSUPPORTED: cuda
 
-// FIXME: the test fails on multiple back-ends
-// REQUIRES: TEMPORARY_DISABLED
-
 //==- handler.cpp - SYCL handler explicit memory operations test -*- C++-*--==//
 //
 // Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
@@ -16,13 +13,13 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include <CL/sycl.hpp>
+#include <sycl/sycl.hpp>
 
 #include <cassert>
 #include <iostream>
 #include <numeric>
 
-using namespace cl::sycl;
+using namespace sycl;
 
 template <typename T> struct point {
   point(const point &rhs) = default;

@@ -25,11 +25,11 @@
 // RUN: %GPU_RUN_PLACEHOLDER %t.fat
 // RUN: %ACC_RUN_PLACEHOLDER %t.fat
 
-#include <CL/sycl.hpp>
+#include <sycl/sycl.hpp>
 
 #include <iostream>
 
-using namespace cl::sycl;
+using namespace sycl;
 
 #ifdef MAIN_APP
 void init_buf(queue &q, buffer<int, 1> &b, range<1> &r, int i);

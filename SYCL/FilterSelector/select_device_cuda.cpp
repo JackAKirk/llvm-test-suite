@@ -8,10 +8,10 @@
 //
 // REQUIRES: cuda,gpu
 
-#include <CL/sycl.hpp>
 #include <iostream>
+#include <sycl/sycl.hpp>
 
-using namespace cl::sycl;
+using namespace sycl;
 using namespace std;
 
 int main() {
@@ -45,16 +45,6 @@ int main() {
       return -1;
     } catch (...) {
       cout << "Expectedly, cpu device is not found." << std::endl;
-    }
-  }
-  {
-    host_selector hs;
-    try {
-      device d = hs.select_device();
-      cerr << "HOST device is found in error: " << d.is_host() << std::endl;
-      return -1;
-    } catch (...) {
-      cout << "Expectedly, HOST device is not found." << std::endl;
     }
   }
   {

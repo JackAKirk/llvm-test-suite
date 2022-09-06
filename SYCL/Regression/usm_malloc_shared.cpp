@@ -6,17 +6,17 @@
 // shared memory, and also test user can call free() without worrying about
 // nullptr or invalid memory descriptor returned from malloc.
 
-#include <CL/sycl.hpp>
 #include <iostream>
 #include <stdlib.h>
-using namespace cl::sycl;
+#include <sycl/sycl.hpp>
+using namespace sycl;
 
 int main(int argc, char *argv[]) {
-  auto exception_handler = [](cl::sycl::exception_list exceptions) {
+  auto exception_handler = [](sycl::exception_list exceptions) {
     for (std::exception_ptr const &e : exceptions) {
       try {
         std::rethrow_exception(e);
-      } catch (cl::sycl::exception const &e) {
+      } catch (sycl::exception const &e) {
         std::cout << "Caught asynchronous SYCL "
                      "exception:\n"
                   << e.what() << std::endl;
@@ -40,10 +40,10 @@ int main(int argc, char *argv[]) {
             << std::endl;
 
   // followings should not throw CL_INVALID_VALUE
-  cl::sycl::free(ia, myQueue);
-  cl::sycl::free(nullptr, myQueue);
-  cl::sycl::free(ja, myQueue);
-  cl::sycl::free(result, myQueue);
+  sycl::free(ia, myQueue);
+  sycl::free(nullptr, myQueue);
+  sycl::free(ja, myQueue);
+  sycl::free(result, myQueue);
 
   return 0;
 }

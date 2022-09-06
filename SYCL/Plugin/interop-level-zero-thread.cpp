@@ -23,13 +23,14 @@
 // CHECK: Running iteration 18
 // CHECK: Running iteration 19
 
-#include <CL/sycl.hpp>
-#include <CL/sycl/backend/level_zero.hpp>
 #include <atomic>
 #include <condition_variable>
 #include <deque>
+#include <iostream>
 #include <level_zero/ze_api.h>
 #include <mutex>
+#include <sycl/backend/level_zero.hpp>
+#include <sycl/sycl.hpp>
 #include <thread>
 #include <vector>
 

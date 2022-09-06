@@ -12,13 +12,13 @@
 //===----------------------------------------------------------------------===//
 
 #include "helper.hpp"
-#include <CL/sycl.hpp>
 #include <algorithm>
 #include <complex>
+#include <sycl/sycl.hpp>
 #include <vector>
 template <typename T> class pointer_kernel;
 
-using namespace cl::sycl;
+using namespace sycl;
 
 template <typename SpecializationKernelName, typename T>
 void check_pointer(queue &Queue, size_t G = 256, size_t L = 64) {
@@ -214,10 +214,6 @@ void check_struct(queue &Queue, Generator &Gen, size_t G = 256, size_t L = 64) {
 
 int main() {
   queue Queue;
-  if (Queue.get_device().is_host()) {
-    std::cout << "Skipping test\n";
-    return 0;
-  }
 
   // Test shuffle of pointer types
   check_pointer<class KernelName_mNiN, int>(Queue);

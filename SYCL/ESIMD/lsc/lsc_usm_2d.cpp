@@ -5,22 +5,22 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //===----------------------------------------------------------------------===//
-// REQUIRES: gpu-intel-pvc
+// REQUIRES: gpu-intel-pvc || esimd_emulator
 // UNSUPPORTED: cuda || hip
 // RUN: %clangxx -fsycl %s -o %t.out
 // RUN: %GPU_RUN_PLACEHOLDER %t.out
 
 #include "../esimd_test_utils.hpp"
 
-#include <CL/sycl.hpp>
 #include <algorithm>
 #include <cmath>
 #include <numeric>
 #include <random>
 #include <sycl/ext/intel/esimd.hpp>
+#include <sycl/sycl.hpp>
 
 int main() {
-  using namespace cl::sycl;
+  using namespace sycl;
   using namespace sycl::ext::intel::esimd;
   using namespace sycl::ext::intel::experimental::esimd;
   unsigned data_height = 4;

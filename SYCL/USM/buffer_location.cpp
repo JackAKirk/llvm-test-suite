@@ -11,11 +11,11 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include <CL/sycl.hpp>
 #include <iostream>
 #include <memory>
+#include <sycl/sycl.hpp>
 
-using namespace cl::sycl;
+using namespace sycl;
 
 // Pointer wrapper allows custom deleter to clean up resources
 struct ptr_wrapper {

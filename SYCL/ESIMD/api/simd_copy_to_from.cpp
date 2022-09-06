@@ -14,12 +14,12 @@
 
 #include "../esimd_test_utils.hpp"
 
-#include <CL/sycl.hpp>
-#include <CL/sycl/builtins_esimd.hpp>
 #include <algorithm>
 #include <array>
 #include <cstdlib>
 #include <iostream>
+#include <sycl/builtins_esimd.hpp>
+#include <sycl/sycl.hpp>
 #ifdef _WIN32
 #include <malloc.h>
 #endif // _WIN32
@@ -35,9 +35,10 @@
 #define aligned_free(ptr) std::free(ptr)
 #endif // _WIN32
 
-using namespace cl::sycl;
+using namespace sycl;
 using namespace sycl::ext::intel;
 using namespace sycl::ext::intel::esimd;
+using bfloat16 = sycl::ext::oneapi::experimental::bfloat16;
 
 template <typename T, int N, typename Flags>
 bool testUSM(queue &Q, T *Src, T *Dst, unsigned Off, Flags) {
@@ -57,7 +58,7 @@ bool testUSM(queue &Q, T *Src, T *Dst, unsigned Off, Flags) {
          Vals.copy_to(Dst + Off, Flags{});
        });
      }).wait();
-  } catch (cl::sycl::exception const &E) {
+  } catch (sycl::exception const &E) {
     std::cout << "ERROR. SYCL exception caught: " << E.what() << std::endl;
     return false;
   }
@@ -97,7 +98,7 @@ bool testAcc(queue &Q, T *Src, T *Dst, unsigned Off, Flags) {
          Vals.copy_to(DstA, Off * sizeof(T), Flags{});
        });
      }).wait();
-  } catch (cl::sycl::exception const &E) {
+  } catch (sycl::exception const &E) {
     std::cout << "ERROR. SYCL exception caught: " << E.what() << std::endl;
     return false;
   }
@@ -250,9 +251,11 @@ int main(void) {
 #else
   Pass &= testUSM<uint16_t>(Q);
   Pass &= testUSM<float>(Q);
+  Pass &= testUSM<bfloat16>(Q);
 
   Pass &= testAcc<int16_t>(Q);
   Pass &= testAcc<float>(Q);
+  Pass &= testAcc<bfloat16>(Q);
 #endif
 
   std::cout << (Pass ? "Test Passed\n" : "Test FAILED\n");

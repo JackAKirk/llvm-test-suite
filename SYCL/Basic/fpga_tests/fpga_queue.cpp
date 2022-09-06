@@ -10,12 +10,12 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //===----------------------------------------------------------------------===//
-#include <CL/sycl.hpp>
-#include <CL/sycl/backend/opencl.hpp>
 #include <iostream>
 #include <set>
+#include <sycl/backend/opencl.hpp>
+#include <sycl/sycl.hpp>
 
-using namespace cl::sycl;
+using namespace sycl;
 
 const int dataSize = 32;
 const int maxNumQueues = 256;
@@ -23,8 +23,9 @@ const int maxNumQueues = 256;
 void GetCLQueue(event sycl_event, std::set<cl_command_queue> &cl_queues) {
   try {
     cl_command_queue cl_queue;
-    cl_event cl_event = get_native<backend::opencl>(sycl_event);
-    cl_int error = clGetEventInfo(cl_event, CL_EVENT_COMMAND_QUEUE,
+    std::vector<cl_event> cl_events = get_native<backend::opencl>(sycl_event);
+    assert(cl_events.size() > 0 && "No native OpenCL events in SYCL event.");
+    cl_int error = clGetEventInfo(cl_events[0], CL_EVENT_COMMAND_QUEUE,
                                   sizeof(cl_queue), &cl_queue, nullptr);
     assert(CL_SUCCESS == error && "Failed to obtain queue from OpenCL event");
 

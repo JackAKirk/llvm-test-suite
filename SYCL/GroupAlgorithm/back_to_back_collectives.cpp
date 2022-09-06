@@ -1,23 +1,19 @@
 // RUN: %clangxx -fsycl -fsycl-targets=%sycl_triple %s -o %t.out
-// RUN: %HOST_RUN_PLACEHOLDER %t.out
 // RUN: %CPU_RUN_PLACEHOLDER %t.out
 // RUN: %GPU_RUN_PLACEHOLDER %t.out
 // RUN: %ACC_RUN_PLACEHOLDER %t.out
 
-#include <CL/sycl.hpp>
+#include <iostream>
 #include <numeric>
+#include <sycl/sycl.hpp>
 #include <vector>
-using namespace cl::sycl;
-using namespace cl::sycl::ext::oneapi;
+using namespace sycl;
+using namespace sycl::ext::oneapi;
 
 class back_to_back;
 
 int main() {
   queue q;
-  if (q.get_device().is_host()) {
-    std::cout << "Skipping test\n";
-    return 0;
-  }
 
   // Use max work-group size to maximize chance of race
   auto KernelID = get_kernel_id<back_to_back>();

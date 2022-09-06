@@ -1,8 +1,8 @@
-// UNSUPPORTED: cuda || hip
-// CUDA and HIP don't support printf.
+// UNSUPPORTED: hip
+// HIP doesn't support printf.
+// CUDA doesn't support vector format specifiers ("%v").
 //
 // RUN: %clangxx -fsycl -fsycl-targets=%sycl_triple %s -o %t.out
-// RUN: %HOST_RUN_PLACEHOLDER %t.out %HOST_CHECK_PLACEHOLDER
 // RUN: %CPU_RUN_PLACEHOLDER %t.out %CPU_CHECK_PLACEHOLDER
 // RUN: %GPU_RUN_PLACEHOLDER %t.out %GPU_CHECK_PLACEHOLDER
 // RUN: %ACC_RUN_PLACEHOLDER %t.out %ACC_CHECK_PLACEHOLDER
@@ -59,7 +59,7 @@ int main() {
         {
           // You can declare format string in non-global scope, but in this case
           // static keyword is required
-          static const CONSTANT char format[] = "%f\n";
+          static const CONSTANT char format[] = "%.1f\n";
           ext::oneapi::experimental::printf(format, 33.4f);
           ext::oneapi::experimental::printf(format, -33.4f);
         }
@@ -67,10 +67,10 @@ int main() {
         // CHECK-NEXT: -33.4
 
         // Vectors
-        cl::sycl::vec<int, 4> v4{5, 6, 7, 8};
-#ifdef __SYCL_DEVICE_ONLY__
-        // On device side, vectors can be printed via native OpenCL types:
-        using ocl_int4 = cl::sycl::vec<int, 4>::vector_t;
+        sycl::vec<int, 4> v4{5, 6, 7, 8};
+#if defined(__SYCL_DEVICE_ONLY__) && defined(__SPIR__)
+        // On SPIRV devices, vectors can be printed via native OpenCL types:
+        using ocl_int4 = sycl::vec<int, 4>::vector_t;
         {
           static const CONSTANT char format[] = "%v4d\n";
           ext::oneapi::experimental::printf(format, (ocl_int4)v4);
@@ -83,7 +83,7 @@ int main() {
                                             (int32_t)v4.x());
         }
 #else
-        // On host side you always have to print them by-element:
+        // Otherwise you always have to print them by-element:
         ext::oneapi::experimental::printf(format_vec, (int32_t)v4.x(),
                                           (int32_t)v4.y(), (int32_t)v4.z(),
                                           (int32_t)v4.w());

@@ -12,12 +12,12 @@
 //===----------------------------------------------------------------------===//
 
 #include "helper.hpp"
-#include <CL/sycl.hpp>
 #include <limits>
 #include <numeric>
+#include <sycl/sycl.hpp>
 
 template <typename T, bool UseNewSyntax> class sycl_subgr;
-using namespace cl::sycl;
+using namespace sycl;
 template <typename T, bool UseNewSyntax = false>
 void check(queue &Queue, size_t G = 240, size_t L = 60) {
   try {
@@ -76,10 +76,6 @@ void check(queue &Queue, size_t G = 240, size_t L = 60) {
 }
 int main() {
   queue Queue;
-  if (Queue.get_device().is_host()) {
-    std::cout << "Skipping test\n";
-    return 0;
-  }
   check<int>(Queue);
   check<unsigned int>(Queue);
   check<long>(Queue);

@@ -15,14 +15,12 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include <CL/sycl.hpp>
 #include <cassert>
 #include <iomanip>
-#if DEBUG_OUTPUT
 #include <iostream>
-#endif
+#include <sycl/sycl.hpp>
 
-namespace s = cl::sycl;
+namespace s = sycl;
 
 template <typename WriteDataT, int ImgType, int read_write> class kernel_class;
 

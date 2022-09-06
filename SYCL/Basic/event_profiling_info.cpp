@@ -15,10 +15,10 @@
 // Flaky with CUDA
 // UNSUPPORTED: cuda
 
-#include <CL/sycl.hpp>
 #include <cassert>
+#include <sycl/sycl.hpp>
 
-using namespace cl::sycl;
+using namespace sycl;
 
 bool verifyProfiling(event Event) {
   auto Submit =

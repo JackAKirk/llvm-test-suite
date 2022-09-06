@@ -12,12 +12,12 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include <CL/sycl.hpp>
+#include <sycl/sycl.hpp>
 
 #include <cassert>
 #include <memory>
 
-using namespace cl::sycl;
+using namespace sycl;
 
 int main() {
   queue q;

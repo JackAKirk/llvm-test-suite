@@ -2,9 +2,9 @@
 // RUN: %CPU_RUN_PLACEHOLDER %t.out
 // RUN: %GPU_RUN_PLACEHOLDER %t.out
 // Temporarily disable test on Windows due to regressions in GPU driver.
-// UNSUPPORTED: cuda || hip, windows
+// UNSUPPORTED: hip, windows
 
-#include <CL/sycl.hpp>
+#include <sycl/sycl.hpp>
 
 #include <iostream>
 
@@ -12,7 +12,7 @@ class test_1d_class;
 class test_2d_class;
 class test_3d_class;
 
-namespace s = cl::sycl;
+namespace s = sycl;
 
 template <typename dataT>
 bool check_result(dataT resultData, dataT expectedData, float epsilon = 0.1) {

@@ -14,16 +14,16 @@
 
 #include "../esimd_test_utils.hpp"
 
-#include <CL/sycl.hpp>
-#include <CL/sycl/builtins_esimd.hpp>
 #include <algorithm>
 #include <array>
 #include <iostream>
 #include <random>
+#include <sycl/builtins_esimd.hpp>
+#include <sycl/sycl.hpp>
 
 #include <sycl/ext/intel/esimd.hpp>
 
-using namespace cl::sycl;
+using namespace sycl;
 using namespace sycl::ext::intel;
 using namespace sycl::ext::intel::esimd;
 
@@ -56,7 +56,7 @@ template <class T, int N> bool test(queue &Q) {
       });
     });
     E.wait();
-  } catch (cl::sycl::exception const &E) {
+  } catch (sycl::exception const &E) {
     std::cout << "ERROR. SYCL exception caught: " << E.what() << std::endl;
     return false;
   }
