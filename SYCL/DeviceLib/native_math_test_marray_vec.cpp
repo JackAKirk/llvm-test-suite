@@ -98,7 +98,6 @@ template <typename T> void native_tests_3(queue &deviceQueue) {
   native_math_test_exp(deviceQueue, T{-1, -1, -1}, T{0, 0, 0}, 1);
   native_math_test_log(deviceQueue, T{-1, -1, -1}, T{1, 1, 1}, 0);
   native_math_test_log2(deviceQueue, T{-1, -1, -1}, T{4, 4, 4}, 2);
-  native_math_test_log10(deviceQueue, T{-1, -1, -1}, T{100, 100, 100}, 2);
   native_math_test_sqrt(deviceQueue, T{-1, -1, -1}, T{4, 4, 4}, 2);
   native_math_test_rsqrt(deviceQueue, T{-1, -1, -1}, T{0.25, 0.25, 0.25}, 2);
   native_math_test_recip(deviceQueue, T{-1, -1, -1}, T{0.25, 0.25, 0.25}, 4);
@@ -114,8 +113,6 @@ template <typename T> void native_tests_4(queue &deviceQueue) {
   native_math_test_exp2(deviceQueue, T{-1, -1, -1, -1}, T{2, 2, 2, 2}, 4);
   native_math_test_log(deviceQueue, T{-1, -1, -1, -1}, T{1, 1, 1, 1}, 0);
   native_math_test_log2(deviceQueue, T{-1, -1, -1, -1}, T{4, 4, 4, 4}, 2);
-  native_math_test_log10(deviceQueue, T{-1, -1, -1, -1}, T{100, 100, 100, 100},
-                         2);
   native_math_test_sqrt(deviceQueue, T{-1, -1, -1, -1}, T{4, 4, 4, 4}, 2);
   native_math_test_rsqrt(deviceQueue, T{-1, -1, -1, -1},
                          T{0.25, 0.25, 0.25, 0.25}, 2);
