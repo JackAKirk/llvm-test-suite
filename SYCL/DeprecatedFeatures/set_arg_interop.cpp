@@ -5,11 +5,11 @@
 // RUN: %GPU_RUN_PLACEHOLDER %t.out
 // RUN: %ACC_RUN_PLACEHOLDER %t.out
 
-#include <CL/sycl.hpp>
+#include <sycl/sycl.hpp>
 
 #include <cassert>
 
-using namespace cl::sycl;
+using namespace sycl;
 
 int main() {
   queue Queue;
@@ -105,10 +105,9 @@ int main() {
       Queue.submit([&](handler &CGH) {
         auto Acc = FirstBuffer.get_access<access::mode::read_write>(CGH);
         CGH.set_arg(0, FirstBuffer.get_access<access::mode::read_write>(CGH));
-        CGH.set_arg(
-            1, cl::sycl::accessor<float, 1, cl::sycl::access::mode::read_write,
-                                  cl::sycl::access::target::local>(
-                   cl::sycl::range<1>(Count), CGH));
+        CGH.set_arg(1, sycl::accessor<float, 1, sycl::access::mode::read_write,
+                                      sycl::access::target::local>(
+                           sycl::range<1>(Count), CGH));
         CGH.parallel_for(range<1>{Count}, ThirdKernel);
       });
     }

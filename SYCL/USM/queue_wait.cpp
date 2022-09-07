@@ -4,12 +4,13 @@
 // RUN: %GPU_RUN_PLACEHOLDER %t.out
 // RUN: %ACC_RUN_PLACEHOLDER %t.out
 
-#include <CL/sycl.hpp>
+#include <iostream>
+#include <sycl/sycl.hpp>
 
 #include <cassert>
 #include <cstddef>
 
-using namespace cl::sycl;
+using namespace sycl;
 
 // This test checks that queue USM functions are properly waited for during
 // calls to queue::wait().

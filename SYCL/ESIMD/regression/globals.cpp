@@ -9,10 +9,11 @@
 
 #include <cstdint>
 
-#include <CL/sycl.hpp>
+#include <iostream>
 #include <sycl/ext/intel/esimd.hpp>
+#include <sycl/sycl.hpp>
 
-using namespace cl::sycl;
+using namespace sycl;
 
 template <int Dim> id<Dim> asId(range<Dim> V) {
   if constexpr (Dim == 1)

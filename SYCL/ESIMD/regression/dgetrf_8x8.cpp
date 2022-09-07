@@ -12,12 +12,13 @@
 //
 // Reduced version of dgetrf.cpp - M = 8, N = 8, single batch.
 //
-#include <CL/sycl.hpp>
+#include <iostream>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sycl/ext/intel/esimd.hpp>
+#include <sycl/sycl.hpp>
 
 #define ABS(x) ((x) >= 0 ? (x) : -(x))
 #define MIN(x, y) ((x) <= (y) ? (x) : (y))
@@ -44,7 +45,7 @@
         (fail_cond) ? "FAILED" : "PASSED");                                    \
   } while (0)
 
-using namespace cl::sycl;
+using namespace sycl;
 using namespace std;
 using namespace sycl::ext::intel::esimd;
 

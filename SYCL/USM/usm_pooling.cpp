@@ -27,8 +27,8 @@
 // RUN: env ZE_DEBUG=1 %GPU_RUN_PLACEHOLDER SYCL_PI_LEVEL_ZERO_USM_ALLOCATOR=";;2M,4,4M" %t.out h 2> %t1.out; cat %t1.out %GPU_CHECK_PLACEHOLDER --check-prefix CHECK-15
 // RUN: env ZE_DEBUG=1 %GPU_RUN_PLACEHOLDER SYCL_PI_LEVEL_ZERO_USM_ALLOCATOR=";;2M,4,4M" %t.out d 2> %t1.out; cat %t1.out %GPU_CHECK_PLACEHOLDER --check-prefix CHECK-15
 // RUN: env ZE_DEBUG=1 %GPU_RUN_PLACEHOLDER SYCL_PI_LEVEL_ZERO_USM_ALLOCATOR=";;2M,4,4M" %t.out s 2> %t1.out; cat %t1.out %GPU_CHECK_PLACEHOLDER --check-prefix CHECK-15
-
 #include "CL/sycl.hpp"
+#include <iostream>
 using namespace sycl;
 
 constexpr size_t SIZE = 2 * 1024 * 1024;
@@ -84,7 +84,7 @@ int main(int argc, char *argv[]) {
   std::string pluginName =
       D.get_platform().get_info<sycl::info::platform::name>();
   std::cout << "Running on device " << devType << " ("
-            << D.get_info<cl::sycl::info::device::name>() << ") " << pluginName
+            << D.get_info<sycl::info::device::name>() << ") " << pluginName
             << " plugin\n";
 
   if (*argv[1] == 'h') {

@@ -6,12 +6,12 @@
 // RUN: %GPU_RUN_PLACEHOLDER %t2.out
 // RUN: %ACC_RUN_PLACEHOLDER %t2.out
 
-#include <CL/sycl.hpp>
+#include <sycl/sycl.hpp>
 
 #include <cassert>
 #include <memory>
 
-using namespace cl::sycl;
+using namespace sycl;
 
 // TODO add cases with dimensions more than 1
 int main() {

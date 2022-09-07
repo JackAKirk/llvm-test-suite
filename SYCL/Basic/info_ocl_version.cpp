@@ -12,14 +12,14 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include <CL/sycl.hpp>
 #include <iostream>
 #include <regex>
 #include <string>
+#include <sycl/sycl.hpp>
 
-using namespace cl::sycl;
+using namespace sycl;
 
-// This test checks that cl::sycl::info::device::version
+// This test checks that sycl::info::device::version
 // is returned in a form: <major_version>.<minor_version>
 
 int main() {

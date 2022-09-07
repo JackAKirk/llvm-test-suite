@@ -17,15 +17,15 @@
 
 #include "esimd_test_utils.hpp"
 
-#include <CL/sycl.hpp>
 #include <iostream>
 #include <sycl/ext/intel/esimd.hpp>
+#include <sycl/sycl.hpp>
 
 static_assert(SIZE >= VL, "Size must greater than or equal to VL");
 static_assert(SIZE % VL == 0, "Size must be multiple of VL");
 constexpr unsigned ROWS = SIZE / VL;
 
-using namespace cl::sycl;
+using namespace sycl;
 
 class KernelID;
 

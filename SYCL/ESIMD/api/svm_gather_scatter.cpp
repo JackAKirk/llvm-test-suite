@@ -14,17 +14,18 @@
 
 #include "../esimd_test_utils.hpp"
 
-#include <CL/sycl.hpp>
-#include <CL/sycl/builtins_esimd.hpp>
 #include <algorithm>
 #include <array>
 #include <iostream>
+#include <sycl/builtins_esimd.hpp>
+#include <sycl/sycl.hpp>
 
 #include <sycl/ext/intel/esimd.hpp>
 
-using namespace cl::sycl;
+using namespace sycl;
 using namespace sycl::ext::intel;
 using namespace sycl::ext::intel::esimd;
+using bfloat16 = sycl::ext::oneapi::experimental::bfloat16;
 
 template <typename T, int N> bool test(queue &Q) {
   std::cout << "  Running " << typeid(T).name() << " test, N=" << N << "...\n";
@@ -56,7 +57,7 @@ template <typename T, int N> bool test(queue &Q) {
          scatter<T, N>(Dst, Offsets, gather<T, N>(Src, Offsets));
        });
      }).wait();
-  } catch (cl::sycl::exception const &E) {
+  } catch (sycl::exception const &E) {
     std::cout << "ERROR. SYCL exception caught: " << E.what() << std::endl;
     return false;
   }
@@ -100,15 +101,19 @@ int main(void) {
   Pass &= test<int32_t, 16>(Q);
   Pass &= test<int32_t, 32>(Q);
 
-  if (Q.get_backend() != cl::sycl::backend::ext_intel_esimd_emulator) {
-    /// TODO: Enable 'half' type support for esimd_emulator
-    Pass &= test<half, 1>(Q);
-    Pass &= test<half, 2>(Q);
-    Pass &= test<half, 4>(Q);
-    Pass &= test<half, 8>(Q);
-    Pass &= test<half, 16>(Q);
-    Pass &= test<half, 32>(Q);
-  }
+  Pass &= test<half, 1>(Q);
+  Pass &= test<half, 2>(Q);
+  Pass &= test<half, 4>(Q);
+  Pass &= test<half, 8>(Q);
+  Pass &= test<half, 16>(Q);
+  Pass &= test<half, 32>(Q);
+
+  Pass &= test<bfloat16, 1>(Q);
+  Pass &= test<bfloat16, 2>(Q);
+  Pass &= test<bfloat16, 4>(Q);
+  Pass &= test<bfloat16, 8>(Q);
+  Pass &= test<bfloat16, 16>(Q);
+  Pass &= test<bfloat16, 32>(Q);
 
   std::cout << (Pass ? "Test Passed\n" : "Test FAILED\n");
   return Pass ? 0 : 1;

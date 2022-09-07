@@ -3,12 +3,8 @@
 // RUN: %ACC_RUN_PLACEHOLDER %t.out
 // RUN: %CPU_RUN_PLACEHOLDER %t.out
 
-// `Group algorithms are not supported on host device.` on NVidia.
+// Group algorithms are not supported on NVidia.
 // XFAIL: hip_nvidia
-
-// RUNx: %HOST_RUN_PLACEHOLDER %t.out
-// TODO: Enable the test for HOST when it supports ext::oneapi::reduce() and
-// barrier()
 
 // This test only checks that the method queue::parallel_for() accepting
 // reduction, can be properly translated into queue::submit + parallel_for().
@@ -16,8 +12,6 @@
 #include "reduction_utils.hpp"
 
 using namespace sycl;
-
-template <typename T, int I> class KName;
 
 enum TestCase { NoDependencies, Dependency, DependenciesVector };
 
@@ -29,12 +23,9 @@ template <typename T> T *allocUSM(queue &Q, size_t Size) {
 }
 
 template <typename RangeT>
-void printNVarsTestLabel(bool IsSYCL2020, const RangeT &Range,
-                         bool ToCERR = false) {
+void printNVarsTestLabel(const RangeT &Range, bool ToCERR = false) {
   std::ostream &OS = ToCERR ? std::cerr : std::cout;
-  std::string Mode = IsSYCL2020 ? "SYCL2020" : "ONEAPI  ";
-  OS << (ToCERR ? "Error" : "Start") << ": Mode=" << Mode
-     << ", Range=" << Range;
+  OS << (ToCERR ? "Error" : "Start") << ", Range=" << Range;
   if (!ToCERR)
     OS << std::endl;
 }
@@ -42,7 +33,7 @@ void printNVarsTestLabel(bool IsSYCL2020, const RangeT &Range,
 template <typename T1, typename T2, TestCase TC, int Dims, typename BOpT1,
           typename BOpT2>
 int test(queue &Q, BOpT1 BOp1, BOpT2 BOp2, const nd_range<Dims> &Range) {
-  printNVarsTestLabel(true /*SYCL2020*/, Range);
+  printNVarsTestLabel(Range);
 
   size_t NElems = Range.get_global_range().size();
   T1 *Sum1 = allocUSM<T1>(Q, 1);
@@ -101,9 +92,9 @@ int test(queue &Q, BOpT1 BOp1, BOpT2 BOp2, const nd_range<Dims> &Range) {
   T1 ExpectedSum1 = NElems + (NElems - 1) * NElems / 2;
   T2 ExpectedSum2 = 2 * NElems + (NElems - 1) * NElems / 2;
   std::string AddInfo = "TestCase=";
-  int Error = checkResults(Q, true /*SYCL2020*/, BOp1, Range, *Sum1,
-                           ExpectedSum1, AddInfo + std::to_string(1));
-  Error += checkResults(Q, true /*SYCL2020*/, BOp2, Range, *Sum2, ExpectedSum2,
+  int Error = checkResults(Q, BOp1, Range, *Sum1, ExpectedSum1,
+                           AddInfo + std::to_string(1));
+  Error += checkResults(Q, BOp2, Range, *Sum2, ExpectedSum2,
                         AddInfo + std::to_string(2));
 
   sycl::free(Sum1, Q);

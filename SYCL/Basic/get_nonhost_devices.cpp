@@ -4,11 +4,11 @@
 // Check that the host device is not included in devices returned by
 // get_devices() if a non-host device type is specified.
 
-#include <CL/sycl.hpp>
+#include <sycl/sycl.hpp>
 
 #include <cassert>
 
-using namespace cl::sycl;
+using namespace sycl;
 
 void check(info::device_type DT) {
   std::vector<device> Devices = device::get_devices(DT);

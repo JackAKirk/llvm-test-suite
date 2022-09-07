@@ -7,11 +7,11 @@
 // Note: Tests that non-trivially copyable types marked as device-copyable are
 // copied and used correctly on the device.
 
-#include <CL/sycl.hpp>
+#include <sycl/sycl.hpp>
 
 #include <iostream>
 
-using namespace cl::sycl;
+using namespace sycl;
 
 struct NontriviallyCopyable {
   int i;

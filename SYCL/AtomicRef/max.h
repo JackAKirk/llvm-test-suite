@@ -4,11 +4,11 @@
 #define TEST_GENERIC_IN_LOCAL 0
 #endif
 
-#include <CL/sycl.hpp>
 #include <algorithm>
 #include <cassert>
 #include <iostream>
 #include <numeric>
+#include <sycl/sycl.hpp>
 #include <vector>
 
 using namespace sycl;
@@ -30,8 +30,7 @@ void max_local_test(queue q, size_t N) {
        auto cum = cum_buf.template get_access<access::mode::read_write>(cgh);
        auto out =
            output_buf.template get_access<access::mode::discard_write>(cgh);
-       accessor<T, 1, access::mode::read_write, access::target::local> loc(1,
-                                                                           cgh);
+       local_accessor<T, 1> loc(1, cgh);
 
        cgh.parallel_for(nd_range<1>(N, N), [=](nd_item<1> it) {
          int gid = it.get_global_id(0);

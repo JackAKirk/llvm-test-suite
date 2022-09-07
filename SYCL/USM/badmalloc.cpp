@@ -17,10 +17,10 @@
 
 // This test verifies that things fail in the proper way when they should.
 
-#include <CL/sycl.hpp>
 #include <iostream>
+#include <sycl/sycl.hpp>
 
-using namespace cl::sycl;
+using namespace sycl;
 
 int main(int argc, char *argv[]) {
   queue q;

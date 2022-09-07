@@ -15,11 +15,11 @@
 
 #include "../esimd_test_utils.hpp"
 
-#include <CL/sycl.hpp>
 #include <iostream>
 #include <sycl/ext/intel/esimd.hpp>
+#include <sycl/sycl.hpp>
 
-using namespace cl::sycl;
+using namespace sycl;
 constexpr int VL = 8;
 
 template <int Width> bool test(queue q, const std::vector<int> &gold) {

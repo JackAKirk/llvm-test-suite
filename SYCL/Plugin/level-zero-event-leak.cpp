@@ -33,8 +33,8 @@
 // NOTE: The 1000 value below is to be larger than the "128" heuristic in
 // queue_impl::addSharedEvent.
 
-#include <CL/sycl.hpp>
-using namespace cl;
+#include <sycl/sycl.hpp>
+
 int main(int argc, char **argv) {
   sycl::queue Q;
   const unsigned n_chunk = 1000;

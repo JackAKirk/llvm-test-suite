@@ -13,14 +13,14 @@
 #include "kmeans.h"
 #include "esimd_test_utils.hpp"
 
-#include <CL/sycl.hpp>
 #include <fstream>
 #include <iostream>
 #include <string.h>
 #include <sycl/ext/intel/esimd.hpp>
+#include <sycl/sycl.hpp>
 #include <vector>
 
-using namespace cl::sycl;
+using namespace sycl;
 using namespace sycl::ext::intel::esimd;
 using namespace std;
 

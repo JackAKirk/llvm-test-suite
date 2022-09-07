@@ -9,8 +9,9 @@
 
 // The test checks that 'image' with max allowed sizes is handled correctly.
 
-#include <CL/sycl.hpp>
-using namespace cl::sycl;
+#include <iostream>
+#include <sycl/sycl.hpp>
+using namespace sycl;
 
 void init(uint32_t *A, uint32_t *B, size_t NumI32Elts) {
   for (int I = 0; I < NumI32Elts; I++) {

@@ -18,13 +18,13 @@
 
 #include "esimd_test_utils.hpp"
 
-#include <CL/sycl.hpp>
 #include <sycl/ext/intel/esimd.hpp>
+#include <sycl/sycl.hpp>
 
 #include <cstdint>
 #include <iostream>
 
-using namespace cl::sycl;
+using namespace sycl;
 
 template <typename T> bool test(queue Q) {
   std::cout << "  Testing " << typeid(T).name() << "...\n";

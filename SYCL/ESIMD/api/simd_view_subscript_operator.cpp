@@ -18,13 +18,14 @@
 
 #include "../esimd_test_utils.hpp"
 
-#include <CL/sycl.hpp>
 #include <sycl/ext/intel/esimd.hpp>
+#include <sycl/sycl.hpp>
 
 #include <iostream>
 
-using namespace cl::sycl;
+using namespace sycl;
 using namespace sycl::ext::intel::esimd;
+using bfloat16 = sycl::ext::oneapi::experimental::bfloat16;
 
 template <class T> class TestID;
 
@@ -102,6 +103,7 @@ int main(int argc, char **argv) {
   bool passed = true;
   passed &= test<int>(q);
   passed &= test<half>(q);
+  passed &= test<bfloat16>(q);
 
   std::cout << (passed ? "Test Passed\n" : "Test FAILED\n");
 

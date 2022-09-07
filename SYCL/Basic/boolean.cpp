@@ -3,12 +3,12 @@
 // RUN: %CPU_RUN_PLACEHOLDER %t.out
 // RUN: %GPU_RUN_PLACEHOLDER %t.out
 // RUN: %ACC_RUN_PLACEHOLDER %t.out
-#include <CL/sycl.hpp>
-
 #include <cassert>
+#include <iostream>
+#include <sycl/sycl.hpp>
 
-using namespace cl::sycl;
-namespace s = cl::sycl;
+using namespace sycl;
+namespace s = sycl;
 namespace d = s::detail;
 
 d::Boolean<3> foo() {

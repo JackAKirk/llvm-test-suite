@@ -7,8 +7,6 @@
 //===----------------------------------------------------------------------===//
 // REQUIRES: gpu
 // UNSUPPORTED: cuda || hip
-// TODO: esimd_emulator fails due to unimplemented 'half' type
-// XFAIL: esimd_emulator
 // RUN: %clangxx -fsycl %s -o %t.out
 // RUN: %GPU_RUN_PLACEHOLDER %t.out
 
@@ -19,14 +17,14 @@
 
 #include "esimd_test_utils.hpp"
 
-#include <CL/sycl.hpp>
-#include <CL/sycl/builtins_esimd.hpp>
+#include <sycl/builtins_esimd.hpp>
 #include <sycl/ext/intel/esimd.hpp>
+#include <sycl/sycl.hpp>
 
 #include <cmath>
 #include <iostream>
 
-using namespace cl::sycl;
+using namespace sycl;
 using namespace sycl::ext::intel;
 
 // --- Data initialization functions
@@ -333,10 +331,10 @@ bool test(queue &Q, const std::string &Name,
     buffer<T, 1> BufC(C, range<1>(Size));
 
     // number of workgroups
-    cl::sycl::range<1> GlobalRange{Size / N};
+    sycl::range<1> GlobalRange{Size / N};
 
     // threads (workitems) in each workgroup
-    cl::sycl::range<1> LocalRange{1};
+    sycl::range<1> LocalRange{1};
 
     auto E = Q.submit([&](handler &CGH) {
       auto PA = BufA.template get_access<access::mode::read>(CGH);
@@ -469,8 +467,11 @@ int main(void) {
   Pass &= testESIMD<half, 8>(Q);
   Pass &= testESIMD<float, 16>(Q);
   Pass &= testESIMD<float, 32>(Q);
-  Pass &= testSYCL<float, 8>(Q);
-  Pass &= testSYCL<float, 32>(Q);
+  if (Q.get_backend() != sycl::backend::ext_intel_esimd_emulator) {
+    // ESIMD_EMULATOR supports only ESIMD kernels
+    Pass &= testSYCL<float, 8>(Q);
+    Pass &= testSYCL<float, 32>(Q);
+  }
   Pass &= testESIMDSqrtIEEE<float, 16>(Q);
   Pass &= testESIMDSqrtIEEE<double, 32>(Q);
   Pass &= testESIMDDivIEEE<float, 8>(Q);

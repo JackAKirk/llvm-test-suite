@@ -1,14 +1,10 @@
 // RUN: %clangxx -fsycl -fsycl-targets=%sycl_triple %s -O3 -o %t.out -Xsycl-target-backend=nvptx64-nvidia-cuda --cuda-gpu-arch=sm_70
-// RUN: %HOST_RUN_PLACEHOLDER %t.out
 // RUN: %CPU_RUN_PLACEHOLDER %t.out
 // RUN: %GPU_RUN_PLACEHOLDER %t.out
 // RUN: %ACC_RUN_PLACEHOLDER %t.out
 // L0, OpenCL, and HIP backends don't currently support
 // info::device::atomic_memory_order_capabilities
 // UNSUPPORTED: level_zero, opencl, hip
-
-// host does not support barrier
-// XFAIL: host
 
 #include "atomic_memory_order.h"
 #include <iostream>
@@ -120,8 +116,7 @@ template <memory_order order> void test_local() {
 
   q.submit([&](handler &cgh) {
      auto res = res_buf.template get_access<access::mode::discard_write>(cgh);
-     accessor<int, 1, access::mode::read_write, access::target::local> val(2,
-                                                                           cgh);
+     local_accessor<int, 1> val(2, cgh);
      cgh.parallel_for(nd_range<1>(N_items, N_items), [=](nd_item<1> it) {
        val[0] = 0;
        it.barrier(access::fence_space::local_space);

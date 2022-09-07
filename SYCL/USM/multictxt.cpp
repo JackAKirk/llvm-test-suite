@@ -11,9 +11,9 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include <CL/sycl.hpp>
+#include <sycl/sycl.hpp>
 
-using namespace cl::sycl;
+using namespace sycl;
 
 // The multictxt test here is a sanity check that USM selects the right
 // implementation when presented with multiple contexts. The extra context

@@ -7,8 +7,8 @@
 // Disabling on windows until fixed
 // UNSUPPORTED: hip_amd, windows
 
-#include <CL/sycl.hpp>
 #include <sycl/ext/intel/fpga_device_selector.hpp>
+#include <sycl/sycl.hpp>
 
 int main() {
   sycl::context Context;
@@ -40,7 +40,7 @@ int main() {
       [&](sycl::handler &cgh) { cgh.single_task<class kernel6>([]() {}); });
 
   // call handler::barrier(const std::vector<event> &WaitList)
-  Q3.submit([&](cl::sycl::handler &cgh) { cgh.barrier({Event1, Event2}); });
+  Q3.submit([&](sycl::handler &cgh) { cgh.barrier({Event1, Event2}); });
 
   Q3.submit(
       [&](sycl::handler &cgh) { cgh.single_task<class kernel7>([]() {}); });
