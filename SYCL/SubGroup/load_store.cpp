@@ -44,8 +44,7 @@ template <typename T, int N> void check(queue &Queue) {
     Queue.submit([&](handler &cgh) {
       auto acc = syclbuf.template get_access<access::mode::read_write>(cgh);
       auto sgsizeacc = sgsizebuf.get_access<access::mode::read_write>(cgh);
-      accessor<T, 1, access::mode::read_write, access::target::local> LocalMem(
-          {L + max_sg_size * N}, cgh);
+      local_accessor<T, 1> LocalMem({L + max_sg_size * N}, cgh);
       cgh.parallel_for<sycl_subgr<T, N>>(NdRange, [=](nd_item<1> NdItem) {
         ext::oneapi::sub_group SG = NdItem.get_sub_group();
         auto SGid = SG.get_group_id().get(0);
@@ -132,8 +131,7 @@ template <typename T> void check(queue &Queue) {
     Queue.submit([&](handler &cgh) {
       auto acc = syclbuf.template get_access<access::mode::read_write>(cgh);
       auto sgsizeacc = sgsizebuf.get_access<access::mode::read_write>(cgh);
-      accessor<T, 1, access::mode::read_write, access::target::local> LocalMem(
-          {L}, cgh);
+      local_accessor<T, 1> LocalMem({L}, cgh);
       cgh.parallel_for<sycl_subgr<T, 0>>(NdRange, [=](nd_item<1> NdItem) {
         ext::oneapi::sub_group SG = NdItem.get_sub_group();
         if (NdItem.get_global_id(0) == 0)
@@ -189,10 +187,6 @@ template <typename T> void check(queue &Queue) {
 
 int main() {
   queue Queue;
-  if (Queue.get_device().is_host()) {
-    std::cout << "Skipping test\n";
-    return 0;
-  }
   std::string PlatformName =
       Queue.get_device().get_platform().get_info<info::platform::name>();
   auto Vec = Queue.get_device().get_info<info::device::extensions>();
