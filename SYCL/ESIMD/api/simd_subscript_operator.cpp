@@ -24,7 +24,7 @@
 
 using namespace sycl;
 using namespace sycl::ext::intel::esimd;
-using bfloat16 = sycl::ext::oneapi::experimental::bfloat16;
+using bfloat16 = sycl::ext::oneapi::bfloat16;
 
 template <class T> bool test(queue &q) {
   std::cout << "Testing " << typeid(T).name() << "...\n";

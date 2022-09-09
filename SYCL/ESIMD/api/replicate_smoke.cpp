@@ -20,7 +20,7 @@
 
 using namespace sycl;
 using namespace sycl::ext::intel::esimd;
-using bfloat16 = sycl::ext::oneapi::experimental::bfloat16;
+using bfloat16 = sycl::ext::oneapi::bfloat16;
 
 template <class T> struct char_to_int {
   using type = typename std::conditional<
