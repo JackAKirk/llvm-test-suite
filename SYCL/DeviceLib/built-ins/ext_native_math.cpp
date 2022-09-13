@@ -3,7 +3,7 @@
 // RUN: %GPU_RUN_PLACEHOLDER %t.out
 // RUN: %ACC_RUN_PLACEHOLDER %t.out
 
-// tests oneapi extension native tanh math function for sycl::vec and
+// Tests oneapi extension native tanh math function for sycl::vec and
 // sycl::marray float cases.
 
 #include "ext_native_math_common.hpp"
