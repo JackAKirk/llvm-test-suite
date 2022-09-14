@@ -36,6 +36,9 @@ int main() {
           range<1>(1), [=](id<1> ID) { Accessor[ID] |= (1 << Index); });
     });
     Q.wait();
+    // Access buffer on host to ensure updated value is read from and sent back
+    // to device
+    Buffer.get_host_access();
     ++Index;
   }
 
