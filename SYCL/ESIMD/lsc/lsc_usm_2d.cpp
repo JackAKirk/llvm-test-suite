@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //===----------------------------------------------------------------------===//
-// REQUIRES: gpu-intel-pvc
+// REQUIRES: gpu-intel-pvc || esimd_emulator
 // UNSUPPORTED: cuda || hip
 // RUN: %clangxx -fsycl %s -o %t.out
 // RUN: %GPU_RUN_PLACEHOLDER %t.out
@@ -32,7 +32,7 @@ int main() {
 
   queue q(esimd_test::ESIMDSelector{}, esimd_test::createExceptionHandler());
   auto device = q.get_device();
-  std::cout << "Device name: " << device.get_info<info::device::name>()
+  std::cout << "Device name: " << device.get_info<sycl::info::device::name>()
             << std::endl;
 
   auto *input = malloc_shared<int>(size, q);

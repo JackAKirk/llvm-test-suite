@@ -38,6 +38,7 @@
 using namespace sycl;
 using namespace sycl::ext::intel;
 using namespace sycl::ext::intel::esimd;
+using bfloat16 = sycl::ext::oneapi::experimental::bfloat16;
 
 template <typename T, int N, typename Flags>
 bool testUSM(queue &Q, T *Src, T *Dst, unsigned Off, Flags) {
@@ -227,7 +228,8 @@ template <typename T> bool testAcc(queue &Q) {
 int main(void) {
   queue Q(esimd_test::ESIMDSelector{}, esimd_test::createExceptionHandler());
   auto Dev = Q.get_device();
-  std::cout << "Running on " << Dev.get_info<info::device::name>() << "\n";
+  std::cout << "Running on " << Dev.get_info<sycl::info::device::name>()
+            << "\n";
 
   bool Pass = true;
 
@@ -250,9 +252,11 @@ int main(void) {
 #else
   Pass &= testUSM<uint16_t>(Q);
   Pass &= testUSM<float>(Q);
+  Pass &= testUSM<bfloat16>(Q);
 
   Pass &= testAcc<int16_t>(Q);
   Pass &= testAcc<float>(Q);
+  Pass &= testAcc<bfloat16>(Q);
 #endif
 
   std::cout << (Pass ? "Test Passed\n" : "Test FAILED\n");

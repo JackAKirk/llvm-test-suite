@@ -1,6 +1,5 @@
 // RUN: %clangxx -fsycl -fsycl-targets=%sycl_triple %s -o %t.out
 //
-// RUN: %HOST_RUN_PLACEHOLDER %t.out
 // RUN: %CPU_RUN_PLACEHOLDER %t.out
 // RUN: %GPU_RUN_PLACEHOLDER %t.out
 // RUN: %ACC_RUN_PLACEHOLDER %t.out
@@ -26,10 +25,8 @@ int main(int argc, char *argv[]) {
 
   q.submit([&](sycl::handler &h) {
      // Use two local buffers, one with an int and one with a double4
-     accessor<cl_int, 1, access::mode::read_write, access::target::local> a(1,
-                                                                            h);
-     accessor<double4, 1, access::mode::read_write, access::target::local> b(1,
-                                                                             h);
+     local_accessor<cl_int, 1> a(1, h);
+     local_accessor<double4, 1> b(1, h);
 
      auto ares = res.get_access<access::mode::read_write>(h);
 

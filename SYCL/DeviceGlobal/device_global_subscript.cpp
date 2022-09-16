@@ -11,9 +11,9 @@
 // RUN: %GPU_RUN_PLACEHOLDER %t_dev_img_scope.out
 // RUN: %ACC_RUN_PLACEHOLDER %t_dev_img_scope.out
 //
-// Currently fails for CPUs due to missing support for the SPIR-V extension.
-// Currently crashes on accelerators.
-// XFAIL: cpu, accelerator
+// CPU and accelerators are not currently guaranteed to support the required
+// extensions they are disabled until they are.
+// UNSUPPORTED: cpu, accelerator
 //
 // Tests operator[] on device_global.
 // NOTE: USE_DEVICE_IMAGE_SCOPE needs both kernels to be in the same image so
@@ -41,10 +41,6 @@ device_global<StructWithSubscript> DeviceGlobalVar2;
 
 int main() {
   queue Q;
-  if (Q.is_host()) {
-    std::cout << "Skipping test\n";
-    return 0;
-  }
 
   Q.single_task([]() {
      DeviceGlobalVar1[2] = 1234;

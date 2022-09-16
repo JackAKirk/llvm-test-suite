@@ -25,6 +25,7 @@
 
 using namespace sycl;
 using namespace sycl::ext::intel::esimd;
+using bfloat16 = sycl::ext::oneapi::experimental::bfloat16;
 
 template <class T> class TestID;
 
@@ -98,10 +99,12 @@ int main(int argc, char **argv) {
   queue q(esimd_test::ESIMDSelector{}, esimd_test::createExceptionHandler());
 
   auto dev = q.get_device();
-  std::cout << "Running on " << dev.get_info<info::device::name>() << "\n";
+  std::cout << "Running on " << dev.get_info<sycl::info::device::name>()
+            << "\n";
   bool passed = true;
   passed &= test<int>(q);
   passed &= test<half>(q);
+  passed &= test<bfloat16>(q);
 
   std::cout << (passed ? "Test Passed\n" : "Test FAILED\n");
 

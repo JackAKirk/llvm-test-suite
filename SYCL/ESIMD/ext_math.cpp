@@ -7,15 +7,16 @@
 //===----------------------------------------------------------------------===//
 // REQUIRES: gpu
 // UNSUPPORTED: cuda || hip
-// TODO: esimd_emulator fails due to unimplemented 'half' type
-// XFAIL: esimd_emulator
-// RUN: %clangxx -fsycl %s -o %t.out
+// RUN: %clangxx -fsycl-device-code-split=per_kernel -fsycl %s -o %t.out
 // RUN: %GPU_RUN_PLACEHOLDER %t.out
 
 // This test checks extended math operations. Combinations of
 // - argument type - half, float
 // - math function - sin, cos, ..., div_ieee, pow
 // - SYCL vs ESIMD APIs
+
+// Temporarily disable while the failure is being investigated.
+// UNSUPPORTED: windows
 
 #include "esimd_test_utils.hpp"
 
@@ -464,17 +465,23 @@ template <class T, int N> bool testSYCL(queue &Q) {
 int main(void) {
   queue Q(esimd_test::ESIMDSelector{}, esimd_test::createExceptionHandler());
   auto Dev = Q.get_device();
-  std::cout << "Running on " << Dev.get_info<info::device::name>() << "\n";
+  std::cout << "Running on " << Dev.get_info<sycl::info::device::name>()
+            << "\n";
   bool Pass = true;
   Pass &= testESIMD<half, 8>(Q);
   Pass &= testESIMD<float, 16>(Q);
   Pass &= testESIMD<float, 32>(Q);
-  Pass &= testSYCL<float, 8>(Q);
-  Pass &= testSYCL<float, 32>(Q);
+  if (Q.get_backend() != sycl::backend::ext_intel_esimd_emulator) {
+    // ESIMD_EMULATOR supports only ESIMD kernels
+    Pass &= testSYCL<float, 8>(Q);
+    Pass &= testSYCL<float, 32>(Q);
+  }
   Pass &= testESIMDSqrtIEEE<float, 16>(Q);
-  Pass &= testESIMDSqrtIEEE<double, 32>(Q);
+  if (Dev.has(sycl::aspect::fp64)) {
+    Pass &= testESIMDSqrtIEEE<double, 32>(Q);
+    Pass &= testESIMDDivIEEE<double, 32>(Q);
+  }
   Pass &= testESIMDDivIEEE<float, 8>(Q);
-  Pass &= testESIMDDivIEEE<double, 32>(Q);
   Pass &= testESIMDPow<float, 8>(Q);
   Pass &= testESIMDPow<half, 32>(Q);
   std::cout << (Pass ? "Test Passed\n" : "Test FAILED\n");

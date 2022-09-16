@@ -1,5 +1,4 @@
 // RUN: %clangxx -fsycl -fsycl-targets=%sycl_triple %s -o %t.out
-// RUN: %HOST_RUN_PLACEHOLDER %t.out
 // RUN: %CPU_RUN_PLACEHOLDER %t.out
 // RUN: %GPU_RUN_PLACEHOLDER %t.out
 // RUN: %ACC_RUN_PLACEHOLDER %t.out
@@ -187,9 +186,7 @@ bool group__async_work_group_copy() {
 
       Q.submit([&](handler &cgh) {
         auto AccGlobal = Buf.get_access<access::mode::read_write>(cgh);
-        accessor<DataType, DIMS, access::mode::read_write,
-                 access::target::local>
-            AccLocal(LocalRange, cgh);
+        local_accessor<DataType, DIMS> AccLocal(LocalRange, cgh);
 
         cgh.parallel_for<class group__async_work_group_copy>(
             nd_range<2>{GlobalRange, LocalRange}, [=](nd_item<DIMS> I) {

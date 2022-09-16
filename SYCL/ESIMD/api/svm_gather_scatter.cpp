@@ -25,6 +25,7 @@
 using namespace sycl;
 using namespace sycl::ext::intel;
 using namespace sycl::ext::intel::esimd;
+using bfloat16 = sycl::ext::oneapi::experimental::bfloat16;
 
 template <typename T, int N> bool test(queue &Q) {
   std::cout << "  Running " << typeid(T).name() << " test, N=" << N << "...\n";
@@ -75,7 +76,8 @@ template <typename T, int N> bool test(queue &Q) {
 int main(void) {
   queue Q(esimd_test::ESIMDSelector{}, esimd_test::createExceptionHandler());
   auto Dev = Q.get_device();
-  std::cout << "Running on " << Dev.get_info<info::device::name>() << "\n";
+  std::cout << "Running on " << Dev.get_info<sycl::info::device::name>()
+            << "\n";
 
   bool Pass = true;
 
@@ -100,15 +102,19 @@ int main(void) {
   Pass &= test<int32_t, 16>(Q);
   Pass &= test<int32_t, 32>(Q);
 
-  if (Q.get_backend() != sycl::backend::ext_intel_esimd_emulator) {
-    /// TODO: Enable 'half' type support for esimd_emulator
-    Pass &= test<half, 1>(Q);
-    Pass &= test<half, 2>(Q);
-    Pass &= test<half, 4>(Q);
-    Pass &= test<half, 8>(Q);
-    Pass &= test<half, 16>(Q);
-    Pass &= test<half, 32>(Q);
-  }
+  Pass &= test<half, 1>(Q);
+  Pass &= test<half, 2>(Q);
+  Pass &= test<half, 4>(Q);
+  Pass &= test<half, 8>(Q);
+  Pass &= test<half, 16>(Q);
+  Pass &= test<half, 32>(Q);
+
+  Pass &= test<bfloat16, 1>(Q);
+  Pass &= test<bfloat16, 2>(Q);
+  Pass &= test<bfloat16, 4>(Q);
+  Pass &= test<bfloat16, 8>(Q);
+  Pass &= test<bfloat16, 16>(Q);
+  Pass &= test<bfloat16, 32>(Q);
 
   std::cout << (Pass ? "Test Passed\n" : "Test FAILED\n");
   return Pass ? 0 : 1;

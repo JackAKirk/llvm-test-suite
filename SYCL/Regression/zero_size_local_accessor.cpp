@@ -1,5 +1,4 @@
 // RUN: %clangxx -fsycl -fsycl-targets=%sycl_triple %s -o %t.out
-// RUN: %HOST_RUN_PLACEHOLDER %t.out
 // RUN: %CPU_RUN_PLACEHOLDER %t.out
 // RUN: %GPU_RUN_PLACEHOLDER %t.out
 // RUN: %ACC_RUN_PLACEHOLDER %t.out
@@ -17,9 +16,7 @@
 int main() {
   sycl::queue Q;
   Q.submit([&](sycl::handler &CGH) {
-     sycl::accessor<uint8_t, 1, sycl::access_mode::read_write,
-                    sycl::access::target::local>
-         ZeroSizeLocalAcc(sycl::range<1>(0), CGH);
+     sycl::local_accessor<uint8_t, 1> ZeroSizeLocalAcc(sycl::range<1>(0), CGH);
      CGH.single_task([=]() {
        if (ZeroSizeLocalAcc.get_range()[0])
          ZeroSizeLocalAcc[0] = 1;
