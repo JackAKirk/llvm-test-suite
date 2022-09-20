@@ -80,7 +80,8 @@ T2 matrix_ref_mn(const int &m, const int &n, T1 *A, T1 *B, T2 *C) {
 }
 
 template <typename T1, typename T2, size_t Sub_Tiles_M, size_t Sub_Tiles_K,
-          size_t Sub_Tiles_N, size_t M, size_t K, size_t N, typename T3 = std::remove_const_t<T1>>
+          size_t Sub_Tiles_N, size_t M, size_t K, size_t N,
+          typename T3 = std::remove_const_t<T1>>
 void test(queue &q) {
 
   constexpr auto Big_M =
@@ -111,7 +112,8 @@ void test(queue &q) {
     for (int i = 0; i < Big_K * Big_N; i++) {
       B[i] = make_bf16(0.1f * (i % 10));
     }
-  } else if constexpr (!std::is_same<std::remove_const_t<T1>, bfloat16>::value) {
+  } else if constexpr (!std::is_same<std::remove_const_t<T1>,
+                                     bfloat16>::value) {
     for (int i = 0; i < Big_M * Big_K; i++) {
       A[i] = i % 100;
     }
@@ -123,11 +125,11 @@ void test(queue &q) {
   {
     if constexpr (std::is_same<std::remove_const_t<T1>, bfloat16>::value) {
 
-    buffer<bfloat16, 1> bufA(A, range<1>(Big_M * Big_K));
-    buffer<bfloat16, 1> bufB(B, range<1>(Big_K * Big_N));
+      buffer<bfloat16, 1> bufA(A, range<1>(Big_M * Big_K));
+      buffer<bfloat16, 1> bufB(B, range<1>(Big_K * Big_N));
       q.submit([&](handler &cgh) {
         accessor<bfloat16, 1, access::mode::write, target::device> accA(bufA,
-                                                                       cgh);
+                                                                        cgh);
 
         cgh.parallel_for<KernelName<T1, class copyA, M, K, N>>(
             range<1>(Big_M * Big_K), [=](item<1> item) {
@@ -137,7 +139,7 @@ void test(queue &q) {
       });
       q.submit([&](handler &cgh) {
         accessor<bfloat16, 1, access::mode::write, target::device> accB(bufB,
-                                                                       cgh);
+                                                                        cgh);
 
         cgh.parallel_for<KernelName<T1, class copyB, M, K, N>>(
             range<1>(Big_K * Big_N), [=](item<1> item) {
@@ -156,7 +158,8 @@ void test(queue &q) {
       accessor<T1, 1, access::mode::read, target::device> accA(bufA, cgh);
       accessor<T1, 1, access::mode::read, target::device> accB(bufB, cgh);
       accessor<T2, 1, access::mode::read, target::device> accC(bufC, cgh);
-      accessor<std::remove_const_t<T2>, 1, access::mode::write, target::device> accD(bufD, cgh);
+      accessor<std::remove_const_t<T2>, 1, access::mode::write, target::device>
+          accD(bufD, cgh);
 
       range<2> LocalRange = {1, N_THREADS_PER_MATRIX_OP};
       range<2> GlobalRange = {Sub_Tiles_M,
@@ -223,8 +226,8 @@ void test(queue &q) {
                    (D[m * Big_N + n] + res_device) <
                bf16_eps * 2);
       } else {
-        assert((D[m * Big_N + n] ==
-                matrix_ref_mn<Big_N, Big_K>(m, n, A, B, C)));
+        assert(
+            (D[m * Big_N + n] == matrix_ref_mn<Big_N, Big_K>(m, n, A, B, C)));
       }
     }
   }
@@ -242,64 +245,82 @@ int main() {
     test<half, float, SUB_TILES_M, SUB_TILES_K, SUB_TILES_N, 8, 16, 32>(Q);
     test<half, float, SUB_TILES_M, SUB_TILES_K, SUB_TILES_N, 32, 16, 8>(Q);
 
-    test<const half, const float, SUB_TILES_M, SUB_TILES_K, SUB_TILES_N, 16, 16, 16>(Q);
-    test<const half, const float, SUB_TILES_M, SUB_TILES_K, SUB_TILES_N, 8, 16, 32>(Q);
-    test<const half, const float, SUB_TILES_M, SUB_TILES_K, SUB_TILES_N, 32, 16, 8>(Q);
+    test<const half, const float, SUB_TILES_M, SUB_TILES_K, SUB_TILES_N, 16, 16,
+         16>(Q);
+    test<const half, const float, SUB_TILES_M, SUB_TILES_K, SUB_TILES_N, 8, 16,
+         32>(Q);
+    test<const half, const float, SUB_TILES_M, SUB_TILES_K, SUB_TILES_N, 32, 16,
+         8>(Q);
 
     // A/B/Accumulator half
     test<half, half, SUB_TILES_M, SUB_TILES_K, SUB_TILES_N, 16, 16, 16>(Q);
     test<half, half, SUB_TILES_M, SUB_TILES_K, SUB_TILES_N, 8, 16, 32>(Q);
     test<half, half, SUB_TILES_M, SUB_TILES_K, SUB_TILES_N, 32, 16, 8>(Q);
 
-    test<const half, const half, SUB_TILES_M, SUB_TILES_K, SUB_TILES_N, 16, 16, 16>(Q);
-    test<const half, const half, SUB_TILES_M, SUB_TILES_K, SUB_TILES_N, 8, 16, 32>(Q);
-    test<const half, const half, SUB_TILES_M, SUB_TILES_K, SUB_TILES_N, 32, 16, 8>(Q);
+    test<const half, const half, SUB_TILES_M, SUB_TILES_K, SUB_TILES_N, 16, 16,
+         16>(Q);
+    test<const half, const half, SUB_TILES_M, SUB_TILES_K, SUB_TILES_N, 8, 16,
+         32>(Q);
+    test<const half, const half, SUB_TILES_M, SUB_TILES_K, SUB_TILES_N, 32, 16,
+         8>(Q);
   }
   if (computeCapability >= 7.2) {
     test<int8_t, int32_t, SUB_TILES_M, SUB_TILES_K, SUB_TILES_N, 16, 16, 16>(Q);
     test<int8_t, int32_t, SUB_TILES_M, SUB_TILES_K, SUB_TILES_N, 8, 16, 32>(Q);
     test<int8_t, int32_t, SUB_TILES_M, SUB_TILES_K, SUB_TILES_N, 32, 16, 8>(Q);
 
-    test<const int8_t, const int32_t, SUB_TILES_M, SUB_TILES_K, SUB_TILES_N, 16, 16, 16>(Q);
-    test<const int8_t, const int32_t, SUB_TILES_M, SUB_TILES_K, SUB_TILES_N, 8, 16, 32>(Q);
-    test<const int8_t, const int32_t, SUB_TILES_M, SUB_TILES_K, SUB_TILES_N, 32, 16, 8>(Q);
+    test<const int8_t, const int32_t, SUB_TILES_M, SUB_TILES_K, SUB_TILES_N, 16,
+         16, 16>(Q);
+    test<const int8_t, const int32_t, SUB_TILES_M, SUB_TILES_K, SUB_TILES_N, 8,
+         16, 32>(Q);
+    test<const int8_t, const int32_t, SUB_TILES_M, SUB_TILES_K, SUB_TILES_N, 32,
+         16, 8>(Q);
 
     test<uint8_t, int32_t, SUB_TILES_M, SUB_TILES_K, SUB_TILES_N, 16, 16, 16>(
         Q);
     test<uint8_t, int32_t, SUB_TILES_M, SUB_TILES_K, SUB_TILES_N, 8, 16, 32>(Q);
     test<uint8_t, int32_t, SUB_TILES_M, SUB_TILES_K, SUB_TILES_N, 32, 16, 8>(Q);
 
-    test<const uint8_t, const int32_t, SUB_TILES_M, SUB_TILES_K, SUB_TILES_N, 16, 16, 16>(
-        Q);
-    test<const uint8_t, const int32_t, SUB_TILES_M, SUB_TILES_K, SUB_TILES_N, 8, 16, 32>(Q);
-    test<const uint8_t, const int32_t, SUB_TILES_M, SUB_TILES_K, SUB_TILES_N, 32, 16, 8>(Q);
+    test<const uint8_t, const int32_t, SUB_TILES_M, SUB_TILES_K, SUB_TILES_N,
+         16, 16, 16>(Q);
+    test<const uint8_t, const int32_t, SUB_TILES_M, SUB_TILES_K, SUB_TILES_N, 8,
+         16, 32>(Q);
+    test<const uint8_t, const int32_t, SUB_TILES_M, SUB_TILES_K, SUB_TILES_N,
+         32, 16, 8>(Q);
   }
   if (computeCapability >= 8.0) {
     test<double, double, SUB_TILES_M, SUB_TILES_K, SUB_TILES_N, 8, 4, 8>(Q);
-    test<const double, const double, SUB_TILES_M, SUB_TILES_K, SUB_TILES_N, 8, 4, 8>(Q);
+    test<const double, const double, SUB_TILES_M, SUB_TILES_K, SUB_TILES_N, 8,
+         4, 8>(Q);
 
     // A/B bfloat16 using storage type
     test<uint16_t, float, SUB_TILES_M, SUB_TILES_K, SUB_TILES_N, 16, 16, 16>(Q);
     test<uint16_t, float, SUB_TILES_M, SUB_TILES_K, SUB_TILES_N, 8, 16, 32>(Q);
     test<uint16_t, float, SUB_TILES_M, SUB_TILES_K, SUB_TILES_N, 32, 16, 8>(Q);
 
-    test<const uint16_t, const float, SUB_TILES_M, SUB_TILES_K, SUB_TILES_N, 16, 16, 16>(Q);
-    test<const uint16_t, const float, SUB_TILES_M, SUB_TILES_K, SUB_TILES_N, 8, 16, 32>(Q);
-    test<const uint16_t, const float, SUB_TILES_M, SUB_TILES_K, SUB_TILES_N, 32, 16, 8>(Q);
+    test<const uint16_t, const float, SUB_TILES_M, SUB_TILES_K, SUB_TILES_N, 16,
+         16, 16>(Q);
+    test<const uint16_t, const float, SUB_TILES_M, SUB_TILES_K, SUB_TILES_N, 8,
+         16, 32>(Q);
+    test<const uint16_t, const float, SUB_TILES_M, SUB_TILES_K, SUB_TILES_N, 32,
+         16, 8>(Q);
 
     test<bfloat16, float, SUB_TILES_M, SUB_TILES_K, SUB_TILES_N, 16, 16, 16>(Q);
     test<bfloat16, float, SUB_TILES_M, SUB_TILES_K, SUB_TILES_N, 8, 16, 32>(Q);
     test<bfloat16, float, SUB_TILES_M, SUB_TILES_K, SUB_TILES_N, 32, 16, 8>(Q);
 
-    test<const bfloat16, const float, SUB_TILES_M, SUB_TILES_K, SUB_TILES_N, 16, 16, 16>(Q);
-    test<const bfloat16, const float, SUB_TILES_M, SUB_TILES_K, SUB_TILES_N, 8, 16, 32>(Q);
-    test<const bfloat16, const float, SUB_TILES_M, SUB_TILES_K, SUB_TILES_N, 32, 16, 8>(Q);
+    test<const bfloat16, const float, SUB_TILES_M, SUB_TILES_K, SUB_TILES_N, 16,
+         16, 16>(Q);
+    test<const bfloat16, const float, SUB_TILES_M, SUB_TILES_K, SUB_TILES_N, 8,
+         16, 32>(Q);
+    test<const bfloat16, const float, SUB_TILES_M, SUB_TILES_K, SUB_TILES_N, 32,
+         16, 8>(Q);
 
     // A/B tf32
     test<float, float, SUB_TILES_M, SUB_TILES_K, SUB_TILES_N, 16, 8, 16,
          precision::tf32>(Q);
-    test<const float, const float, SUB_TILES_M, SUB_TILES_K, SUB_TILES_N, 16, 8, 16,
-     precision::tf32>(Q);
+    test<const float, const float, SUB_TILES_M, SUB_TILES_K, SUB_TILES_N, 16, 8,
+         16, precision::tf32>(Q);
   }
   return 0;
 };
