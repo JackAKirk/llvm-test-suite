@@ -171,13 +171,13 @@ void test(queue &q) {
                 item.get_group().get_group_id()[1]; // column id of current
                                                     // submatrix of BIG C matrix
 
-            joint_matrix<T3, M, K, matrix_use::a, layout::row_major>
+            joint_matrix<T3, matrix_use::a, M, K, layout::row_major>
                 sub_a;
 
-            joint_matrix<T3, K, N, matrix_use::b, layout::row_major>
+            joint_matrix<T3, matrix_use::b, K, N, layout::row_major>
                 sub_b;
 
-            joint_matrix<T2, M, N, matrix_use::accumulator>
+            joint_matrix<T2, matrix_use::accumulator, M, N, layout::dynamic>
                 sub_c;
 
             joint_matrix_load(
@@ -203,7 +203,7 @@ void test(queue &q) {
                   sub_b.wi_marray[i] = round_to_tf32(sub_b.wi_marray[i]);
                 }
               }
-              joint_matrix_mad(sg, sub_c, sub_a, sub_b, sub_c);
+             sub_c = joint_matrix_mad(sg, sub_a, sub_b, sub_c);
             }
             joint_matrix_store(
                 sg, sub_c, accD.get_pointer() + (m * M) * Big_N + n * N, Big_N, layout::row_major);
@@ -231,7 +231,7 @@ int main() {
 
   queue Q;
   auto computeCapability =
-      std::stof(Q.get_device().get_info<info::device::backend_version>());
+      std::stof(Q.get_device().get_info<sycl::info::device::backend_version>());
 
   if (computeCapability >= 7.0) {
     // A/B half, Accumulator float
