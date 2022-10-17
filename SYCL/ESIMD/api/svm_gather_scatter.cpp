@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //===----------------------------------------------------------------------===//
-// REQUIRES: gpu
+// REQUIRES: gpu && !gpu-intel-pvc
 // UNSUPPORTED: cuda || hip
 // RUN: %clangxx -fsycl %s -o %t.out
 // RUN: %GPU_RUN_PLACEHOLDER %t.out
@@ -25,9 +25,12 @@
 using namespace sycl;
 using namespace sycl::ext::intel;
 using namespace sycl::ext::intel::esimd;
+using bfloat16 = sycl::ext::oneapi::experimental::bfloat16;
+using tfloat32 = sycl::ext::intel::experimental::esimd::tfloat32;
 
 template <typename T, int N> bool test(queue &Q) {
-  std::cout << "  Running " << typeid(T).name() << " test, N=" << N << "...\n";
+  std::cout << "  Running " << esimd_test::type_name<T>() << " test, N=" << N
+            << "...\n";
 
   struct Deleter {
     queue Q;
@@ -73,9 +76,10 @@ template <typename T, int N> bool test(queue &Q) {
 }
 
 int main(void) {
-  queue Q(esimd_test::ESIMDSelector{}, esimd_test::createExceptionHandler());
+  queue Q(esimd_test::ESIMDSelector, esimd_test::createExceptionHandler());
   auto Dev = Q.get_device();
-  std::cout << "Running on " << Dev.get_info<info::device::name>() << "\n";
+  std::cout << "Running on " << Dev.get_info<sycl::info::device::name>()
+            << "\n";
 
   bool Pass = true;
 
@@ -106,6 +110,22 @@ int main(void) {
   Pass &= test<half, 8>(Q);
   Pass &= test<half, 16>(Q);
   Pass &= test<half, 32>(Q);
+
+  Pass &= test<bfloat16, 1>(Q);
+  Pass &= test<bfloat16, 2>(Q);
+  Pass &= test<bfloat16, 4>(Q);
+  Pass &= test<bfloat16, 8>(Q);
+  Pass &= test<bfloat16, 16>(Q);
+  Pass &= test<bfloat16, 32>(Q);
+#ifdef USE_TF32
+  Pass &= test<tfloat32, 1>(Q);
+  Pass &= test<tfloat32, 2>(Q);
+  Pass &= test<tfloat32, 4>(Q);
+  Pass &= test<tfloat32, 8>(Q);
+  Pass &= test<tfloat32, 16>(Q);
+  Pass &= test<tfloat32, 32>(Q);
+#endif
+
   std::cout << (Pass ? "Test Passed\n" : "Test FAILED\n");
   return Pass ? 0 : 1;
 }

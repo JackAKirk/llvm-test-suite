@@ -1,9 +1,6 @@
 // See https://github.com/intel/llvm-test-suite/issues/906
 // REQUIRES: gpu, level_zero
 
-// Temporarily disabled on Windows.
-// UNSUPPORTED: windows
-
 // RUN: %clangxx -fsycl -fsycl-unnamed-lambda -fsycl-targets=%sycl_triple  %s -o %t.out
 
 // Set batching to 4 explicitly
@@ -51,8 +48,7 @@
 #include <thread>
 
 int main(void) {
-  sycl::default_selector ds{};
-  sycl::queue q{ds};
+  sycl::queue q{sycl::default_selector_v};
   std::vector<sycl::event> events(10);
 
   sycl::event ev1 = q.submit([&](sycl::handler &cgh) {

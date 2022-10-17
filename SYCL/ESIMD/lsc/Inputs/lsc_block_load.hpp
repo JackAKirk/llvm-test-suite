@@ -99,11 +99,10 @@ bool test(unsigned SurfaceWidth, unsigned SurfaceHeight, unsigned SurfacePitch,
 
   T old_val = get_rand<T>();
 
-  auto GPUSelector = gpu_selector{};
-  auto q = queue{GPUSelector};
+  auto q = queue{gpu_selector_v};
   auto dev = q.get_device();
   std::cout << "Running case #" << case_num << " on "
-            << dev.get_info<info::device::name>() << "\n";
+            << dev.get_info<sycl::info::device::name>() << "\n";
   auto ctx = q.get_context();
 
   // workgroups

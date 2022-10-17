@@ -7,7 +7,7 @@
 //===----------------------------------------------------------------------===//
 // REQUIRES: cuda
 
-// RUN: %clangxx -fsycl -fsycl-targets=%sycl_triple -Xsycl-target-backend --cuda-gpu-arch=sm_80 -DSYCL_EXT_ONEAPI_MATRIX=3 %s -o %t.out
+// RUN: %clangxx -fsycl -fsycl-targets=%sycl_triple -Xsycl-target-backend --cuda-gpu-arch=sm_80 -DSYCL_EXT_ONEAPI_MATRIX_VERSION=3 %s -o %t.out
 // RUN: %t.out
 
 #include <sycl/sycl.hpp>
@@ -121,7 +121,7 @@ int main() {
 
   queue q;
   auto computeCapability =
-      std::stof(q.get_device().get_info<info::device::backend_version>());
+      std::stof(q.get_device().get_info<sycl::info::device::backend_version>());
   nd_range<2> r({nWGperDim, nWGperDim * SG_SZ}, {1, 1 * SG_SZ});
 
   if (computeCapability >= 7.0) {

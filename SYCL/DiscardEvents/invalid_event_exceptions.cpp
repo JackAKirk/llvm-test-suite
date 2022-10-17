@@ -1,12 +1,8 @@
 // RUN: %clangxx -fsycl -fsycl-targets=%sycl_triple %s -o %t.out
 //
-// RUN: %HOST_RUN_PLACEHOLDER %t.out
 // RUN: %CPU_RUN_PLACEHOLDER %t.out
 // RUN: %GPU_RUN_PLACEHOLDER %t.out
 // RUN: %ACC_RUN_PLACEHOLDER %t.out
-//
-// Temporarily disabled on Windows.
-// UNSUPPORTED: windows
 //
 // The test checks 3 things:
 // 1. An attempt to construct a queue with both properties(discard_events and

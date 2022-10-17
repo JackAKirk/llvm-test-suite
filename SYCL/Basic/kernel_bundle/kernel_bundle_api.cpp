@@ -34,18 +34,14 @@ void checkException(TryBodyT TryBody, const std::string &ExpectedErrMsg) {
 }
 
 int main() {
-  const sycl::device Dev{sycl::default_selector{}};
-  const sycl::device Dev2{sycl::default_selector{}};
+  const sycl::device Dev{sycl::default_selector_v};
+  const sycl::device Dev2{sycl::default_selector_v};
 
   const sycl::context Ctx{Dev};
   const sycl::context Ctx2{Dev2};
 
   sycl::queue Q{Ctx, Dev};
   sycl::queue Q2{Ctx2, Dev2};
-
-  // No support for host device so far.
-  if (Q.is_host() || Q2.is_host())
-    return 0;
 
   // The code is needed to just have device images in the executable
   if (0) {

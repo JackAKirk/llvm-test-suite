@@ -80,9 +80,10 @@ bool test(queue q, const std::array<T, VL> &input,
 }
 
 int main(void) {
-  queue q(esimd_test::ESIMDSelector{}, esimd_test::createExceptionHandler());
+  queue q(esimd_test::ESIMDSelector, esimd_test::createExceptionHandler());
   auto dev = q.get_device();
-  std::cout << "Running on " << dev.get_info<info::device::name>() << "\n";
+  std::cout << "Running on " << dev.get_info<sycl::info::device::name>()
+            << "\n";
 
   auto int32max = std::numeric_limits<int>::max();
   auto int32min = std::numeric_limits<int>::min();

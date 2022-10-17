@@ -1,4 +1,4 @@
-// RUN: %clangxx -fsycl -fsycl-targets=%sycl_triple %s -I . -o %t.out
+// RUN: %clangxx -fsycl -fsycl-targets=%sycl_triple -fsycl-device-code-split=per_kernel %s -I . -o %t.out
 // RUN: %CPU_RUN_PLACEHOLDER %t.out
 // RUN: %GPU_RUN_PLACEHOLDER %t.out
 // RUN: %ACC_RUN_PLACEHOLDER %t.out
@@ -112,9 +112,7 @@ int test_sort_over_group(sycl::queue &q, std::size_t local,
               << std::endl;
   q.submit([&](sycl::handler &h) {
      auto aI1 = sycl::accessor(bufI1, h);
-     sycl::accessor<std::byte, 1, sycl::access_mode::read_write,
-                    sycl::access::target::local>
-         scratch({local_memory_size}, h);
+     sycl::local_accessor<std::byte, 1> scratch({local_memory_size}, h);
 
      h.parallel_for<sort_over_group_kernel_name<int_wrapper<dim>, T, Compare>>(
          sycl::nd_range<dim>(local_range, local_range),
@@ -167,9 +165,7 @@ int test_joint_sort(sycl::queue &q, std::size_t n_items, std::size_t local,
               << std::endl;
   q.submit([&](sycl::handler &h) {
      auto aI1 = sycl::accessor(bufI1, h);
-     sycl::accessor<std::byte, 1, sycl::access_mode::read_write,
-                    sycl::access::target::local>
-         scratch({local_memory_size}, h);
+     sycl::local_accessor<std::byte, 1> scratch({local_memory_size}, h);
 
      h.parallel_for<joint_sort_kernel_name<T, Compare>>(
          sycl::nd_range<1>{{n_groups * local}, {local}},
@@ -347,7 +343,7 @@ void test_sort_by_type(sycl::queue &q, std::size_t dataSize) {
 }
 
 int main(int argc, char *argv[]) {
-  sycl::queue q(sycl::default_selector{}, async_handler_);
+  sycl::queue q(sycl::default_selector_v, async_handler_);
   if (!isSupportedDevice(q.get_device())) {
     std::cout << "Skipping test\n";
     return 0;
@@ -361,8 +357,10 @@ int main(int argc, char *argv[]) {
     test_sort_by_type<std::int32_t>(q, sizes[i]);
     test_sort_by_type<std::uint32_t>(q, sizes[i]);
     test_sort_by_type<float>(q, sizes[i]);
-    test_sort_by_type<sycl::half>(q, sizes[i]);
-    test_sort_by_type<double>(q, sizes[i]);
+    if (q.get_device().has(sycl::aspect::fp16))
+      test_sort_by_type<sycl::half>(q, sizes[i]);
+    if (q.get_device().has(sycl::aspect::fp64))
+      test_sort_by_type<double>(q, sizes[i]);
     test_sort_by_type<std::size_t>(q, sizes[i]);
 
     test_custom_type(q, sizes[i]);

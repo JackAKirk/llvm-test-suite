@@ -1,10 +1,8 @@
 // RUN: %clangxx -fsycl -fsycl-targets=%sycl_triple -fsycl-dead-args-optimization %s -o %t.out
-// RUN: %HOST_RUN_PLACEHOLDER %t.out
 // RUN: %CPU_RUN_PLACEHOLDER %t.out
 // RUN: %GPU_RUN_PLACEHOLDER %t.out
 // RUN: %ACC_RUN_PLACEHOLDER %t.out
 // RUN: %clangxx -DRESTRICT_WRITE_ACCESS_TO_CONSTANT_PTR -fsycl -fsycl-targets=%sycl_triple -fsycl-dead-args-optimization %s -o %t1.out
-// RUN: %HOST_RUN_PLACEHOLDER %t1.out
 // RUN: %CPU_RUN_PLACEHOLDER %t1.out
 // RUN: %GPU_RUN_PLACEHOLDER %t1.out
 // RUN: %ACC_RUN_PLACEHOLDER %t1.out
@@ -71,8 +69,7 @@ template <typename T> void testMultPtr() {
       accessor<T, 1, access::mode::read_write, access::target::device,
                access::placeholder::false_t>
           accessorData_2(bufferData_2, cgh);
-      accessor<T, 1, access::mode::read_write, access::target::local>
-          localAccessor(numOfItems, cgh);
+      local_accessor<T, 1> localAccessor(numOfItems, cgh);
 
       cgh.parallel_for<class testMultPtrKernel<T>>(range<1>{10}, [=](id<1> wiID) {
         auto ptr_1 = make_ptr<T, access::address_space::global_space>(
@@ -136,9 +133,7 @@ template <typename T> void testMultPtrArrowOperator() {
       accessor<point<T>, 1, access::mode::read, access::target::constant_buffer,
                access::placeholder::false_t>
           accessorData_2(bufferData_2, cgh);
-      accessor<point<T>, 1, access::mode::read_write, access::target::local,
-               access::placeholder::false_t>
-          accessorData_3(1, cgh);
+      local_accessor<point<T>, 1> accessorData_3(1, cgh);
       accessor<point<T>, 1, access::mode::read, access::target::device,
                access::placeholder::false_t>
           accessorData_4(bufferData_4, cgh);

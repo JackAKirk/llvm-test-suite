@@ -1,6 +1,5 @@
 // UNSUPPORTED: hip
 // RUN: %clangxx -fsycl -fsycl-targets=%sycl_triple %s -o %t.out
-// RUN: %HOST_RUN_PLACEHOLDER %t.out
 // RUN: %CPU_RUN_PLACEHOLDER %t.out
 // RUN: %GPU_RUN_PLACEHOLDER %t.out
 
@@ -9,7 +8,7 @@
 #include <sycl/sycl.hpp>
 
 int main() {
-  sycl::device dev{sycl::default_selector{}};
+  sycl::device dev{sycl::default_selector_v};
   sycl::queue q{dev};
 
   int *x = sycl::malloc_shared<int>(1, q);

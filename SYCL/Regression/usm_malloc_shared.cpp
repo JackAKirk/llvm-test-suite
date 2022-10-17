@@ -1,5 +1,4 @@
 // RUN: %clangxx -fsycl %s -o %t.out
-// RUN: %HOST_RUN_PLACEHOLDER %t.out
 // RUN: %CPU_RUN_PLACEHOLDER %t.out
 
 // This test checks if users will successfully allocate 160, 0, and -16 bytes of
@@ -24,7 +23,7 @@ int main(int argc, char *argv[]) {
     }
   };
 
-  queue myQueue(default_selector{}, exception_handler);
+  queue myQueue(default_selector_v, exception_handler);
   std::cout << "Device: " << myQueue.get_device().get_info<info::device::name>()
             << std::endl;
 

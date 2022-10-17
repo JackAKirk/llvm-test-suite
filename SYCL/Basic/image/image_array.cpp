@@ -1,8 +1,6 @@
-// UNSUPPORTED: cuda || hip
-// CUDA cannot support SYCL 1.2.1 images.
+// UNSUPPORTED: hip
 //
 // RUN: %clangxx -fsycl -fsycl-targets=%sycl_triple %s -o %t.out
-// RUNx: %HOST_RUN_PLACEHOLDER %t.out
 // RUN: %CPU_RUN_PLACEHOLDER %t.out
 // RUNx: %GPU_RUN_PLACEHOLDER %t.out
 
@@ -48,7 +46,7 @@ int main() {
 
     sycl::buffer<int, 1> ResBuf(ResBufData.data(), {ResBufSize});
 
-    TestQueue Q{sycl::default_selector()};
+    TestQueue Q{sycl::default_selector_v};
 
     constexpr auto SYCLRead = sycl::access::mode::read;
     constexpr auto SYCLWrite = sycl::access::mode::write;

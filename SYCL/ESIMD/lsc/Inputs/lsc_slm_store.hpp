@@ -36,10 +36,10 @@ bool test(uint32_t PMask = ~0) {
   else if constexpr (DS == lsc_data_size::u16u32h)
     VMask = static_cast<T>(0xffff0000);
 
-  queue Q(gpu_selector{});
+  queue Q(gpu_selector_v);
   auto D = Q.get_device();
   std::cout << "Running case #" << CaseNum << " on "
-            << D.get_info<info::device::name>() << std::endl;
+            << D.get_info<sycl::info::device::name>() << std::endl;
 
   nd_range<1> Range{range<1>{Groups * LocalRange}, range<1>{LocalRange}};
   constexpr uint16_t OutSize = Groups * LocalRange * VL * NChannels;

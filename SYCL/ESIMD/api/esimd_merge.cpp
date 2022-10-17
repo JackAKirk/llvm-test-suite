@@ -38,10 +38,11 @@ int main(void) {
   constexpr unsigned SUB_VL = VL / FACTOR / FACTOR;
   constexpr unsigned Size = VL * NUM_THREADS;
 
-  queue q(esimd_test::ESIMDSelector{}, esimd_test::createExceptionHandler());
+  queue q(esimd_test::ESIMDSelector, esimd_test::createExceptionHandler());
 
   auto dev = q.get_device();
-  std::cout << "Running on " << dev.get_info<info::device::name>() << "\n";
+  std::cout << "Running on " << dev.get_info<sycl::info::device::name>()
+            << "\n";
 
   int *A = malloc_shared<int>(Size, q);
   int *B = malloc_shared<int>(Size, q);

@@ -1,7 +1,7 @@
 // TODO: device_global without the device_image_scope property is not currently
 //       initialized on device. Enable the following test cases when it is
 //       supported.
-// RUN: %clangxx -fsycl -fsycl-targets=%sycl_triple %s -o %t.out
+// RUNx: %clangxx -fsycl -fsycl-targets=%sycl_triple %s -o %t.out
 // RUNx: %CPU_RUN_PLACEHOLDER %t.out
 // RUNx: %GPU_RUN_PLACEHOLDER %t.out
 // RUNx: %ACC_RUN_PLACEHOLDER %t.out
@@ -11,9 +11,9 @@
 // RUN: %GPU_RUN_PLACEHOLDER %t_dev_img_scope.out
 // RUN: %ACC_RUN_PLACEHOLDER %t_dev_img_scope.out
 //
-// Currently fails for CPUs due to missing support for the SPIR-V extension.
-// Currently crashes on accelerators.
-// XFAIL: cpu, accelerator
+// CPU and accelerators are not currently guaranteed to support the required
+// extensions they are disabled until they are.
+// UNSUPPORTED: cpu, accelerator
 //
 // Tests the passthrough of operators on device_global.
 // NOTE: USE_DEVICE_IMAGE_SCOPE needs both kernels to be in the same image so
@@ -32,10 +32,6 @@ device_global<int> DeviceGlobalVar;
 
 int main() {
   queue Q;
-  if (Q.is_host()) {
-    std::cout << "Skipping test\n";
-    return 0;
-  }
 
   Q.single_task([]() {
      DeviceGlobalVar = 2;
