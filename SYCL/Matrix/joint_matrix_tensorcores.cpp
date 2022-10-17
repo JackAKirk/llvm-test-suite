@@ -159,8 +159,7 @@ void test(queue &q) {
             joint_matrix<T3, use::b, K, N, layout::row_major>
                 sub_b;
 
-            joint_matrix<std::remove_const_t<T2>, use::accumulator, M, N,
-                         layout::dynamic>
+            joint_matrix<std::remove_const_t<T2>, use::accumulator, M, N>
                 sub_c;
 
             joint_matrix_load(
