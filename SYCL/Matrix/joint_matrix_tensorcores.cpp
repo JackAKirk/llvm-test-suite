@@ -56,7 +56,6 @@ T2 matrix_ref_mn(const int &m, const int &n, T1 *A, T1 *B, T2 *C) {
       res += A[m * Big_K + k] * B[k * Big_N + n];
   } else {
     for (int k = 0; k < Big_K; k++)
-
       res +=
           static_cast<T2>(A[m * Big_K + k]) * static_cast<T2>(B[k * Big_N + n]);
   }
