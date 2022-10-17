@@ -31,15 +31,15 @@ constexpr float bf16_eps = 0.00390625;
 // number of rows of "A" sub-matrix.
 // K: number of cols of "A"/number of rows of "B" sub-matrices.
 
-constexpr int N_THREADS_PER_MATRIX_OP =
-    32; // the number of threads per MMA subgroup is always 32 for Nvidia.
+// the number of threads per MMA subgroup is always 32 for Nvidia.
+constexpr int N_THREADS_PER_MATRIX_OP = 32;
 
-constexpr int SUB_TILES_M =
-    2; // number of submatrices per row of accumulator ("C", "D") matrices.
-constexpr int SUB_TILES_N =
-    3; // number of submatrices per col of accumulator matrices.
-constexpr int SUB_TILES_K =
-    4; // number of submatrices per col of "A"/per row of "B", matrices.
+// number of submatrices per row of accumulator ("C", "D") matrices.
+constexpr int SUB_TILES_M = 2;
+// number of submatrices per col of accumulator matrices.
+constexpr int SUB_TILES_N = 3;
+// number of submatrices per col of "A"/per row of "B", matrices.
+constexpr int SUB_TILES_K = 4;
 
 template <typename T1, typename T2, size_t M, size_t K, size_t N>
 class TypeHelper;
@@ -67,16 +67,12 @@ template <typename T1, typename T2, size_t Sub_Tiles_M, size_t Sub_Tiles_K,
           size_t Sub_Tiles_N, size_t M, size_t K, size_t N,
           typename T3 = std::remove_const_t<T1>>
 void test(queue &q) {
-
-  constexpr auto Big_M =
-      Sub_Tiles_M *
-      M; // total number of M dimension matrix elements for the "Big matrix".
-  constexpr auto Big_N =
-      Sub_Tiles_N *
-      N; // total number of N dimension matrix elements for the "Big matrix".
-  constexpr auto Big_K =
-      Sub_Tiles_K *
-      K; // total number of K dimension matrix elements for the "Big matrix".
+  // total number of M dimension matrix elements for the "Big matrix".
+  constexpr auto Big_M = Sub_Tiles_M * M;
+  // total number of N dimension matrix elements for the "Big matrix".
+  constexpr auto Big_N = Sub_Tiles_N * N;
+  // total number of K dimension matrix elements for the "Big matrix".
+  constexpr auto Big_K = Sub_Tiles_K * K;
 
   std::remove_const_t<T1> A[Big_M * Big_K];
   std::remove_const_t<T1> B[Big_K * Big_N];
@@ -143,12 +139,10 @@ void test(queue &q) {
       cgh.parallel_for<KernelName<T1, T2, M, K, N>>(
           nd_range<2>(GlobalRange, LocalRange), [=](nd_item<2> item) {
             sub_group sg = item.get_sub_group();
-            const auto m =
-                item.get_group().get_group_id()[0]; // row id of current
-                                                    // submatrix of BIG C matrix
-            const auto n =
-                item.get_group().get_group_id()[1]; // column id of current
-                                                    // submatrix of BIG C matrix
+            // row id of current submatrix of BIG C matrix
+            const auto m = item.get_group().get_group_id()[0];
+            // column id of current submatrix of BIG C matrix
+            const auto n = item.get_group().get_group_id()[1];
 
             joint_matrix<T3, use::a, M, K, layout::row_major> sub_a;
             joint_matrix<T3, use::b, K, N, layout::row_major> sub_b;
@@ -157,10 +151,8 @@ void test(queue &q) {
             joint_matrix_load(sg, sub_c,
                               accC.get_pointer() + (m * M) * Big_N + n * N,
                               Big_N, layout::row_major);
-
-            for (int k = 0; k < Sub_Tiles_K;
-                 k++) // row/col id of current submatrix of BIG A/B matrices
-            {
+            // k = row/col id of current submatrix of BIG A/B matrices
+            for (int k = 0; k < Sub_Tiles_K; k++) {
               joint_matrix_load(sg, sub_a,
                                 accA.get_pointer() + (k * K) + (m * M * Big_K),
                                 Big_K);
