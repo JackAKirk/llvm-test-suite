@@ -155,8 +155,9 @@ void test(queue &q) {
             joint_matrix<T3, use::b, K, N, layout::row_major> sub_b;
             joint_matrix<std::remove_const_t<T2>, use::accumulator, M, N> sub_c;
 
-            joint_matrix_load(sg, sub_c, accC.get_pointer() + (m * M) * Big_N + n * N,
-                  Big_N, layout::row_major);
+            joint_matrix_load(sg, sub_c,
+                              accC.get_pointer() + (m * M) * Big_N + n * N,
+                              Big_N, layout::row_major);
 
             for (int k = 0; k < Sub_Tiles_K;
                  k++) // row/col id of current submatrix of BIG A/B matrices
@@ -181,8 +182,9 @@ void test(queue &q) {
 
               sub_c = joint_matrix_mad(sg, sub_a, sub_b, sub_c);
             }
-            joint_matrix_store(sg, sub_c, accD.get_pointer() + (m * M) * Big_N + n * N,
-                   Big_N, layout::row_major);
+            joint_matrix_store(sg, sub_c,
+                               accD.get_pointer() + (m * M) * Big_N + n * N,
+                               Big_N, layout::row_major);
           });
     });
     q.wait();
