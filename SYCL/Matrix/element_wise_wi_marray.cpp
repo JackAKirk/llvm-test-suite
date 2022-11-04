@@ -29,8 +29,8 @@ template <typename T, size_t M, size_t K> void verify_wi_marray(queue q) {
            [ERR](nd_item<2> spmd_item) [[sycl::reqd_sub_group_size(SG_SZ)]] {
              auto sg = spmd_item.get_sub_group();
 
-             joint_matrix<T, use::a, M, K, layout::row_major> sub_a;
-             joint_matrix<T, use::a, M, K, layout::row_major> sub_a_2;
+             joint_matrix<T, use::a, M, K, layout::row_major> sub_a(sg);
+             joint_matrix<T, use::a, M, K, layout::row_major> sub_a_2(sg);
 
              joint_matrix_fill(sg, sub_a, -1);
              joint_matrix_fill(sg, sub_a_2, -1);
@@ -39,10 +39,10 @@ template <typename T, size_t M, size_t K> void verify_wi_marray(queue q) {
              for (int i = 0; i < wi_slice_a.length(); i++) {
                wi_slice_a[i] = fabs(wi_slice_a[i]);
              }
-             sub_a_2.wi_marray = fabs(sub_a_2.wi_marray);
+             sub_a_2.get_wi_marray() = fabs(sub_a_2.get_wi_marray());
 
-             for (int i = 0; i < sub_a_2.wi_marray.size(); i++) {
-               if (sub_a_2.wi_marray[i] != wi_slice_a[i]) {
+             for (int i = 0; i < sub_a_2.get_wi_marray().size(); i++) {
+               if (sub_a_2.get_wi_marray()[i] != wi_slice_a[i]) {
                  ERR[0] = 1;
                }
              }
