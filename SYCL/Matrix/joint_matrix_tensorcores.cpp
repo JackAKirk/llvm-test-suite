@@ -144,10 +144,9 @@ void test(queue &q) {
             // column id of current submatrix of BIG C matrix
             const auto n = item.get_group().get_group_id()[1];
 
-            joint_matrix<T3, use::a, M, K, layout::row_major> sub_a(sg);
-            joint_matrix<T3, use::b, K, N, layout::row_major> sub_b(sg);
-            joint_matrix<std::remove_const_t<T2>, use::accumulator, M, N> sub_c(
-                sg);
+            joint_matrix<T3, use::a, M, K, layout::row_major> sub_a;
+	     joint_matrix<T3, use::b, K, N, layout::row_major> sub_b;
+            joint_matrix<std::remove_const_t<T2>, use::accumulator, M, N> sub_c;
 
             joint_matrix_load(sg, sub_c,
                               accC.get_pointer() + (m * M) * Big_N + n * N,

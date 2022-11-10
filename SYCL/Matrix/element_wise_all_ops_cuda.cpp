@@ -63,9 +63,9 @@ void matrix_verify_op(queue q, big_matrix<T2, M * nWGperDim, N * nWGperDim> &C,
 
              auto sg = spmd_item.get_sub_group();
 
-             joint_matrix<T, use::a, M, K, layout::row_major> sub_a(sg);
-             joint_matrix<T, use::b, K, N, layout::row_major> sub_b(sg);
-             joint_matrix<T2, use::accumulator, M, N> sub_c(sg);
+             joint_matrix<T, use::a, M, K, layout::row_major> sub_a;
+             joint_matrix<T, use::b, K, N, layout::row_major> sub_b;
+             joint_matrix<T2, use::accumulator, M, N> sub_c;
 
              joint_matrix_fill(sg, sub_a, 3);
              joint_matrix_fill(sg, sub_b, 1);
