@@ -5,8 +5,8 @@
 // Checks that the sycl::ext::oneapi::experimental::cuda::__ldg builtins are
 // returning the correct values.
 
-#include <sycl/sycl.hpp>
 #include <sycl/ext/oneapi/experimental/cuda/builtins.hpp>
+#include <sycl/sycl.hpp>
 
 using namespace sycl::ext::oneapi::experimental::cuda;
 using namespace sycl::ext::oneapi::experimental;
