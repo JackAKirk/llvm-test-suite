@@ -67,7 +67,8 @@ int main() {
   CUDA_CHECK(cuDeviceGet(&cu_dev, 0));
   auto sycl_dev = sycl::make_device<sycl::backend::ext_oneapi_cuda>(cu_dev);
   auto native_dev = sycl::get_native<sycl::backend::ext_oneapi_cuda>(sycl_dev);
-  auto sycl_dev2 = sycl::make_device<sycl::backend::ext_oneapi_cuda>(native_dev);
+  auto sycl_dev2 =
+      sycl::make_device<sycl::backend::ext_oneapi_cuda>(native_dev);
 
   check_type<sycl::device>(sycl_dev);
   check_type<CUdevice>(native_dev);
