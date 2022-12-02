@@ -1,5 +1,5 @@
 // RUN: %clangxx -fsycl %s -o %t.out
-// RUN: env SYCL_DEVICE_FILTER=%sycl_be %t.out
+// RUN: env ONEAPI_DEVICE_SELECTOR='%sycl_be:*' %t.out
 //
 // Hip is missing some of the parameters tested here so it fails with NVIDIA
 // XFAIL: hip_nvidia
@@ -54,8 +54,8 @@ int main() {
     if (plt.has(aspect::fp64)) {
       std::cout << "  fp64" << std::endl;
     }
-    if (plt.has(aspect::ext_oneapi_bfloat16)) {
-      std::cout << " ext_oneapi_bfloat16" << std::endl;
+    if (plt.has(aspect::ext_oneapi_bfloat16_math_functions)) {
+      std::cout << " ext_oneapi_bfloat16_math_functions" << std::endl;
     }
     if (plt.has(aspect::int64_base_atomics)) {
       std::cout << "  base atomic operations" << std::endl;

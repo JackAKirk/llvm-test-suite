@@ -7,7 +7,7 @@
 //===----------------------------------------------------------------------===//
 // REQUIRES: gpu && !gpu-intel-pvc
 // UNSUPPORTED: cuda || hip
-// RUN: %clangxx -fsycl %s -o %t.out
+// RUN: %clangxx -fsycl-device-code-split=per_kernel -fsycl %s -o %t.out
 // RUN: %GPU_RUN_PLACEHOLDER %t.out
 
 // Regression test for SVM gather/scatter API.
@@ -25,7 +25,7 @@
 using namespace sycl;
 using namespace sycl::ext::intel;
 using namespace sycl::ext::intel::esimd;
-using bfloat16 = sycl::ext::oneapi::experimental::bfloat16;
+using bfloat16 = sycl::ext::oneapi::bfloat16;
 using tfloat32 = sycl::ext::intel::experimental::esimd::tfloat32;
 
 template <typename T, int N> bool test(queue &Q) {
@@ -104,12 +104,14 @@ int main(void) {
   Pass &= test<int32_t, 16>(Q);
   Pass &= test<int32_t, 32>(Q);
 
-  Pass &= test<half, 1>(Q);
-  Pass &= test<half, 2>(Q);
-  Pass &= test<half, 4>(Q);
-  Pass &= test<half, 8>(Q);
-  Pass &= test<half, 16>(Q);
-  Pass &= test<half, 32>(Q);
+  if (Dev.has(aspect::fp16)) {
+    Pass &= test<half, 1>(Q);
+    Pass &= test<half, 2>(Q);
+    Pass &= test<half, 4>(Q);
+    Pass &= test<half, 8>(Q);
+    Pass &= test<half, 16>(Q);
+    Pass &= test<half, 32>(Q);
+  }
 
   Pass &= test<bfloat16, 1>(Q);
   Pass &= test<bfloat16, 2>(Q);
