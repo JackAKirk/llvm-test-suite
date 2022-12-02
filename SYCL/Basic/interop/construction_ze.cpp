@@ -1,6 +1,6 @@
 // REQUIRES: level_zero, level_zero_dev_kit
 // RUN: %clangxx -fsycl -fsycl-targets=%sycl_triple %level_zero_options %s -o %t.ze.out
-// RUN: env SYCL_DEVICE_FILTER="level_zero" %t.ze.out
+// RUN: env ONEAPI_DEVICE_SELECTOR="level_zero:*" %t.ze.out
 
 #include <level_zero/ze_api.h>
 
@@ -10,7 +10,7 @@
 constexpr auto BE = sycl::backend::ext_oneapi_level_zero;
 
 int main() {
-  sycl::device Dev{sycl::default_selector{}};
+  sycl::device Dev{sycl::default_selector_v};
 
   sycl::queue Q{Dev};
 

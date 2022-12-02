@@ -8,8 +8,8 @@
 
 #pragma once
 
+#include <sycl/ext/intel/experimental/esimd/tfloat32.hpp>
 #include <sycl/sycl.hpp>
-
 #define NOMINMAX
 
 #include <algorithm>
@@ -26,7 +26,7 @@ using namespace sycl;
 
 namespace esimd_test {
 
-// This is the class provided to SYCL runtime by the application to decide
+// This is the function provided to SYCL runtime by the application to decide
 // on which device to run, or whether to run at all.
 // When selecting a device, SYCL runtime first takes (1) a selector provided by
 // the program or a default one and (2) the set of all available devices. Then
@@ -34,25 +34,21 @@ namespace esimd_test {
 // which '()' returned the highest number, is selected. If a negative number
 // was returned for all devices, then the selection process will cause an
 // exception.
-class ESIMDSelector : public device_selector {
-  // Require GPU device unless HOST is requested in SYCL_DEVICE_FILTER env
-  virtual int operator()(const device &device) const {
-    if (const char *dev_filter = getenv("SYCL_DEVICE_FILTER")) {
-      std::string filter_string(dev_filter);
-      if (filter_string.find("gpu") != std::string::npos)
-        return device.is_gpu() ? 1000 : -1;
-      if (filter_string.find("host") != std::string::npos)
-        return device.is_host() ? 1000 : -1;
-      std::cerr
-          << "Supported 'SYCL_DEVICE_FILTER' env var values are 'gpu' and "
-             "'host', '"
-          << filter_string << "' does not contain such substrings.\n";
-      return -1;
-    }
-    // If "SYCL_DEVICE_FILTER" not defined, only allow gpu device
-    return device.is_gpu() ? 1000 : -1;
+// Require GPU device
+inline int ESIMDSelector(const device &device) {
+  const std::string intel{"Intel(R) Corporation"};
+  if (device.get_backend() == backend::ext_intel_esimd_emulator) {
+    return 1000;
+  } else if (device.is_gpu() &&
+             (device.get_info<info::device::vendor>() == intel)) {
+    // pick gpu device if esimd not available but give it a lower score in
+    // order not to compete with the esimd in environments where both are
+    // present
+    return 900;
+  } else {
+    return -1;
   }
-};
+}
 
 inline auto createExceptionHandler() {
   return [](exception_list l) {
@@ -557,7 +553,8 @@ TID(uint32_t)
 TID(int64_t)
 TID(uint64_t)
 TID(half)
-TID(sycl::ext::oneapi::experimental::bfloat16)
+TID(sycl::ext::oneapi::bfloat16)
+TID(sycl::ext::intel::experimental::esimd::tfloat32)
 TID(float)
 TID(double)
 

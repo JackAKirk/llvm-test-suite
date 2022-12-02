@@ -1,5 +1,4 @@
 // RUN: %clangxx -fsycl -fsycl-targets=%sycl_triple %s -o %t.out
-// RUN: %HOST_RUN_PLACEHOLDER %t.out
 // RUN: %CPU_RUN_PLACEHOLDER %t.out
 // RUN: %GPU_RUN_PLACEHOLDER %t.out
 // RUN: %ACC_RUN_PLACEHOLDER %t.out
@@ -168,8 +167,9 @@ int main() {
   queue q;
 
   if (!q.get_device().has(sycl::aspect::fp16)) {
-    std::cout << "skipping fp16 tests: requires fp16 device aspect."
-              << std::endl;
+    std::cout
+        << "Test was skipped because the selected device does not support fp16"
+        << std::endl;
     return 0;
   }
 

@@ -54,10 +54,17 @@ int main(int argc, char **argv) {
   }
   std::cout << "Using start value = " << start_val << "\n";
 
-  queue q(esimd_test::ESIMDSelector{}, esimd_test::createExceptionHandler());
+  queue q(esimd_test::ESIMDSelector, esimd_test::createExceptionHandler());
 
   auto dev = q.get_device();
   std::cout << "Running on " << dev.get_info<info::device::name>() << "\n";
+
+  if (!dev.has(sycl::aspect::fp16)) {
+    std::cout << "Test was skipped becasue the selected device does not "
+                 "support sycl::aspect::fp16"
+              << std::endl;
+    return 0;
+  }
 
   TstT *A = malloc_shared<TstT>(Size, q);
   SrcT *B = malloc_shared<SrcT>(Size, q);

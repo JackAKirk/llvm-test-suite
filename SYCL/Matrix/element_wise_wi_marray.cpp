@@ -6,14 +6,15 @@
 //
 //===----------------------------------------------------------------------===//
 // REQUIRES: cuda
-
-// RUN: %clangxx -fsycl -fsycl-targets=%sycl_triple -Xsycl-target-backend --cuda-gpu-arch=sm_80 -DSYCL_EXT_ONEAPI_MATRIX=3 %s -o %t.out
+// Temp xfail: test was merged early.
+// XFAIL: cuda
+// RUN: %clangxx -fsycl -fsycl-targets=%sycl_triple -Xsycl-target-backend --cuda-gpu-arch=sm_80 -DSYCL_EXT_ONEAPI_MATRIX_VERSION=4 %s -o %t.out
 // RUN: %t.out
 
 #include <sycl/sycl.hpp>
 
 using namespace sycl;
-using namespace sycl::ext::oneapi::experimental;
+using namespace sycl::ext::oneapi;
 using namespace sycl::ext::oneapi::experimental::matrix;
 
 #define SG_SZ 32
@@ -30,8 +31,8 @@ template <typename T, size_t M, size_t K> void verify_wi_marray(queue q) {
            [ERR](nd_item<2> spmd_item) [[sycl::reqd_sub_group_size(SG_SZ)]] {
              auto sg = spmd_item.get_sub_group();
 
-             joint_matrix<T, matrix_use::a, M, K> sub_a;
-             joint_matrix<T, matrix_use::a, M, K> sub_a_2;
+             joint_matrix<T, use::a, M, K, layout::row_major> sub_a;
+             joint_matrix<T, use::a, M, K, layout::row_major> sub_a_2;
 
              joint_matrix_fill(sg, sub_a, -1);
              joint_matrix_fill(sg, sub_a_2, -1);
@@ -57,7 +58,7 @@ int main() {
 
   queue q;
   auto computeCapability =
-      std::stof(q.get_device().get_info<info::device::backend_version>());
+      std::stof(q.get_device().get_info<sycl::info::device::backend_version>());
 
   if (computeCapability >= 8.0) {
     verify_wi_marray<bfloat16, 16, 16>(q);

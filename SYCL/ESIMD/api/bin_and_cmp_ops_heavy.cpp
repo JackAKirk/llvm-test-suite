@@ -8,7 +8,7 @@
 // Exclude PVC not to run same test cases twice (via the *_pvc.cpp variant).
 // REQUIRES: gpu && !gpu-intel-pvc
 // UNSUPPORTED: cuda || hip
-// RUN: %clangxx -fsycl %s -o %t.out
+// RUN: %clangxx -fsycl-device-code-split=per_kernel -fsycl %s -o %t.out
 // RUN: %GPU_RUN_PLACEHOLDER %t.out
 
 // Tests various binary operations applied to simd objects.
@@ -30,7 +30,8 @@
 
 using namespace sycl;
 using namespace sycl::ext::intel::esimd;
-using bfloat16 = sycl::ext::oneapi::experimental::bfloat16;
+using bfloat16 = sycl::ext::oneapi::bfloat16;
+using tfloat32 = sycl::ext::intel::experimental::esimd::tfloat32;
 
 template <class T1, class T2, int VL, class OpClass, class Ops> class TestID;
 
@@ -255,45 +256,81 @@ template <class T1, class T2, class C> using IDf = init_default<T1, T2, C>;
 template <class T1, class T2, class C> using ISf = init_for_shift<T1, T2, C>;
 
 int main(void) {
-  queue q(esimd_test::ESIMDSelector{}, esimd_test::createExceptionHandler());
+  queue q(esimd_test::ESIMDSelector, esimd_test::createExceptionHandler());
 
   auto dev = q.get_device();
-  std::cout << "Running on " << dev.get_info<info::device::name>() << "\n";
+  std::cout << "Running on " << dev.get_info<sycl::info::device::name>()
+            << "\n";
   bool passed = true;
   using BinOp = esimd_test::BinaryOp;
+
+  bool SupportsDouble = dev.has(aspect::fp64);
+  bool SupportsHalf = dev.has(aspect::fp16);
 
   auto arith_ops = esimd_test::ArithBinaryOpsNoDiv;
   passed &= test<unsigned char, int, 1, BinOp, VSf, IDf>(arith_ops, q);
   passed &= test<char, float, 7, BinOp, VEf, IDf>(arith_ops, q, 0.000001f);
-  passed &= test<short, double, 7, BinOp, VEf, IDf>(arith_ops, q, 1e-15);
+  if (SupportsDouble)
+    passed &= test<short, double, 7, BinOp, VEf, IDf>(arith_ops, q, 1e-15);
   passed &= test<float, float, 32, BinOp, VEf, IDf>(arith_ops, q, 0.000001f);
-  passed &= test<half, char, 1, BinOp, verify_n, IDf>(arith_ops, q, 1);
-  passed &= test<half, unsigned int, 32, BinOp, VSf, IDf>(arith_ops, q, 1);
-  passed &= test<double, half, 7, BinOp, VSf, IDf>(arith_ops, q);
+  if (SupportsHalf)
+    passed &= test<half, char, 1, BinOp, verify_n, IDf>(arith_ops, q, 1);
+  if (SupportsHalf)
+    passed &= test<half, unsigned int, 32, BinOp, VSf, IDf>(arith_ops, q, 1);
+  if (SupportsDouble && SupportsHalf)
+    passed &= test<double, half, 7, BinOp, VSf, IDf>(arith_ops, q);
   passed &= test<short, uint64_t, 7, BinOp, VSf, IDf>(arith_ops, q);
 #ifdef USE_BF16
   passed &= test<bfloat16, int, 8, BinOp, VSf, IDf>(arith_ops, q);
-  passed &= test<half, bfloat16, 7, BinOp, VEfa, IDf>(arith_ops, q, 0.03);
+  if (SupportsHalf)
+    passed &= test<half, bfloat16, 7, BinOp, VEfa, IDf>(arith_ops, q, 0.03);
 #endif // USE_BF16
-
+#ifdef USE_TF32
+  passed &= test<tfloat32, float, 32, BinOp, VEf, IDf>(arith_ops, q, 0.000001f);
+  passed &=
+      test<tfloat32, tfloat32, 32, BinOp, VEf, IDf>(arith_ops, q, 0.000001f);
+  passed &= test<char, tfloat32, 32, BinOp, VEf, IDf>(arith_ops, q, 0.000001f);
+  if (SupportsHalf)
+    passed &=
+        test<tfloat32, half, 32, BinOp, VEf, IDf>(arith_ops, q, 0.000001f);
+  passed &= test<tfloat32, unsigned char, 32, BinOp, VEf, IDf>(arith_ops, q,
+                                                               0.000001f);
+  passed &= test<tfloat32, short, 32, BinOp, VEf, IDf>(arith_ops, q, 0.000001f);
+#endif // USE_TF32
   // Test division separately, as error probability is higher.
   auto div_op = esimd_test::BinaryOpSeq<BinOp::div>{};
   passed &= test<unsigned char, int, 1, BinOp, VSf, IDf>(div_op, q);
   passed &= test<char, float, 7, BinOp, VEf, IDf>(div_op, q, 0.000001f);
 #ifndef WA_BUG
-  passed &= test<short, double, 7, BinOp, VSf, IDf>(div_op, q);
+  if (SupportsDouble)
+    passed &= test<short, double, 7, BinOp, VEf, IDf>(div_op, q, 0.000001f);
 #endif // WA_BUG
   passed &= test<float, float, 32, BinOp, VEf, IDf>(div_op, q, 0.000001f);
-  passed &= test<half, char, 1, BinOp, verify_n, IDf>(div_op, q, 1);
-  passed &= test<half, unsigned int, 32, BinOp, VSf, IDf>(div_op, q, 1);
+  if (SupportsHalf)
+    passed &= test<half, char, 1, BinOp, verify_n, IDf>(div_op, q, 1);
+  if (SupportsHalf)
+    passed &= test<half, unsigned int, 32, BinOp, VSf, IDf>(div_op, q, 1);
 #ifndef WA_BUG
-  passed &= test<double, half, 7, BinOp, VSf, IDf>(div_op, q);
+  if (SupportsDouble && SupportsHalf)
+    passed &= test<double, half, 7, BinOp, VEf, IDf>(div_op, q, 0.000001f);
 #endif // WA_BUG
   passed &= test<short, uint64_t, 7, BinOp, VSf, IDf>(div_op, q);
 #ifdef USE_BF16
   passed &= test<bfloat16, short, 8, BinOp, VSf, IDf>(div_op, q);
-  passed &= test<half, bfloat16, 7, BinOp, VEfa, IDf>(div_op, q, 0.03);
+  if (SupportsHalf)
+    passed &= test<half, bfloat16, 7, BinOp, VEfa, IDf>(div_op, q, 0.03);
 #endif // USE_BF16
+
+#ifdef USE_TF32
+  passed &= test<tfloat32, float, 32, BinOp, VEf, IDf>(div_op, q, 0.000001f);
+  passed &= test<tfloat32, tfloat32, 32, BinOp, VEf, IDf>(div_op, q, 0.000001f);
+  passed &= test<char, tfloat32, 32, BinOp, VEf, IDf>(div_op, q, 0.000001f);
+  if (SupportsHalf)
+    passed &= test<tfloat32, half, 32, BinOp, VEf, IDf>(div_op, q, 0.000001f);
+  passed &=
+      test<tfloat32, unsigned char, 32, BinOp, VEf, IDf>(div_op, q, 0.000001f);
+  passed &= test<tfloat32, short, 32, BinOp, VEf, IDf>(div_op, q, 0.000001f);
+#endif // USE_TF32
 
   auto int_ops = esimd_test::IntBinaryOpsNoShiftNoDivRem;
   passed &= test<unsigned char, unsigned int, 1, BinOp, VSf, IDf>(int_ops, q);
@@ -326,16 +363,31 @@ int main(void) {
   auto cmp_ops = esimd_test::CmpOps;
   passed &= test<unsigned char, int, 1, CmpOp, VSf, IDf>(cmp_ops, q);
   passed &= test<char, float, 7, CmpOp, VSf, IDf>(cmp_ops, q);
-  passed &= test<short, double, 7, CmpOp, VSf, IDf>(cmp_ops, q);
+  if (SupportsDouble)
+    passed &= test<short, double, 7, CmpOp, VSf, IDf>(cmp_ops, q);
   passed &= test<float, float, 32, CmpOp, VSf, IDf>(cmp_ops, q);
-  passed &= test<half, char, 1, CmpOp, VSf, IDf>(cmp_ops, q, 1);
-  passed &= test<half, unsigned int, 32, CmpOp, VSf, IDf>(cmp_ops, q, 1);
-  passed &= test<double, half, 7, CmpOp, VSf, IDf>(cmp_ops, q);
+  if (SupportsHalf)
+    passed &= test<half, char, 1, CmpOp, VSf, IDf>(cmp_ops, q, 1);
+  if (SupportsHalf)
+    passed &= test<half, unsigned int, 32, CmpOp, VSf, IDf>(cmp_ops, q, 1);
+  if (SupportsDouble)
+    passed &= test<double, half, 7, CmpOp, VSf, IDf>(cmp_ops, q);
   passed &= test<short, uint64_t, 7, CmpOp, VSf, IDf>(cmp_ops, q);
 #ifdef USE_BF16
   passed &= test<bfloat16, int, 32, CmpOp, VSf, IDf>(cmp_ops, q);
-  passed &= test<half, bfloat16, 7, CmpOp, VSf, IDf>(cmp_ops, q);
+  if (SupportsHalf)
+    passed &= test<half, bfloat16, 7, CmpOp, VSf, IDf>(cmp_ops, q);
 #endif // USE_BF16
+
+#ifdef USE_TF32
+  passed &= test<tfloat32, float, 32, CmpOp, VSf, IDf>(cmp_ops, q);
+  passed &= test<tfloat32, tfloat32, 32, CmpOp, VSf, IDf>(cmp_ops, q);
+  passed &= test<char, tfloat32, 32, CmpOp, VSf, IDf>(cmp_ops, q);
+  if (SupportsHalf)
+    passed &= test<tfloat32, half, 32, CmpOp, VSf, IDf>(cmp_ops, q);
+  passed &= test<tfloat32, unsigned char, 32, CmpOp, VSf, IDf>(cmp_ops, q);
+  passed &= test<tfloat32, short, 32, CmpOp, VSf, IDf>(cmp_ops, q);
+#endif // USE_TF32
 
   std::cout << (passed ? "Test PASSED\n" : "Test FAILED\n");
   return passed ? 0 : 1;

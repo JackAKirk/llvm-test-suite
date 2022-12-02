@@ -2,7 +2,6 @@
 // Temporarily disabled because the test is out of time
 // RUN: %clangxx -fsycl -fsycl-targets=%sycl_triple %s -o %t.out
 // RUN: %ACC_RUN_PLACEHOLDER %t.out
-// RUN: %HOST_RUN_PLACEHOLDER %t.out
 // RUN: %CPU_RUN_PLACEHOLDER %t.out
 // RUN: %GPU_RUN_PLACEHOLDER %t.out
 
@@ -21,8 +20,7 @@ const size_t ITERS = 100000;
 // The test checks that that event destruction does not lead to stack overflow
 
 int main() {
-  sycl::default_selector S;
-  sycl::queue Q(S);
+  sycl::queue Q(sycl::default_selector_v);
   sycl::buffer<int, 1> Buf(3000);
   for (size_t Idx = 0; Idx < ITERS; ++Idx) {
     auto Event = Q.submit([&](sycl::handler &cgh) {

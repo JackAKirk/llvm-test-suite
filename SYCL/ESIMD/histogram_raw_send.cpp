@@ -7,7 +7,7 @@
 //
 //===----------------------------------------------------------------------===//
 // REQUIRES: gpu-intel-gen9
-// UNSUPPORTED: gpu-intel-dg1,cuda,hip
+// UNSUPPORTED: gpu-intel-dg1,gpu-intel-dg2,cuda,hip
 // UNSUPPORTED: ze_debug-1,ze_debug4
 // RUN: %clangxx -fsycl %s -o %t.out
 // RUN: %GPU_RUN_PLACEHOLDER %t.out
@@ -109,7 +109,7 @@ int main(int argc, char *argv[]) {
   // Read in image luma plane
 
   // Allocate Input Buffer
-  queue q(esimd_test::ESIMDSelector{}, esimd_test::createExceptionHandler(),
+  queue q(esimd_test::ESIMDSelector, esimd_test::createExceptionHandler(),
           sycl::property::queue::enable_profiling{});
 
   auto dev = q.get_device();
@@ -118,7 +118,8 @@ int main(int argc, char *argv[]) {
       static_cast<unsigned char *>(malloc_shared(width * height, dev, ctxt));
   unsigned int *bins = static_cast<unsigned int *>(
       malloc_shared(NUM_BINS * sizeof(unsigned int), dev, ctxt));
-  std::cout << "Running on " << dev.get_info<info::device::name>() << "\n";
+  std::cout << "Running on " << dev.get_info<sycl::info::device::name>()
+            << "\n";
 
   uint range_width = width / BLOCK_WIDTH;
   uint range_height = height / BLOCK_HEIGHT;

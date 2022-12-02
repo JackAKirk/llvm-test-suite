@@ -36,7 +36,7 @@ using namespace sycl::ext::oneapi;
 int queryFromQueue(std::vector<sycl::platform> *platform_list,
                    std::vector<sycl::device> *device_list) {
   int failures = 0;
-  sycl::queue Q{sycl::default_selector{}};
+  sycl::queue Q{sycl::default_selector_v};
   sycl::device dev = Q.get_info<sycl::info::queue::device>();
   auto plt = dev.get_platform();
 
@@ -134,8 +134,8 @@ int main() {
   std::vector<sycl::device> device_list;
   for (const auto &plt : sycl::platform::get_platforms()) {
     std::cout << "Platform " << pindex++ << " "
-              << ((plt.is_host()) ? "host" : "") << " ("
-              << plt.get_info<sycl::info::platform::name>() << ")" << std::endl;
+              << " (" << plt.get_info<sycl::info::platform::name>() << ")"
+              << std::endl;
     platform_list.push_back(plt);
 
     int dindex = 1;

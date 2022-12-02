@@ -13,12 +13,16 @@
 // Smoke test for 2D region select API which can be used to represent 2D tiles.
 // Tests int types.
 
+// Temporarily disabled while the problem in GPU RT is being fixed.
+// XFAIL: gpu-intel-gen12
+
 #include "simd_view_select_2d.hpp"
 
 int main(int argc, char **argv) {
-  queue q(esimd_test::ESIMDSelector{}, esimd_test::createExceptionHandler());
+  queue q(esimd_test::ESIMDSelector, esimd_test::createExceptionHandler());
   auto dev = q.get_device();
-  std::cout << "Running on " << dev.get_info<info::device::name>() << "\n";
+  std::cout << "Running on " << dev.get_info<sycl::info::device::name>()
+            << "\n";
 
   bool passed = true;
   passed &= test<char>(q);

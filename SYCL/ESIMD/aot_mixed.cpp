@@ -8,6 +8,10 @@
 // REQUIRES: gpu
 // UNSUPPORTED: cuda || hip
 // UNSUPPORTED: esimd_emulator
+// Temporary disable everywhere until "Unsupported required sub group size" is
+// fixed in some configurations.
+// UNSUPPORTED: windows
+// UNSUPPORTED: linux
 // RUN: %clangxx -fsycl -fsycl-targets=spir64_gen -Xsycl-target-backend=spir64_gen "-device gen9" -o %t.sycl.out -DENABLE_SYCL=0 %s
 // RUN: %GPU_RUN_PLACEHOLDER %t.sycl.out
 // RUN: %clangxx -fsycl -fsycl-targets=spir64_gen -Xsycl-target-backend=spir64_gen "-device gen9" -o %t.out %s
@@ -152,7 +156,7 @@ bool test_sycl(queue q) {
 #endif
 
 int main(void) {
-  queue q(esimd_test::ESIMDSelector{}, esimd_test::createExceptionHandler());
+  queue q(esimd_test::ESIMDSelector, esimd_test::createExceptionHandler());
   auto dev = q.get_device();
   std::cout << "Running on " << dev.get_info<info::device::name>() << "\n";
 

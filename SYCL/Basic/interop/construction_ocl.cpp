@@ -1,6 +1,6 @@
 // REQUIRES: opencl, opencl_icd
 // RUN: %clangxx -fsycl -fsycl-targets=%sycl_triple %opencl_lib %s -o %t.ocl.out
-// RUN: env SYCL_DEVICE_FILTER="opencl" %t.ocl.out
+// RUN: env ONEAPI_DEVICE_SELECTOR="opencl:*" %t.ocl.out
 
 #include <CL/cl.h>
 #include <sycl/backend/opencl.hpp>
@@ -10,7 +10,7 @@
 constexpr auto BE = sycl::backend::opencl;
 
 int main() {
-  sycl::device Dev{sycl::default_selector{}};
+  sycl::device Dev{sycl::default_selector_v};
   auto NativeDev = sycl::get_native<BE>(Dev);
 
   sycl::device NewDev = sycl::make_device<BE>(NativeDev);

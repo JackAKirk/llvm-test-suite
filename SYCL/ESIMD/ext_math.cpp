@@ -7,7 +7,7 @@
 //===----------------------------------------------------------------------===//
 // REQUIRES: gpu
 // UNSUPPORTED: cuda || hip
-// RUN: %clangxx -fsycl %s -o %t.out
+// RUN: %clangxx -fsycl-device-code-split=per_kernel -fsycl %s -o %t.out
 // RUN: %GPU_RUN_PLACEHOLDER %t.out
 
 // This test checks extended math operations. Combinations of
@@ -460,10 +460,19 @@ template <class T, int N> bool testSYCL(queue &Q) {
 // --- The entry point
 
 int main(void) {
-  queue Q(esimd_test::ESIMDSelector{}, esimd_test::createExceptionHandler());
+  queue Q(esimd_test::ESIMDSelector, esimd_test::createExceptionHandler());
   auto Dev = Q.get_device();
-  std::cout << "Running on " << Dev.get_info<info::device::name>() << "\n";
+  std::cout << "Running on " << Dev.get_info<sycl::info::device::name>()
+            << "\n";
   bool Pass = true;
+#ifdef TEST_IEEE_DIV_REM
+  Pass &= testESIMDSqrtIEEE<float, 16>(Q);
+  Pass &= testESIMDDivIEEE<float, 8>(Q);
+  if (Dev.has(sycl::aspect::fp64)) {
+    Pass &= testESIMDSqrtIEEE<double, 32>(Q);
+    Pass &= testESIMDDivIEEE<double, 32>(Q);
+  }
+#else  // !TEST_IEEE_DIV_REM
   Pass &= testESIMD<half, 8>(Q);
   Pass &= testESIMD<float, 16>(Q);
   Pass &= testESIMD<float, 32>(Q);
@@ -472,12 +481,9 @@ int main(void) {
     Pass &= testSYCL<float, 8>(Q);
     Pass &= testSYCL<float, 32>(Q);
   }
-  Pass &= testESIMDSqrtIEEE<float, 16>(Q);
-  Pass &= testESIMDSqrtIEEE<double, 32>(Q);
-  Pass &= testESIMDDivIEEE<float, 8>(Q);
-  Pass &= testESIMDDivIEEE<double, 32>(Q);
   Pass &= testESIMDPow<float, 8>(Q);
   Pass &= testESIMDPow<half, 32>(Q);
+#endif // !TEST_IEEE_DIV_REM
   std::cout << (Pass ? "Test Passed\n" : "Test FAILED\n");
   return Pass ? 0 : 1;
 }

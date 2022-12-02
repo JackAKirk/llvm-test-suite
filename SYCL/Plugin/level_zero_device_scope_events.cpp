@@ -24,7 +24,7 @@
 //
 // MODE2: ze_event_pool_desc_t flags set to: 1
 // MODE2: ZE ---> zeEventCreate(ZeEventPool, &ZeEventDesc, &ZeEvent)
-// MODE2: ZE ---> zeCommandListAppendSignalEvent(CommandList->first, HostVisibleEvent->ZeEvent)
+// MODE2: ZE ---> zeCommandListAppendBarrier(CommandList->first, HostVisibleEvent->ZeEvent, 0, nullptr)
 // MODE2: ZE ---> zeCommandListClose(CommandList->first)
 // MODE2: ZE ---> zeCommandQueueExecuteCommandLists(ZeCommandQueue, 1, &ZeCommandList, CommandList->second.ZeFence)
 // clang-format on
@@ -33,8 +33,7 @@
 #include <sycl/sycl.hpp>
 
 int main(int argc, char **argv) {
-  sycl::gpu_selector device_selector;
-  sycl::queue queue(device_selector);
+  sycl::queue queue(sycl::gpu_selector_v);
 
   int N = (argc >= 2 ? std::atoi(argv[1]) : 100);
   std::cout << N << " kernels" << std::endl;

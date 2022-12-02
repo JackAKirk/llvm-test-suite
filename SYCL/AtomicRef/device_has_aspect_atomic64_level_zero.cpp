@@ -11,7 +11,7 @@ int main() {
   queue Queue;
   device Dev = Queue.get_device();
   bool Result;
-  ze_device_module_properties_t Properties;
+  ze_device_module_properties_t Properties{};
   zeDeviceGetModuleProperties(get_native<backend::ext_oneapi_level_zero>(Dev),
                               &Properties);
   if (Properties.flags & ZE_DEVICE_MODULE_FLAG_INT64_ATOMICS)

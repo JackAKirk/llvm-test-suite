@@ -16,14 +16,17 @@
 #include "simd_view_select_2d.hpp"
 
 int main(int argc, char **argv) {
-  queue q(esimd_test::ESIMDSelector{}, esimd_test::createExceptionHandler());
+  queue q(esimd_test::ESIMDSelector, esimd_test::createExceptionHandler());
   auto dev = q.get_device();
-  std::cout << "Running on " << dev.get_info<info::device::name>() << "\n";
+  std::cout << "Running on " << dev.get_info<sycl::info::device::name>()
+            << "\n";
 
   bool passed = true;
-  passed &= test<half>(q);
+  if (dev.has(sycl::aspect::fp16))
+    passed &= test<half>(q);
   passed &= test<float>(q);
-  passed &= test<double>(q);
+  if (dev.has(sycl::aspect::fp64))
+    passed &= test<double>(q);
 
   std::cout << (passed ? "=== Test passed\n" : "=== Test FAILED\n");
   return passed ? 0 : 1;
