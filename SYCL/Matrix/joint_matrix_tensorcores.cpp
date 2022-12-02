@@ -144,9 +144,9 @@ void test(queue &q) {
             // column id of current submatrix of BIG C matrix
             const auto n = item.get_group().get_group_id()[1];
 
-            joint_matrix<T3, use::a, M, K, layout::row_major> sub_a;
-            joint_matrix<T3, use::b, K, N, layout::row_major> sub_b;
-            joint_matrix<std::remove_const_t<T2>, use::accumulator, M, N> sub_c;
+            joint_matrix<sub_group, T3, use::a, M, K, layout::row_major> sub_a;
+            joint_matrix<sub_group, T3, use::b, K, N, layout::row_major> sub_b;
+            joint_matrix<sub_group, std::remove_const_t<T2>, use::accumulator, M, N> sub_c;
 
             joint_matrix_load(sg, sub_c,
                               accC.get_pointer() + (m * M) * Big_N + n * N,
@@ -163,13 +163,11 @@ void test(queue &q) {
 
               // round values to correct precision if using tf32
               if constexpr (std::is_same<T3, precision::tf32>::value) {
-                auto wi_size = sub_a.get_wi_marray().size();
-                assert(wi_size == sub_b.get_wi_marray().size());
+                auto wi_size = get_wi_data(sg, sub_a).length();
+                assert(wi_size == get_wi_data(sg, sub_b).length());
                 for (auto i = 0; i < wi_size; ++i) {
-                  sub_a.get_wi_marray()[i] =
-                      round_to_tf32(sub_a.get_wi_marray()[i]);
-                  sub_b.get_wi_marray()[i] =
-                      round_to_tf32(sub_b.get_wi_marray()[i]);
+                  get_wi_data(sg, sub_a)[i] = round_to_tf32(get_wi_data(sg, sub_a)[i]);
+                  get_wi_data(sg, sub_b)[i] = round_to_tf32(get_wi_data(sg, sub_b)[i]);
                 }
               }
 
