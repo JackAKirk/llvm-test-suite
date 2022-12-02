@@ -12,7 +12,7 @@
 #include <sycl/sycl.hpp>
 
 using namespace sycl;
-using namespace sycl::ext::oneapi::experimental;
+using namespace sycl::ext::oneapi;
 using namespace sycl::ext::oneapi::experimental::matrix;
 constexpr float bf16_eps = 0.00390625;
 
