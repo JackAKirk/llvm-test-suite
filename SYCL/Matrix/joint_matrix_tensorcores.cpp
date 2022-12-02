@@ -146,7 +146,9 @@ void test(queue &q) {
 
             joint_matrix<sub_group, T3, use::a, M, K, layout::row_major> sub_a;
             joint_matrix<sub_group, T3, use::b, K, N, layout::row_major> sub_b;
-            joint_matrix<sub_group, std::remove_const_t<T2>, use::accumulator, M, N> sub_c;
+            joint_matrix<sub_group, std::remove_const_t<T2>, use::accumulator,
+                         M, N>
+                sub_c;
 
             joint_matrix_load(sg, sub_c,
                               accC.get_pointer() + (m * M) * Big_N + n * N,
@@ -166,8 +168,10 @@ void test(queue &q) {
                 auto wi_size = get_wi_data(sg, sub_a).length();
                 assert(wi_size == get_wi_data(sg, sub_b).length());
                 for (auto i = 0; i < wi_size; ++i) {
-                  get_wi_data(sg, sub_a)[i] = round_to_tf32(get_wi_data(sg, sub_a)[i]);
-                  get_wi_data(sg, sub_b)[i] = round_to_tf32(get_wi_data(sg, sub_b)[i]);
+                  get_wi_data(sg, sub_a)[i] =
+                      round_to_tf32(get_wi_data(sg, sub_a)[i]);
+                  get_wi_data(sg, sub_b)[i] =
+                      round_to_tf32(get_wi_data(sg, sub_b)[i]);
                 }
               }
 
