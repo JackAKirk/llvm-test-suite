@@ -1,7 +1,7 @@
 // RUN: %clangxx -fsycl -fsycl-targets=%sycl_triple %s -o %t.out
 // RUN: %t.out
 
-// Checks that the sycl::ext::oneapi::experimental::cuda::__ldg builtins are
+// Checks that the sycl::ext::oneapi::experimental::cuda::ldg builtins are
 // returning the correct values.
 
 #include <sycl/ext/oneapi/experimental/cuda/builtins.hpp>
@@ -39,8 +39,8 @@ template <typename T> void test(sycl::queue &q) {
 
   q.submit([=](sycl::handler &h) {
     h.single_task<KernelName<T>>([=] {
-      auto cacheA = __ldg(&A[0]);
-      auto cacheB = __ldg(&B[0]);
+      auto cacheA = ldg(&A[0]);
+      auto cacheB = ldg(&B[0]);
       C[0] = cacheA + cacheB;
     });
   });
