@@ -63,13 +63,13 @@ template <typename T> void test(sycl::queue &q) {
 int main() {
   queue q;
 
-if (q.get_device().has(aspect::usm_shared_allocations)) {
-  test<float>(q);
-  test<double>(q);
+  if (q.get_device().has(aspect::usm_shared_allocations)) {
+    test<float>(q);
+    test<double>(q);
 
-  test<float2>(q);
-  test<double2>(q);
-  test<float4>(q);
-}
+    test<float2>(q);
+    test<double2>(q);
+    test<float4>(q);
+  }
   return 0;
 }
