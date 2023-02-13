@@ -38,14 +38,16 @@ template <typename T> void test(sycl::queue &q) {
   q.wait();
 
   q.submit([=](sycl::handler &h) {
-    h.single_task<KernelName<T>>([=] {
+    h.parallel_for<KernelName<T>>(range<1>(1), [=](auto i) {
       auto cacheA = ldg(&A[0]);
       auto cacheB = ldg(&B[0]);
       C[0] = cacheA + cacheB;
     });
   });
+
   T dev_result;
   q.wait();
+
   q.memcpy(&dev_result, C, sizeof(T)).wait();
   if constexpr (std::is_same_v<T, double> || std::is_same_v<T, float>) {
     assert(dev_result == a_loc + b_loc);
