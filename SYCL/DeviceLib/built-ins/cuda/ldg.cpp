@@ -31,7 +31,7 @@ template <typename T> void test(sycl::queue &q) {
 
   T *A = malloc_device<T>(1, q);
   T *B = malloc_device<T>(1, q);
-  T *C = malloc_shared<T>(1, q);
+  T *C = malloc_device<T>(1, q);
 
   q.memcpy(A, &a_loc, sizeof(T));
   q.memcpy(B, &b_loc, sizeof(T));
@@ -44,32 +44,29 @@ template <typename T> void test(sycl::queue &q) {
       C[0] = cacheA + cacheB;
     });
   });
-
+  T dev_result;
   q.wait();
-
+  q.memcpy(&dev_result, C, sizeof(T)).wait();
   if constexpr (std::is_same_v<T, double> || std::is_same_v<T, float>) {
-    assert(C[0] == a_loc + b_loc);
+    assert(dev_result == a_loc + b_loc);
   } else {
-    assert(checkEqual(C[0], a_loc + b_loc));
+    assert(checkEqual(dev_result, a_loc + b_loc));
   }
 
   free(A, q);
   free(B, q);
   free(C, q);
-
-  return;
 }
 
 int main() {
   queue q;
 
-  if (q.get_device().has(aspect::usm_shared_allocations)) {
-    test<float>(q);
-    test<double>(q);
+  test<float>(q);
+  test<double>(q);
 
-    test<float2>(q);
-    test<double2>(q);
-    test<float4>(q);
-  }
+  test<float2>(q);
+  test<double2>(q);
+  test<float4>(q);
+
   return 0;
 }
