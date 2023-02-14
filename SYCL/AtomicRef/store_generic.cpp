@@ -3,9 +3,6 @@
 // RUN: %CPU_RUN_PLACEHOLDER %t.out
 // RUN: %ACC_RUN_PLACEHOLDER %t.out
 
-// CUDA and HIP backends have no support for the generic address space yet
-// XFAIL: cuda, hip
-
 #include "store.h"
 
 int main() { store_test_all<access::address_space::generic_space>(); }

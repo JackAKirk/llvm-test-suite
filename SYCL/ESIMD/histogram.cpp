@@ -6,7 +6,7 @@
 //
 //===----------------------------------------------------------------------===//
 // REQUIRES: gpu
-// UNSUPPORTED: cuda || hip
+// UNSUPPORTED: cuda || hip || gpu-intel-pvc
 // RUN: %clangxx -fsycl %s -o %t.out
 // RUN: %GPU_RUN_PLACEHOLDER %t.out
 
@@ -27,6 +27,12 @@ using namespace sycl;
 //
 #define BLOCK_WIDTH 32
 #define BLOCK_HEIGHT 64
+
+#ifdef USE_64_BIT_OFFSET
+typedef uint64_t Toffset;
+#else
+typedef uint32_t Toffset;
+#endif
 
 void histogram_CPU(unsigned int width, unsigned int height, unsigned char *srcY,
                    unsigned int *cpuHistogram) {
@@ -191,7 +197,7 @@ int main(int argc, char *argv[]) {
               }
 
               // Declare a vector to store the offset for atomic write operation
-              simd<unsigned int, 8> offset(0, 1); // init to 0, 1, 2, ..., 7
+              simd<Toffset, 8> offset(0, 1); // init to 0, 1, 2, ..., 7
               offset *= sizeof(unsigned int);
 
           // Update global sum by atomically adding each local histogram

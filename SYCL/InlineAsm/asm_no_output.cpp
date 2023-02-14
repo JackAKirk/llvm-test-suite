@@ -8,7 +8,7 @@
 #include <sycl/sycl.hpp>
 #include <vector>
 
-using dataType = sycl::cl_int;
+using dataType = sycl::opencl::cl_int;
 
 template <typename T = dataType> struct KernelFunctor : WithOutputBuffer<T> {
   KernelFunctor(size_t problem_size) : WithOutputBuffer<T>(problem_size) {}
@@ -19,7 +19,7 @@ template <typename T = dataType> struct KernelFunctor : WithOutputBuffer<T> {
             cgh);
     cgh.parallel_for<KernelFunctor<T>>(
         sycl::range<1>{this->getOutputBufferSize()},
-        [=](sycl::id<1> wiID) [[intel::reqd_sub_group_size(8)]] {
+        [=](sycl::id<1> wiID) [[intel::reqd_sub_group_size(16)]] {
           volatile int local_var = 47;
           local_var += C[0];
 #if defined(__SYCL_DEVICE_ONLY__)

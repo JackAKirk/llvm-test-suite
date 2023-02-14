@@ -11,8 +11,10 @@
 //
 //===----------------------------------------------------------------------===//
 
-// Flaky with CUDA
-// UNSUPPORTED: cuda
+// Flaky with CUDA and HIP (https://github.com/intel/llvm/issues/6495).
+// TODO: Test is failing for acc backend, enable back when the issue
+// fixed.
+// UNSUPPORTED: cuda, hip, accelerator
 
 #include <cassert>
 #include <sycl/sycl.hpp>

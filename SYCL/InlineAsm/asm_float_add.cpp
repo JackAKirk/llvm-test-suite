@@ -9,7 +9,7 @@
 #include <sycl/sycl.hpp>
 #include <vector>
 
-using dataType = sycl::cl_double;
+using dataType = sycl::opencl::cl_double;
 
 template <typename T = dataType>
 struct KernelFunctor : WithInputBuffers<T, 2>, WithOutputBuffer<T> {
@@ -30,9 +30,9 @@ struct KernelFunctor : WithInputBuffers<T, 2>, WithOutputBuffer<T> {
 
     cgh.parallel_for<KernelFunctor<T>>(
         sycl::range<1>{this->getOutputBufferSize()},
-        [=](sycl::id<1> wiID) [[intel::reqd_sub_group_size(8)]] {
+        [=](sycl::id<1> wiID) [[intel::reqd_sub_group_size(16)]] {
 #if defined(__SYCL_DEVICE_ONLY__)
-          asm("add (M1, 8) %0(0, 0)<1> %1(0, 0)<1;1,0> %2(0, 0)<1;1,0>"
+          asm("add (M1, 16) %0(0, 0)<1> %1(0, 0)<1;1,0> %2(0, 0)<1;1,0>"
               : "=rw"(C[wiID])
               : "rw"(A[wiID]), "rw"(B[wiID]));
 #else

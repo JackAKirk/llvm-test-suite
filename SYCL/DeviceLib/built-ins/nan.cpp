@@ -38,14 +38,14 @@ template <typename T, typename R> void check_nan(s::queue &Queue) {
 }
 
 int main() {
-  test_nan_call<s::ushort, s::half>();
-  test_nan_call<s::uint, float>();
-  test_nan_call<s::ulong, double>();
-  test_nan_call<s::ulonglong, double>();
+  test_nan_call<unsigned short, s::half>();
+  test_nan_call<unsigned int, float>();
+  test_nan_call<unsigned long, double>();
+  test_nan_call<unsigned long long, double>();
   test_nan_call<s::ushort2, s::half2>();
   test_nan_call<s::uint2, s::float2>();
   test_nan_call<s::ulong2, s::double2>();
-  test_nan_call<s::ulonglong2, s::double2>();
+  test_nan_call<s::vec<unsigned long long, 2>, s::double2>();
 
   s::queue Queue([](sycl::exception_list ExceptionList) {
     for (std::exception_ptr ExceptionPtr : ExceptionList) {
