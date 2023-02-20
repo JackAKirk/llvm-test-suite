@@ -49,7 +49,15 @@ template <typename T> void test(sycl::queue &q) {
   q.wait();
 
   q.memcpy(&dev_result, C, sizeof(T)).wait();
-  if constexpr (std::is_same_v<T, double> || std::is_same_v<T, float>) {
+  if constexpr (std::is_same_v<T, char> || std::is_same_v<T, short> ||
+                std::is_same_v<T, int> || std::is_same_v<T, long> ||
+                std::is_same_v<T, long long> ||
+                std::is_same_v<T, unsigned char> ||
+                std::is_same_v<T, unsigned short> ||
+                std::is_same_v<T, unsigned int> ||
+                std::is_same_v<T, unsigned long long> ||
+                std::is_same_v<T, double> || std::is_same_v<T, float>) {
+
     assert(dev_result == a_loc + b_loc);
   } else {
     assert(checkEqual(dev_result, a_loc + b_loc));
@@ -62,6 +70,34 @@ template <typename T> void test(sycl::queue &q) {
 
 int main() {
   queue q;
+
+  test<char>(q);
+  test<short>(q);
+  test<int>(q);
+  test<long>(q);
+  test<long long>(q);
+
+  test<unsigned char>(q);
+  test<unsigned short>(q);
+  test<unsigned int>(q);
+
+  test<unsigned long long>(q);
+
+  test<char2>(q);
+  test<int2>(q);
+  test<longlong2>(q);
+
+  test<uchar2>(q);
+  test<uint2>(q);
+  test<ulonglong2>(q);
+
+  test<char4>(q);
+  test<short4>(q);
+  test<int4>(q);
+
+  test<uchar4>(q);
+  test<ushort4>(q);
+  test<uint4>(q);
 
   test<float>(q);
   test<double>(q);
