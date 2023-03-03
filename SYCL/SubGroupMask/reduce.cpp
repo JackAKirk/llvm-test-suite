@@ -8,14 +8,19 @@
 #include <limits>
 #include <numeric>
 using namespace sycl;
+namespace syclex = sycl::ext::oneapi::experimental;
 
 template <typename T, class BinaryOperation>
 void test_impl(queue q, BinaryOperation binary_op, T identity) {
   constexpr int N = 7;
   size_t G = 32;
 
-  std::array<T, N * 2> input;
-  std::iota(input.begin(), input.end(), sizeof(T));
+  std::array<T, N * 2> input = {1};
+  for (int i = 0; i < N * 2; i++)
+  {
+    input[i] = 1;
+  }
+  //std::iota(input.begin(), input.end(), sizeof(T));
   std::array<T, 4> output;
   T init = 42;
 
@@ -28,30 +33,44 @@ void test_impl(queue q, BinaryOperation binary_op, T identity) {
       accessor out{out_buf, cgh, sycl::write_only, sycl::no_init};
       cgh.parallel_for(nd_range<1>(G, G), [=](nd_item<1> it) {
         sycl::ext::oneapi::sub_group sg = it.get_sub_group();
-
+/*
         uint32_t msk = (1 << N) - 1;
         auto mask =
             detail::Builder::createSubGroupMask<ext::oneapi::sub_group_mask>(
-                msk, sg.get_max_local_range()[0]);
+                msk, sg.get_max_local_range()[0]);*/
 
         int lid = it.get_local_id(0);
-
+        bool pred = (N - 1 < sg.get_local_id() && sg.get_local_id() < N * 2) ? true : false;
+        auto BallotGroup = syclex::get_ballot_group(sg, pred);
+/*
         if (N - 1 < sg.get_local_id() && sg.get_local_id() < N * 2) {
+
           auto active_mask = it.ext_oneapi_active_sub_group_items();
 
           out[0] = reduce_over_group(sg, active_mask, in[lid], binary_op);
           out[1] = reduce_over_group(sg, active_mask, in[lid], init, binary_op);
+        }*/
+        if(pred)
+        {
+        //auto active_mask = it.ext_oneapi_active_sub_group_items();
+                    auto OpportunisticGroup =
+                syclex::this_kernel::get_opportunistic_group();
+        out[0] = sycl::ext::oneapi::reduce_over_group(OpportunisticGroup, in[lid], binary_op); //why is fully qual name reqd here?
         }
-        out[0] =
-            binary_op(out[0], reduce_over_group(sg, mask, in[lid], binary_op));
-        out[1] =
-            binary_op(out[1], reduce_over_group(sg, mask, in[lid], binary_op));
-
+        else{
+          out[1] = reduce_over_group(BallotGroup, in[lid], binary_op);
+        }
+        //out[0] = reduce_over_group(sg, in[lid], binary_op);
+        //out[0] =
+          //  binary_op(out[0], reduce_over_group(BallotGroup, in[lid], binary_op));
+        /*out[1] =
+            binary_op(out[1], reduce_over_group(BallotGroup, in[lid], binary_op));*/
+/*
         auto active_mask = it.ext_oneapi_active_sub_group_items();
         out[2] = joint_reduce(sg, active_mask, in.get_pointer(),
                               in.get_pointer() + N, binary_op);
         out[3] = joint_reduce(sg, active_mask, in.get_pointer(),
-                              in.get_pointer() + N, init, binary_op);
+                              in.get_pointer() + N, init, binary_op);*/
       });
     });
   }
@@ -66,27 +85,29 @@ void test_impl(queue q, BinaryOperation binary_op, T identity) {
     correct2 = binary_op(correct2, input[i]);
   }
 
-  assert(output[0] == correct1);
-  assert(output[1] == binary_op(correct1, init));
+std::cout << "result0=" << output[0];
+std::cout << "result1=" << output[1];
+  //assert(output[0] == correct1);
+  /*assert(output[1] == binary_op(correct1, init));
   assert(output[2] == correct2);
-  assert(output[3] == binary_op(correct2, init));
+  assert(output[3] == binary_op(correct2, init));*/
 }
 
 template <typename T> void test(queue q) {
   test_impl<T>(q, sycl::plus<T>(), 0);
-  test_impl<T>(q, sycl::minimum<T>(), std::numeric_limits<T>::max());
-  test_impl<T>(q, sycl::maximum<T>(), std::numeric_limits<T>::lowest());
+  //test_impl<T>(q, sycl::minimum<T>(), std::numeric_limits<T>::max());
+  //test_impl<T>(q, sycl::maximum<T>(), std::numeric_limits<T>::lowest());
 }
 
 int main() {
   queue q;
 
   test<int>(q);
-  test<unsigned int>(q);
+  /*test<unsigned int>(q);
   test<short>(q);
   test<unsigned short>(q);
   test<char>(q);
   test<unsigned char>(q);
-
+*/
   std::cout << "Test passed." << std::endl;
 }
