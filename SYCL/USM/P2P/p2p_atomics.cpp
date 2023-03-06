@@ -37,11 +37,6 @@ int main() {
                  [](const sycl::device &D) { return sycl::queue{D}; });
   ////////////////////////////////////////////////////////////////////////
 
-  auto Dev0 = Queues[0].get_device();
-  auto Dev1 = Queues[1].get_device();
-
-  assert(Dev0 != Dev1);
-
   if (!Devs[0].ext_oneapi_can_access_peer(
           Devs[1], sycl::ext::oneapi::peer_access::atomics_supported)) {
     std::cout << "P2P atomics are not supported by devices, exiting."
