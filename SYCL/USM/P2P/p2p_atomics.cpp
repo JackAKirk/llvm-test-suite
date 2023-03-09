@@ -44,8 +44,8 @@ int main() {
     return 0;
   }
 
-  // Enables Dev1 to access Dev0 memory.
-  Dev1.ext_oneapi_enable_peer_access(Dev0);
+  // Enables Devs[1] to access Devs[0] memory.
+  Devs[1].ext_oneapi_enable_peer_access(Devs[0]);
 
   std::vector<double> input(N);
   std::iota(input.begin(), input.end(), 0);
