@@ -1,6 +1,6 @@
 // REQUIRES: cuda
-// RUN: %clangxx -fsycl -fsycl-targets=%sycl_triple %s -o %t.out
-// RUN: %t.out
+// RUN: %clangxx -fsycl -fsycl-targets=%sycl_triple -Xsycl-target-backend --cuda-gpu-arch=sm_61 %s -o %t.out
+// RUN: env SYCL_PI_TRACE=2 %GPU_RUN_PLACEHOLDER %t.out 2>&1 %GPU_CHECK_PLACEHOLDER
 
 #include <cassert>
 #include <numeric>
@@ -37,15 +37,15 @@ int main() {
                  [](const sycl::device &D) { return sycl::queue{D}; });
   ////////////////////////////////////////////////////////////////////////
 
-  if (!Devs[0].ext_oneapi_can_access_peer(
-          Devs[1], sycl::ext::oneapi::peer_access::atomics_supported)) {
+  if (!Devs[1].ext_oneapi_can_access_peer(
+          Devs[0], sycl::ext::oneapi::peer_access::atomics_supported)) {
     std::cout << "P2P atomics are not supported by devices, exiting."
               << std::endl;
     return 0;
   }
 
-  // Enables Dev1 to access Dev0 memory.
-  Dev1.ext_oneapi_enable_peer_access(Dev0);
+  // Enables Devs[1] to access Devs[0] memory.
+  Devs[1].ext_oneapi_enable_peer_access(Devs[0]);
 
   std::vector<double> input(N);
   std::iota(input.begin(), input.end(), 0);
@@ -80,3 +80,6 @@ int main() {
 
   return 0;
 }
+
+// CHECK: ---> piextPeerAccessGetInfo(
+// CHECK: ---> piextEnablePeerAccess(

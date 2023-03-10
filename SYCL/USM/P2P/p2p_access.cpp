@@ -1,6 +1,6 @@
 // REQUIRES: cuda
 // RUN: %clangxx -fsycl -fsycl-targets=%sycl_triple %s -o %t.out
-// RUN: %t.out
+// RUN: env SYCL_PI_TRACE=2 %GPU_RUN_PLACEHOLDER %t.out 2>&1 %GPU_CHECK_PLACEHOLDER
 
 #include <cassert>
 #include <sycl/sycl.hpp>
@@ -69,3 +69,7 @@ int main() {
 
   return 0;
 }
+
+// CHECK: ---> piextPeerAccessGetInfo(
+// CHECK: ---> piextEnablePeerAccess(
+// CHECK: ---> piextDisablePeerAccess(
