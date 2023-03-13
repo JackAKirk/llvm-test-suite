@@ -53,32 +53,32 @@ void matrix_verify_lambda(queue q,
 
       cgh.parallel_for<KernelName<T, T2, M, K, N>>(
           r, [accC, lambda](
-                 nd_item<2> spmd_item)[[sycl::reqd_sub_group_size(SG_SZ)]] {
-        const auto global_idx = spmd_item.get_global_id(0);
-        const auto global_idy = spmd_item.get_global_id(1);
-        const auto sg_startx = global_idx - spmd_item.get_local_id(0);
-        const auto sg_starty = global_idy - spmd_item.get_local_id(1);
+                 nd_item<2> spmd_item) [[sycl::reqd_sub_group_size(SG_SZ)]] {
+            const auto global_idx = spmd_item.get_global_id(0);
+            const auto global_idy = spmd_item.get_global_id(1);
+            const auto sg_startx = global_idx - spmd_item.get_local_id(0);
+            const auto sg_starty = global_idy - spmd_item.get_local_id(1);
 
-        auto sg = spmd_item.get_sub_group();
+            auto sg = spmd_item.get_sub_group();
 
-        joint_matrix<sub_group, T, use::a, M, K, layout::row_major> sub_a;
-        joint_matrix<sub_group, T, use::b, K, N, layout::row_major> sub_b;
-        joint_matrix<sub_group, T2, use::accumulator, M, N> sub_c;
+            joint_matrix<sub_group, T, use::a, M, K, layout::row_major> sub_a;
+            joint_matrix<sub_group, T, use::b, K, N, layout::row_major> sub_b;
+            joint_matrix<sub_group, T2, use::accumulator, M, N> sub_c;
 
-        joint_matrix_fill(sg, sub_a, 3);
-        joint_matrix_fill(sg, sub_b, 1);
-        joint_matrix_fill(sg, sub_c, -80);
+            joint_matrix_fill(sg, sub_a, 3);
+            joint_matrix_fill(sg, sub_b, 1);
+            joint_matrix_fill(sg, sub_c, -80);
 
-        joint_matrix_apply(sg, sub_a, lambda);
+            joint_matrix_apply(sg, sub_a, lambda);
 
-        sub_c = joint_matrix_mad(sg, sub_a, sub_b, sub_c);
+            sub_c = joint_matrix_mad(sg, sub_a, sub_b, sub_c);
 
-        joint_matrix_store(sg, sub_c,
-                           accC.get_pointer() +
-                               (sg_startx * M) * (N * nWGperDim) +
-                               sg_starty / SG_SZ * N,
-                           (N * nWGperDim), layout::row_major);
-      }); // parallel for
+            joint_matrix_store(sg, sub_c,
+                               accC.get_pointer() +
+                                   (sg_startx * M) * (N * nWGperDim) +
+                                   sg_starty / SG_SZ * N,
+                               (N * nWGperDim), layout::row_major);
+          }); // parallel for
     });
   }
   assert_ref<T2, M * nWGperDim, N * nWGperDim>(C.get_data(), ref);
