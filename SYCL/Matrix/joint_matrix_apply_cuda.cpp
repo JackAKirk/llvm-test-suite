@@ -51,9 +51,9 @@ void matrix_verify_lambda(queue q,
     q.submit([&](handler &cgh) {
       accessor<T2, 2, access::mode::read_write, target::device> accC(bufC, cgh);
 
-      cgh.parallel_for<KernelName<T, T2, M, K, N>>(r, [
-        accC, lambda
-      ](nd_item<2> spmd_item)[[sycl::reqd_sub_group_size(SG_SZ)]] {
+      cgh.parallel_for<KernelName<T, T2, M, K, N>>(
+          r, [accC, lambda](
+                 nd_item<2> spmd_item)[[sycl::reqd_sub_group_size(SG_SZ)]] {
         const auto global_idx = spmd_item.get_global_id(0);
         const auto global_idy = spmd_item.get_global_id(1);
         const auto sg_startx = global_idx - spmd_item.get_local_id(0);
