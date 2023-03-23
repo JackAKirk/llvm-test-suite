@@ -1,4 +1,3 @@
-// UNSUPPORTED: (level_zero || opencl)
 // RUN: %clangxx -fsycl -fsycl-targets=%sycl_triple %s -o %t.out
 // RUN: %t.out
 
@@ -101,11 +100,12 @@ int main() {
   test<uint4>(q);
 
   test<float>(q);
-  test<double>(q);
-
   test<float2>(q);
-  test<double2>(q);
   test<float4>(q);
 
+  if (q.get_device().has(sycl::aspect::fp64)) {
+    test<double>(q);
+    test<double2>(q);
+  }
   return 0;
 }
